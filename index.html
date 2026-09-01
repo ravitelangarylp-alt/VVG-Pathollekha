@@ -1,250 +1,238 @@
-html_code = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="sa">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>पाठोल्लेखः - वेदविज्ञानगुरुकुलम्</title>
     
-    <!-- Inknut Antiqua and Laila Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;700&family=Laila:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-color: #FDFBF7;
-            --header-bg: #D35400;
-            --text-dark: #2C3E50;
-            --table-border: #E0D4C8;
-            --samanya-text: #0000FF;
-            --vedanta-text: #FF00FF;
-            --vyakarana-text: #FF0000;
+            /* Garden Theme Colors */
+            --bg-color: #F4F9F4; /* Soft greenish white */
+            --header-bg: #2E7D32; /* Forest Green */
+            --header-gradient: linear-gradient(135deg, #2E7D32, #4CAF50);
+            --accent-orange: #D35400; /* Saffron/Terracotta accent */
+            --text-dark: #2E3B32;
+            --table-border: #C8E6C9;
+            --card-bg: #FFFFFF;
+            
+            --samanya-text: #0277BD; 
+            --vedanta-text: #AD1457; 
+            --vyakarana-text: #C62828; 
         }
 
-        body {
-            font-family: 'Laila', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-dark);
-            margin: 0;
-            padding: 0;
-        }
-
-        h1, h2, h3, th {
-            font-family: 'Inknut Antiqua', serif;
-        }
-
-        header {
-            background-color: var(--header-bg);
-            color: white;
-            text-align: center;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        body { font-family: 'Laila', sans-serif; background-color: var(--bg-color); color: var(--text-dark); margin: 0; padding: 0; background-image: radial-gradient(#e8f5e9 1px, transparent 1px); background-size: 20px 20px; }
+        h1, h2, h3, th { font-family: 'Inknut Antiqua', serif; }
         
-        header h1 {
-            margin: 0;
-            font-size: 1.8rem;
-            letter-spacing: 1px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* ---------------- TABS / VIEWS ---------------- */
-        .tab-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .btn-tab {
-            background-color: white;
-            color: var(--header-bg);
-            border: 2px solid var(--header-bg);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 700;
+        header { 
+            background: var(--header-gradient); 
+            color: white; text-align: center; padding: 20px 15px; 
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3); 
+            border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
             cursor: pointer;
-            font-family: 'Laila', sans-serif;
-            transition: all 0.3s;
         }
-
-        .btn-tab.active, .btn-tab:hover {
-            background-color: var(--header-bg);
-            color: white;
-        }
-
-        .view-section {
-            display: none;
-            animation: fadeIn 0.5s;
-        }
-
-        .view-section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* ---------------- YESTERDAY'S VIEW ---------------- */
-        .yesterday-card {
-            background: white;
-            border-left: 5px solid var(--header-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            margin-bottom: 15px;
-            text-align: center;
-            font-size: 1.2rem;
-            color: #555;
-        }
-
-        /* ---------------- TABLE STYLES ---------------- */
-        .table-wrapper {
-            overflow-x: auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            border: 1px solid var(--table-border);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 1000px;
-        }
-
-        th, td {
-            border: 1px solid var(--table-border);
-            padding: 10px;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 0.95rem;
-            position: relative;
-        }
-
-        th {
-            background-color: #F8F1E7;
-            font-weight: 700;
-            font-size: 1rem;
-            color: #5D4037;
-        }
-
-        td {
-            font-weight: 600;
-            transition: background 0.3s ease;
-        }
-
-        td:hover { background-color: #FFF9F0; }
-
-        .samanya { color: var(--samanya-text); }
-        .vedanta { color: var(--vedanta-text); }
-        .vyakarana { color: var(--vyakarana-text); }
+        header h1 { margin: 0; font-size: 2rem; letter-spacing: 1px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
         
-        .acharya-name {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 400;
-            margin-top: 5px;
-            color: #555;
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 25px 20px; }
 
-        .split-cell {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
+        /* Tabs */
+        .tab-buttons { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .btn-tab { 
+            background-color: var(--card-bg); color: var(--header-bg); 
+            border: 2px solid var(--header-bg); padding: 10px 25px; 
+            border-radius: 30px; font-size: 1.1rem; font-weight: 700; 
+            cursor: pointer; font-family: 'Laila', sans-serif; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .split-top { border-bottom: 1px solid var(--table-border); padding-bottom: 5px; margin-bottom: 5px; }
-
-        /* ---------------- MODALS & FORMS ---------------- */
-        .btn-primary {
-            background-color: var(--header-bg);
-            color: white;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 8px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: block;
-            margin: 30px auto;
-            box-shadow: 0 4px 6px rgba(211, 84, 0, 0.2);
-            font-family: 'Inknut Antiqua', serif;
-        }
+        .btn-tab.active, .btn-tab:hover { background-color: var(--header-bg); color: white; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(46, 125, 50, 0.2); }
         
-        .admin-link {
-            text-align: center;
-            display: block;
-            margin-top: 20px;
-            font-size: 1rem;
-            color: #7f8c8d;
-            cursor: pointer;
-            text-decoration: underline;
-        }
+        .view-section { display: none; animation: fadeIn 0.5s; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+        /* Dashboard & Cards (Garden Vibe) */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        .stat-card { 
+            background: var(--card-bg); padding: 25px 20px; 
+            border-radius: 20px; box-shadow: 0 8px 20px rgba(46, 125, 50, 0.08); 
+            text-align: center; border: 1px solid #E8F5E9;
+            position: relative; overflow: hidden;
+            transition: transform 0.3s;
         }
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--header-gradient); }
+        .stat-card h3 { color: #33691E; font-size: 1.15rem; margin-top: 0; margin-bottom: 20px; line-height: 1.4; }
         
-        .form-select, .form-input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 1.1rem;
-            box-sizing: border-box;
+        .circle-progress {
+            width: 100px; height: 100px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 15px auto; font-size: 1.5rem; font-weight: bold; color: var(--header-bg);
+            position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
+        .circle-progress::before {
+            content: ""; position: absolute; width: 76px; height: 76px;
+            background: white; border-radius: 50%;
+        }
+        .circle-progress span { position: relative; z-index: 1; font-family: 'Inknut Antiqua', serif; }
+        
+        .stat-number { font-size: 2.5rem; font-weight: bold; color: var(--accent-orange); margin: 10px 0; font-family: 'Inknut Antiqua', serif; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+
+        .data-card { background: var(--card-bg); border-left: 6px solid var(--accent-orange); padding: 25px; border-radius: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.06); margin-bottom: 20px; text-align: center; font-size: 1.2rem; color: #555; }
+        
+        /* Table Styles */
+        .table-wrapper { overflow-x: auto; background: var(--card-bg); border-radius: 15px; box-shadow: 0 8px 25px rgba(46, 125, 50, 0.08); border: 1px solid var(--table-border); margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th, td { border: 1px solid var(--table-border); padding: 12px; text-align: center; vertical-align: middle; font-size: 0.95rem; }
+        th { background-color: #F1F8E9; font-weight: 700; font-size: 1.05rem; color: #1B5E20; }
+        td { font-weight: 600; transition: background 0.3s ease; }
+        td:hover { background-color: #F9FBE7; }
+        .samanya { color: var(--samanya-text); } .vedanta { color: var(--vedanta-text); } .vyakarana { color: var(--vyakarana-text); }
+        .acharya-name { display: block; font-size: 0.85rem; font-weight: 400; margin-top: 5px; color: #689F38; }
+        .split-cell { display: flex; flex-direction: column; height: 100%; }
+        .split-top { border-bottom: 1px solid var(--table-border); padding-bottom: 6px; margin-bottom: 6px; }
+
+        /* Buttons & Forms */
+        .btn-primary { 
+            background: var(--header-gradient); color: white; border: none; padding: 14px 32px; 
+            border-radius: 30px; font-size: 1.2rem; font-weight: 700; cursor: pointer; display: block; 
+            margin: 20px auto; box-shadow: 0 6px 12px rgba(46, 125, 50, 0.25); font-family: 'Inknut Antiqua', serif; transition: all 0.2s; 
+        }
+        .btn-primary:active { transform: scale(0.95); box-shadow: 0 2px 6px rgba(46, 125, 50, 0.2); }
+        .btn-primary:disabled { background: #9E9E9E; cursor: not-allowed; box-shadow: none; }
+        .btn-outline { background: transparent; border: 2px solid var(--header-bg); color: var(--header-bg); box-shadow: none;}
+        
+        .admin-link { text-align: center; display: block; margin-top: 25px; font-size: 1.05rem; color: #795548; cursor: pointer; text-decoration: underline; font-weight: 600; }
+        
+        .form-card { background: var(--card-bg); padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(46, 125, 50, 0.1); max-width: 600px; margin: 0 auto; border: 1px solid var(--table-border); }
+        .form-group { margin-bottom: 25px; text-align: left; }
+        .form-group label { display: block; font-weight: 700; color: #33691E; margin-bottom: 10px; font-size: 1.15rem; }
+        .form-control { width: 100%; padding: 14px; border: 1.5px solid #A5D6A7; border-radius: 10px; font-family: inherit; font-size: 1.1rem; box-sizing: border-box; transition: border-color 0.3s, box-shadow 0.3s; background-color: #FAFAFA; }
+        .form-control:focus { outline: none; border-color: var(--header-bg); box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); background-color: white; }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--card-bg); padding: 35px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.2); border: 2px solid #81C784; }
+        
+        /* Floating Action Button for Adding Log */
+        .fab {
+            position: fixed; bottom: 30px; right: 30px; background: var(--accent-orange); color: white;
+            width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; box-shadow: 0 6px 15px rgba(211, 84, 0, 0.4); cursor: pointer; transition: transform 0.3s; z-index: 100;
+        }
+        .fab:hover { transform: scale(1.1) rotate(90deg); }
+        
+        .section-title { text-align: center; color: #2E7D32; font-size: 2rem; margin-bottom: 25px; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
-<header>
+<!-- Header acts as Home/Dashboard button -->
+<header onclick="goToDashboard()" title="मुख्यपृष्ठम् प्रति गच्छतु">
     <h1>पाठोल्लेखः</h1>
-    <div style="font-size: 1.1rem; margin-top: 5px; font-weight: 400; font-family: 'Laila', sans-serif;">वेदविज्ञानगुरुकुलम्</div>
+    <div style="font-size: 1.2rem; margin-top: 5px; font-weight: 600; font-family: 'Laila', sans-serif; opacity: 0.9;">वेदविज्ञानगुरुकुलम्</div>
 </header>
 
 <div class="container">
-    <div class="tab-buttons">
-        <button class="btn-tab active" onclick="switchView('yesterdayView', this)">ह्यस्तन-समयसारिणी (Yesterday)</button>
-        <button class="btn-tab" onclick="switchView('yearlyView', this)">वार्षिक-समयसारिणी (Yearly)</button>
+    
+    <!-- Top Navigation Tabs -->
+    <div id="mainTabs" class="tab-buttons">
+        <button id="tabToday" class="btn-tab" onclick="switchView('todayView', this)">अद्यतन-पाठोल्लेखः</button>
+        <button id="tabYearly" class="btn-tab" onclick="switchView('yearlyView', this)">वार्षिक-समयसारिणी</button>
     </div>
 
-    <!-- YESTERDAY'S VIEW -->
-    <div id="yesterdayView" class="view-section active">
-        <h2 style="text-align: center; color: #5D4037;">ह्यस्तन-पाठ-विवरणम्</h2>
-        <div class="yesterday-card">
+    <!-- 1. DASHBOARD VIEW (Default View: Yesterday's logs + Analytics) -->
+    <div id="dashboardView" class="view-section active">
+        <h2 class="section-title" style="margin-bottom: 10px;">ह्यस्तन-पाठ-विवरणम्</h2>
+        <div style="text-align: center; color: #795548; margin-bottom: 25px;">(Yesterday's Dashboard)</div>
+        
+        <!-- YESTERDAY'S LOGS -->
+        <div class="data-card">
             अद्य यावत् कोऽपि पाठः न उल्लिखितः।<br>
-            <span style="font-size: 0.9rem; color: #888;">(Google Sheets इत्यस्मात् दत्तांशः अत्र आगमिष्यति / Data will load here)</span>
+            <span style="font-size: 0.95rem; color: #888;">(Google Sheets इत्यस्मात् दत्तांशः अत्र आगमिष्यति)</span>
+        </div>
+        
+        <!-- DASHBOARD ANALYTICS -->
+        <div class="dashboard-grid" style="margin-top: 40px;">
+            <div class="stat-card">
+                <h3>पाठ-पूरकाः आचार्याः <br><span style="font-size:0.85rem; font-family:'Laila'; font-weight:normal; color:#689F38;">(Submitted Logs)</span></h3>
+                <div class="circle-progress" style="background: conic-gradient(#4CAF50 80%, #E8F5E9 0); color: #2E7D32;">
+                    <span>८०%</span>
+                </div>
+                <div style="font-size: 0.95rem; color:#795548; font-weight:600;">ह्यः (Yesterday)</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>उपस्थिताः आचार्याः <br><span style="font-size:0.85rem; font-family:'Laila'; font-weight:normal; color:#689F38;">(Present Acharyas)</span></h3>
+                <div class="circle-progress" style="background: conic-gradient(#0288D1 90%, #E1F5FE 0); color: #0277BD;">
+                    <span>९०%</span>
+                </div>
+                <div style="font-size: 0.95rem; color:#795548; font-weight:600;">ह्यः (Yesterday)</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>सम्पन्नाः पाठाः <br><span style="font-size:0.85rem; font-family:'Laila'; font-weight:normal; color:#689F38;">(Completed Classes)</span></h3>
+                <div class="circle-progress" style="background: conic-gradient(#E65100 75%, #FFF3E0 0); color: #D35400;">
+                    <span>७५%</span>
+                </div>
+                <div style="font-size: 0.95rem; color:#795548; font-weight:600;">ह्यः (Yesterday)</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid" style="grid-template-columns: 1fr;">
+            <div class="stat-card" style="padding: 20px; border: 2px solid #C8E6C9; background: #F1F8E9;">
+                <h3 style="margin-bottom: 5px; color: #1B5E20; font-size:1.3rem;">अस्मिन् मासे सम्पन्नाः पाठाः <br><span style="font-size:0.9rem; font-family:'Laila'; font-weight:normal;">(Classes this month)</span></h3>
+                <div class="stat-number" style="font-size: 3rem; color: #2E7D32;">१२४</div>
+            </div>
+        </div>
+
+        <a class="admin-link" onclick="openAdminModal()">प्रबन्धक-प्रवेशः (Admin Login)</a>
+    </div>
+
+    <!-- 2. TODAY'S VIEW (अद्यतन-पाठोल्लेखः) -->
+    <div id="todayView" class="view-section">
+        <h2 class="section-title">अद्यतन-प्रविष्टाः पाठाः</h2>
+        <div class="data-card">
+            अद्य कोऽपि पाठः न उल्लिखितः।<br>
+            <span style="font-size: 0.95rem; color: #888;">(अद्यतन-दत्तांशः अत्र आगमिष्यति)</span>
+        </div>
+        <button class="btn-primary" onclick="openLoginModal()" style="background: var(--accent-orange);">पाठोल्लेखं कुरु 📝</button>
+    </div>
+
+    <!-- 3. DATA ENTRY FORM VIEW -->
+    <div id="entryFormSection" class="view-section">
+        <h2 class="section-title">पाठोल्लेख-प्रपत्रम् <br><span id="loggedInAcharya" style="color: var(--accent-orange); font-size: 1.6rem; text-shadow:none;"></span></h2>
+        
+        <div class="form-card">
+            <div class="form-group">
+                <label>दिनाङ्कः (Date)</label>
+                <input type="date" id="dateInput" class="form-control" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>कक्षा (Class / Gana)</label>
+                <select id="classSelect" class="form-control">
+                </select>
+                <small style="color:#795548; display:block; margin-top:8px; font-weight:600;">* अत्र भवतः कक्षाः केवलं दृश्यन्ते।</small>
+            </div>
+
+            <div class="form-group">
+                <label>पाठस्य विवरणम् (Lesson Description)</label>
+                <textarea id="descriptionInput" class="form-control" rows="5" placeholder="अद्य कृतस्य पाठस्य विवरणम् अत्र लिखतु..."></textarea>
+            </div>
+
+            <button id="submitBtn" class="btn-primary" style="width: 100%; margin-top: 20px;" onclick="submitLesson()">समर्पयतु (Submit)</button>
+            <button class="btn-primary btn-outline" style="width: 100%; margin-top: 15px;" onclick="logout()">निर्गच्छतु (Logout / Back)</button>
         </div>
     </div>
 
-    <!-- YEARLY VIEW (ALL 8 GANAS) -->
+    <!-- 4. YEARLY VIEW -->
     <div id="yearlyView" class="view-section">
-        <h2 style="text-align: center; color: #5D4037;">वार्षिक-समयसारिणी (२०२६-२७)</h2>
+        <h2 class="section-title">वार्षिक-समयसारिणी (२०२६-२७)</h2>
         <div class="table-wrapper">
             <table>
                 <thead>
@@ -395,15 +383,16 @@ html_code = """<!DOCTYPE html>
         </div>
     </div>
 
-    <button class="btn-primary" onclick="openLoginModal()">पाठोल्लेखं कुरु</button>
-    <a class="admin-link" onclick="openAdminModal()">प्रबन्धक-प्रवेशः (Admin Login)</a>
 </div>
 
-<!-- Login Modal for Acharyas -->
+<!-- Floating Action Button for Adding Log -->
+<div class="fab" onclick="openLoginModal()" title="पाठोल्लेखं कुरु">+</div>
+
+<!-- Login Modal -->
 <div class="modal" id="loginModal">
     <div class="modal-content">
-        <h3 style="color: var(--header-bg);">आचार्य-प्रवेशः</h3>
-        <select id="acharyaSelect" class="form-select">
+        <h3 style="color: var(--header-bg); font-size: 1.6rem; margin-top: 0;">आचार्य-प्रवेशः</h3>
+        <select id="acharyaSelect" class="form-control" style="margin-bottom: 15px;">
             <option value="">-- आचार्यं चिनोतु --</option>
             <option value="सचिनः">सचिनः</option>
             <option value="सज्जयाचार्यः">सज्जयाचार्यः</option>
@@ -428,56 +417,62 @@ html_code = """<!DOCTYPE html>
             <option value="आचार्यः">आचार्यः</option>
             <option value="विष्णुः">विष्णुः</option>
         </select>
-        <input type="password" id="acharyaPin" class="form-input" placeholder="दूरवाणी सङ्ख्या (Mobile No) / PIN">
-        <button class="btn-primary" style="margin-bottom:10px; font-family: 'Laila', sans-serif;" onclick="verifyAcharya()">प्रविशतु</button>
-        <button class="btn-primary" style="background-color: #95a5a6; font-family: 'Laila', sans-serif;" onclick="closeModals()">निरस्यतु</button>
+        <input type="password" id="acharyaPin" class="form-control" placeholder="दूरवाणी सङ्ख्या (Mobile No) / PIN" style="margin-bottom: 25px; text-align: center;">
+        <button class="btn-primary" style="width: 100%; margin: 0 0 10px 0;" onclick="verifyAcharya()">प्रविशतु</button>
+        <button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="closeModals()">निरस्यतु</button>
     </div>
 </div>
 
 <!-- Admin Modal -->
 <div class="modal" id="adminModal">
     <div class="modal-content">
-        <h3 style="color: var(--header-bg);">प्रबन्धक-व्यवस्था</h3>
-        <p style="font-size: 1.1rem; color: #5D4037;">कूटशब्दं (Admin PIN) लिखतु:</p>
-        <input type="password" id="adminPin" class="form-input" placeholder="****" style="text-align: center;">
-        <button class="btn-primary" style="margin-bottom:10px; font-family: 'Laila', sans-serif;" onclick="verifyAdmin()">प्रविशतु</button>
-        <button class="btn-primary" style="background-color: #95a5a6; font-family: 'Laila', sans-serif;" onclick="closeModals()">निरस्यतु</button>
+        <h3 style="color: var(--header-bg); font-size: 1.6rem; margin-top: 0;">प्रबन्धक-व्यवस्था</h3>
+        <p style="font-size: 1.1rem; color: #5D4037; font-weight: bold;">कूटशब्दं (Admin PIN) लिखतु:</p>
+        <input type="password" id="adminPin" class="form-control" placeholder="****" style="text-align: center; margin-bottom: 25px;">
+        <button class="btn-primary" style="width: 100%; margin: 0 0 10px 0;" onclick="verifyAdmin()">प्रविशतु</button>
+        <button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="closeModals()">निरस्यतु</button>
     </div>
 </div>
 
 <script>
-    // Acharya Mobile Numbers (Passwords) mapping
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRxywNJTKN21s0AHqgxLGaC6i404UVN4s_am5TCMSLq0CC30v5R4HmTDvTT8vsVu5O/exec";
+
+    // System Data and Passwords
+    const timetableData = {"सचिनः": [{"gana": "तपः", "time": "06:30–07:55", "subject": "वेदः – कपिलः", "vibhaga": "सामान्य"}, {"gana": "तेजः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "11:00–11:55", "subject": "वेदान्तसारः", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "08:30–09:25", "subject": "वेदान्तपरिभाषा", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "01:30–02:25", "subject": "गीताभाष्यम्", "vibhaga": "वेदान्त"}], "सज्जयाचार्यः": [{"gana": "तपः", "time": "08:30–09:25", "subject": "संस्कृतवाङ्मयम्", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "11:00–11:55", "subject": "उपनिषद्भाष्यम्", "vibhaga": "वेदान्त"}], "विश्वेश्वराचार्यः": [{"gana": "तपः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}], "श्रीधराचार्यः": [{"gana": "तपः", "time": "02:30–03:25", "subject": "हितोपदेशः / पञ्चतन्त्रम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "03:30–04:25", "subject": "गीताभाष्यम्", "vibhaga": "वेदान्त"}, {"gana": "आज्ञः", "time": "06:30–07:55", "subject": "वेदः-जमदग्निः", "vibhaga": "सामान्य"}, {"gana": "आज्ञः", "time": "06:30–07:25", "subject": "सि.ले.सङ्ग्रहः", "vibhaga": "वेदान्त"}], "समीरणः": [{"gana": "तपः", "time": "03:30–04:25", "subject": "कण्ठपाठः", "vibhaga": "सामान्य"}], "चिन्मयः": [{"gana": "तेजः", "time": "06:30–07:55", "subject": "वेदः - कश्यपः", "vibhaga": "सामान्य"}, {"gana": "ओजः", "time": "06:30–07:25", "subject": "साहित्यसौष्ठवम्-२", "vibhaga": "सामान्य"}], "शिवसुब्रह्मण्यः": [{"gana": "तेजः", "time": "08:30–09:25", "subject": "व्याकरणम्", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "02:30–03:25", "subject": "कौमुदी", "vibhaga": "व्याकरण"}], "विनायकाचार्यः": [{"gana": "तेजः", "time": "11:00–11:55", "subject": "काव्यम्", "vibhaga": "सामान्य"}, {"gana": "तेजः", "time": "03:30–04:25", "subject": "तर्कसङ्ग्रहः", "vibhaga": "सामान्य"}, {"gana": "ओजः", "time": "06:30–07:55", "subject": "वेदः - अत्रिः", "vibhaga": "सामान्य"}], "आत्रेयः": [{"gana": "तेजः", "time": "02:30–03:25", "subject": "कण्ठपाठः", "vibhaga": "सामान्य"}], "गुरुप्रसादाचार्यः": [{"gana": "ओजः", "time": "08:30–09:25", "subject": "व्याकरणम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "06:30–07:55", "subject": "वेदः - भरद्वाजः", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "03:30–04:25", "subject": "कौमुदी-३ / प्रक्रिया", "vibhaga": "व्याकरण"}, {"gana": "प्रेयः", "time": "06:30–07:25", "subject": "परिभाषेन्दुशेखरः", "vibhaga": "व्याकरण"}], "आचार्यः": [{"gana": "ओजः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}], "प्राचार्यः": [{"gana": "ओजः", "time": "02:30–03:25", "subject": "साहित्यसौष्ठवम्-१", "vibhaga": "सामान्य"}, {"gana": "यशः", "time": "03:30–04:25", "subject": "ब्रह्मसूत्रम्", "vibhaga": "वेदान्त"}], "पृथ्वीराजाचार्यः": [{"gana": "ओजः", "time": "03:30–04:25", "subject": "न्यायबोधिनी", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "01:30–02:25", "subject": "न्यायप्रकाशः", "vibhaga": "सामान्य"}], "पृथ्वीराजः": [{"gana": "आज्ञः", "time": "06:30–07:55", "subject": "वेदः-वसिष्ठः", "vibhaga": "सामान्य"}], "अरुणाचार्यः": [{"gana": "वर्चः", "time": "08:30–09:25", "subject": "सिद्धान्तकौमुदी-१", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "11:00–11:55", "subject": "कौमुदी/प्रौढमनोरमा", "vibhaga": "व्याकरण"}, {"gana": "श्रेयः", "time": "01:30–02:25", "subject": "परिभाषेन्दुशेखरः", "vibhaga": "व्याकरण"}, {"gana": "आज्ञः", "time": "01:30–02:25", "subject": "परिभाषेन्दुशेखरः", "vibhaga": "व्याकरण"}, {"gana": "आज्ञः", "time": "02:30–03:25", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}], "अभिरामाचार्यः": [{"gana": "वर्चः", "time": "02:30–03:25", "subject": "दीपिका / मुक्तावली", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "08:30–09:25", "subject": "न्यायप्रकाशः", "vibhaga": "सामान्य"}], "सञ्जयः": [{"gana": "प्रेयः", "time": "06:30–07:55", "subject": "वेदः - विश्वामित्रः तथा गौतमः", "vibhaga": "सामान्य"}], "सञ्जयाचार्यः": [{"gana": "आज्ञः", "time": "03:30–04:25", "subject": "उपनिषद्भाष्यम्", "vibhaga": "वेदान्त"}], "रव्याचार्यः": [{"gana": "प्रेयः", "time": "02:30–03:25", "subject": "सिद्धान्तकौमुदी (कारकम्)", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "11:00–11:55", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}, {"gana": "श्रेयः", "time": "03:30–04:25", "subject": "प्रौढमनोरमा", "vibhaga": "व्याकरण"}, {"gana": "आज्ञः", "time": "03:30–04:25", "subject": "प्रौढमनोरमा", "vibhaga": "व्याकरण"}, {"gana": "यशः", "time": "02:30–03:25", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}], "महादेवाचार्यः": [{"gana": "प्रेयः", "time": "06:30–07:25", "subject": "गीताभाष्यम्", "vibhaga": "वेदान्त"}, {"gana": "श्रेयः", "time": "03:30–04:25", "subject": "सि.ले.सङ्ग्रहः", "vibhaga": "वेदान्त"}, {"gana": "आज्ञः", "time": "08:30–09:25", "subject": "अद्वैतसिद्धिः", "vibhaga": "वेदान्त"}, {"gana": "आज्ञः", "time": "02:30–03:25", "subject": "ब्रह्मसूत्रम्", "vibhaga": "वेदान्त"}], "शम्भु-आचार्यः": [{"gana": "आज्ञः", "time": "11:00–11:55", "subject": "प.ल.म./भूषणसारः", "vibhaga": "व्याकरण"}, {"gana": "यशः", "time": "08:30–09:25", "subject": "प.ल.म./भूषणसारः", "vibhaga": "व्याकरण"}], "सुब्रह्मण्य. आ.": [{"gana": "आज्ञः", "time": "06:30–07:25", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}], "विष्णुः": [{"gana": "यशः", "time": "06:30–07:55", "subject": "याज्ञवल्क्यः", "vibhaga": "सामान्य"}], "पुष्कराचार्यः": [{"gana": "यशः", "time": "03:30–04:25", "subject": "अद्वैतसिद्धिः", "vibhaga": "वेदान्त"}]};
+    
     const acharyaPasswords = {
-        "सचिनः": "9739581142",
-        "सज्जयाचार्यः": "8762181320",
-        "विश्वेश्वराचार्यः": "7338056216",
-        "श्रीधराचार्यः": "8277778160",
-        "समीरणः": "12345",
-        "चिन्मयः": "6361904023",
-        "शिवसुब्रह्मण्यः": "12345",
-        "विनायकाचार्यः": "6363189416",
-        "आत्रेयः": "7411740923",
-        "गुरुप्रसादाचार्यः": "6360826384",
-        "प्राचार्यः": "9480404552",
-        "पृथ्वीराजाचार्यः": "9902679817",
-        "अभिरामाचार्यः": "9986683290",
-        "रव्याचार्यः": "9480463935",
-        "महादेवाचार्यः": "7090946517",
-        "अरुणाचार्यः": "8105889761",
-        "सञ्जयः": "8762181320", // Including Sanjay as per list
-        "शम्भु-आचार्यः": "9482493321",
-        "पुष्कराचार्यः": "8680842724",
-        "सुब्रह्मण्य. आ.": "8762970370",
-        "आचार्यः": "9880598008",
+        "सचिनः": "9739581142", "सज्जयाचार्यः": "8762181320", "विश्वेश्वराचार्यः": "7338056216",
+        "श्रीधराचार्यः": "8277778160", "समीरणः": "12345", "चिन्मयः": "6361904023",
+        "शिवसुब्रह्मण्यः": "12345", "विनायकाचार्यः": "6363189416", "आत्रेयः": "7411740923",
+        "गुरुप्रसादाचार्यः": "6360826384", "प्राचार्यः": "9480404552", "पृथ्वीराजाचार्यः": "9902679817",
+        "अभिरामाचार्यः": "9986683290", "रव्याचार्यः": "9480463935", "महादेवाचार्यः": "7090946517",
+        "अरुणाचार्यः": "8105889761", "सञ्जयः": "8762181320", "शम्भु-आचार्यः": "9482493321",
+        "पुष्कराचार्यः": "8680842724", "सुब्रह्मण्य. आ.": "8762970370", "आचार्यः": "9880598008",
         "विष्णुः": "12345"
     };
 
+    let currentLoggedIn = "";
+    let isAdmin = false;
+
+    window.onload = function() {
+        const today = new Date();
+        document.getElementById('dateInput').value = today.toISOString().split('T')[0];
+    };
+
+    // Header acts as Home button
+    function goToDashboard() {
+        document.getElementById('mainTabs').style.display = 'flex';
+        document.querySelectorAll('.btn-tab').forEach(el => el.classList.remove('active'));
+        switchView('dashboardView', null);
+    }
+
     function switchView(viewId, btnElement) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.btn-tab').forEach(el => el.classList.remove('active'));
-        
+        if(btnElement) {
+            document.querySelectorAll('.btn-tab').forEach(el => el.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
         document.getElementById(viewId).classList.add('active');
-        btnElement.classList.add('active');
     }
 
     function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
@@ -494,10 +489,57 @@ html_code = """<!DOCTYPE html>
     function verifyAdmin() {
         const pin = document.getElementById('adminPin').value;
         if(pin === '9999') { 
-            alert("प्रबन्धक-प्रवेशः सफलः! (Admin Login Successful)");
+            isAdmin = true;
             closeModals();
+            document.getElementById('dateInput').removeAttribute('readonly');
+            
+            document.getElementById('mainTabs').style.display = 'none';
+            switchView('entryFormSection', null);
+            document.getElementById('loggedInAcharya').innerText = "प्रबन्धक-व्यवस्था (Admin Mode)";
+            
+            openFormForAdmin();
         } else {
             alert("असमीचीनः कूटशब्दः! (Wrong Admin PIN!)");
+        }
+    }
+
+    // --- VOCATIVE CASE LOGIC (सम्बोधना) ---
+    function getVocative(name) {
+        if (name === "विष्णुः") return "विष्णो";
+        if (name === "सुब्रह्मण्य. आ.") return name;
+        return name.replace(/ः$/, '');
+    }
+
+    function populateForm(acharyaName) {
+        const select = document.getElementById('classSelect');
+        select.innerHTML = '<option value="">-- कक्षां चिनोतु --</option>';
+        
+        const classes = timetableData[acharyaName] || [];
+        classes.forEach(cls => {
+            const valStr = encodeURIComponent(JSON.stringify({
+                acharya: acharyaName,
+                gana: cls.gana,
+                time: cls.time,
+                subject: cls.subject
+            }));
+            select.innerHTML += `<option value="${valStr}">${cls.gana} गणः | ${cls.time} | ${cls.subject} (${cls.vibhaga})</option>`;
+        });
+    }
+
+    function openFormForAdmin() {
+        const select = document.getElementById('classSelect');
+        select.innerHTML = '<option value="">-- सर्वाः कक्षाः (All Classes) --</option>';
+        
+        for (const [achName, classes] of Object.entries(timetableData)) {
+            classes.forEach(cls => {
+                const valStr = encodeURIComponent(JSON.stringify({
+                    acharya: achName,
+                    gana: cls.gana,
+                    time: cls.time,
+                    subject: cls.subject
+                }));
+                select.innerHTML += `<option value="${valStr}">${achName} | ${cls.gana} गणः | ${cls.time} | ${cls.subject}</option>`;
+            });
         }
     }
 
@@ -505,24 +547,77 @@ html_code = """<!DOCTYPE html>
         const name = document.getElementById('acharyaSelect').value;
         const pin = document.getElementById('acharyaPin').value;
         
-        if(!name) {
-            alert("कृपया आचार्यं चिनोतु! (Please select an Acharya)");
-            return;
-        }
+        if(!name) { alert("कृपया आचार्यं चिनोतु! (Please select an Acharya)"); return; }
 
         if(acharyaPasswords[name] === pin) {
-            alert("प्रवेशः सफलः! स्वागतम् " + name);
             closeModals();
-            // Here the form logic will open
+            isAdmin = false;
+            currentLoggedIn = name;
+            
+            document.getElementById('mainTabs').style.display = 'none';
+            switchView('entryFormSection', null);
+            
+            document.getElementById('loggedInAcharya').innerText = "स्वागतम्, " + getVocative(name);
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateInput').value = today;
+            document.getElementById('dateInput').setAttribute('readonly', 'true');
+            
+            populateForm(name);
         } else {
             alert("असमीचीनः कूटशब्दः (दूरवाणी सङ्ख्या)! (Wrong Password/Mobile No!)");
         }
+    }
+
+    function submitLesson() {
+        const clsVal = document.getElementById('classSelect').value;
+        const desc = document.getElementById('descriptionInput').value;
+        const dateVal = document.getElementById('dateInput').value;
+        
+        if(!clsVal) { alert("कृपया कक्षां चिनोतु! (Select a Class)"); return; }
+        if(!desc.trim()) { alert("कृपया पाठस्य विवरणं लिखतु! (Enter Description)"); return; }
+
+        const clsData = JSON.parse(decodeURIComponent(clsVal));
+
+        const formData = new URLSearchParams();
+        formData.append('date', dateVal);
+        formData.append('acharya', clsData.acharya);
+        formData.append('gana', clsData.gana);
+        formData.append('time', clsData.time);
+        formData.append('subject', clsData.subject);
+        formData.append('description', desc);
+
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = "समर्प्यते... (Submitting...)";
+        submitBtn.disabled = true;
+
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.text())
+        .then(data => {
+            alert("पाठोल्लेखः सफलः! (Data submitted successfully)");
+            document.getElementById('descriptionInput').value = "";
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+            goToDashboard();
+        })
+        .catch(err => {
+            alert("दोषः जातः! पुनः प्रयत्नं करोतु। (Error occurred. Please try again.)");
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    function logout() {
+        currentLoggedIn = "";
+        isAdmin = false;
+        document.getElementById('descriptionInput').value = "";
+        goToDashboard();
     }
 </script>
 
 </body>
 </html>
-"""
-with open('/mnt/data/Pathollekh_V4_Complete.html', 'w', encoding='utf-8') as f:
-    f.write(html_code)
-print("Complete V4 generated successfully.")
