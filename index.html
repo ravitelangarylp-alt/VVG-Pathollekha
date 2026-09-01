@@ -1,46 +1,47 @@
 html_code = """<!DOCTYPE html>
-<html lang="kn">
+<html lang="sa">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ಪಾಠೋಲ್ಲೇಖ - ವೇದ ವಿಜ್ಞಾನ ಗುರುಕುಲ</title>
+    <title>पाठोल्लेखः - वेदविज्ञानगुरुकुलम्</title>
     
-    <!-- ಹಿತವಾದ ಫಾಂಟ್ಸ್ (Soothing Fonts) -->
+    <!-- Inknut Antiqua and Laila Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;600;700&family=Yatra+One&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;700&family=Laila:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-color: #FDFBF7; /* ಮೃದುವಾದ ಕೆನೆ ಬಣ್ಣ (Cream) */
-            --header-bg: #D35400; /* ಕೇಸರಿ (Saffron) */
+            --bg-color: #FDFBF7;
+            --header-bg: #D35400;
             --text-dark: #2C3E50;
             --table-border: #E0D4C8;
-            
-            /* ವಿಭಾಗಗಳ ಬಣ್ಣಗಳು (ಚಿತ್ರದ ಆಧಾರದ ಮೇಲೆ) */
-            --samanya-text: #0000FF; /* Blue */
-            --vedanta-text: #FF00FF; /* Magenta/Pink */
-            --vyakarana-text: #FF0000; /* Red */
+            --samanya-text: #0000FF;
+            --vedanta-text: #FF00FF;
+            --vyakarana-text: #FF0000;
         }
 
         body {
-            font-family: 'Noto Sans Kannada', 'Poppins', sans-serif;
+            font-family: 'Laila', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-dark);
             margin: 0;
             padding: 0;
         }
 
+        h1, h2, h3, th {
+            font-family: 'Inknut Antiqua', serif;
+        }
+
         header {
             background-color: var(--header-bg);
             color: white;
             text-align: center;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
         header h1 {
-            font-family: 'Yatra One', serif;
             margin: 0;
             font-size: 1.8rem;
             letter-spacing: 1px;
@@ -52,27 +53,81 @@ html_code = """<!DOCTYPE html>
             padding: 20px;
         }
 
+        /* ---------------- TABS / VIEWS ---------------- */
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-tab {
+            background-color: white;
+            color: var(--header-bg);
+            border: 2px solid var(--header-bg);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Laila', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .btn-tab.active, .btn-tab:hover {
+            background-color: var(--header-bg);
+            color: white;
+        }
+
+        .view-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ---------------- YESTERDAY'S VIEW ---------------- */
+        .yesterday-card {
+            background: white;
+            border-left: 5px solid var(--header-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+            color: #555;
+        }
+
         /* ---------------- TABLE STYLES ---------------- */
         .table-wrapper {
             overflow-x: auto;
             background: white;
             border-radius: 12px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            margin-top: 20px;
             border: 1px solid var(--table-border);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 800px; /* ಮೊಬೈಲ್‌ನಲ್ಲಿ ಸ್ಕ್ರಾಲ್ ಆಗಲು */
+            min-width: 1000px;
         }
 
         th, td {
             border: 1px solid var(--table-border);
-            padding: 12px;
+            padding: 10px;
             text-align: center;
             vertical-align: middle;
+            font-size: 0.95rem;
             position: relative;
         }
 
@@ -84,55 +139,12 @@ html_code = """<!DOCTYPE html>
         }
 
         td {
-            font-size: 0.95rem;
             font-weight: 600;
-            cursor: pointer;
             transition: background 0.3s ease;
         }
 
-        td:hover {
-            background-color: #FFF9F0;
-        }
+        td:hover { background-color: #FFF9F0; }
 
-        /* Hover Tooltip (ಮೌಸ್ ಹೂವರ್) */
-        .tooltip-text {
-            visibility: hidden;
-            width: 200px;
-            background-color: rgba(44, 62, 80, 0.95);
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 10px;
-            position: absolute;
-            z-index: 100;
-            bottom: 110%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.85rem;
-            font-weight: normal;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            pointer-events: none;
-        }
-        
-        .tooltip-text::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent;
-        }
-
-        td:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* ಬಣ್ಣದ ತರಗತಿಗಳು */
         .samanya { color: var(--samanya-text); }
         .vedanta { color: var(--vedanta-text); }
         .vyakarana { color: var(--vyakarana-text); }
@@ -142,41 +154,47 @@ html_code = """<!DOCTYPE html>
             font-size: 0.85rem;
             font-weight: 400;
             margin-top: 5px;
+            color: #555;
         }
 
-        /* ---------------- FORMS & BUTTONS ---------------- */
+        .split-cell {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .split-top { border-bottom: 1px solid var(--table-border); padding-bottom: 5px; margin-bottom: 5px; }
+
+        /* ---------------- MODALS & FORMS ---------------- */
         .btn-primary {
             background-color: var(--header-bg);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 12px 28px;
             border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.2rem;
+            font-weight: 700;
             cursor: pointer;
             display: block;
             margin: 30px auto;
             box-shadow: 0 4px 6px rgba(211, 84, 0, 0.2);
-            transition: transform 0.2s;
+            font-family: 'Inknut Antiqua', serif;
         }
-        .btn-primary:active { transform: scale(0.95); }
-
+        
         .admin-link {
             text-align: center;
             display: block;
-            margin-top: 40px;
-            font-size: 0.9rem;
+            margin-top: 20px;
+            font-size: 1rem;
             color: #7f8c8d;
             cursor: pointer;
             text-decoration: underline;
         }
 
-        /* Modals */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -188,131 +206,316 @@ html_code = """<!DOCTYPE html>
             width: 90%;
             max-width: 400px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         
-        .form-group { margin-bottom: 20px; text-align: left; }
-        .form-group label { display: block; font-weight: 600; color: #5D4037; margin-bottom: 8px; }
-        .form-group select, .form-group input, .form-group textarea {
-            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; font-size: 1rem; box-sizing: border-box;
+        .form-select, .form-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            box-sizing: border-box;
         }
-        
-        /* Split Cell styling for parallel classes */
-        .split-cell {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        .split-top { border-bottom: 1px solid var(--table-border); padding-bottom: 5px; margin-bottom: 5px; }
-        
     </style>
 </head>
 <body>
 
 <header>
-    <h1>ಪಾಠೋಲ್ಲೇಖ</h1>
-    <div style="font-size: 1rem; margin-top: 5px; font-weight: 400;">ವೇದವಿಜ್ಞಾನ ಗುರುಕುಲಮ್</div>
+    <h1>पाठोल्लेखः</h1>
+    <div style="font-size: 1.1rem; margin-top: 5px; font-weight: 400; font-family: 'Laila', sans-serif;">वेदविज्ञानगुरुकुलम्</div>
 </header>
 
-<div class="container" id="homePage">
-    <h2 style="text-align: center; color: #5D4037; font-family: 'Yatra One', serif;">ಸಮಯಸಾರಿಣೀ (Time-Table)</h2>
-    
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>ಗಣಃ</th>
-                    <th>06.30 - 7.55</th>
-                    <th>8.30 - 9.25</th>
-                    <th>11.00 - 11.55</th>
-                    <th>1.30 - 2.25</th>
-                    <th>2.30 - 3.25</th>
-                    <th>3.30 - 4.25</th>
-                    <th>6.30 - 7.25</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- ತಪಃ ಗಣ -->
-                <tr>
-                    <th>ತಪಃ</th>
-                    <td class="samanya">ವೇದಃ - ಕಪಿಲಃ <span class="acharya-name">ಸಚಿನಃ</span>
-                        <div class="tooltip-text">ಪಾಠದ ವಿವರ: ಇಲ್ಲಿ ನಿನ್ನೆಯ ಪಾಠದ ಸಾರಾಂಶ ಕಾಣಿಸುತ್ತದೆ...</div>
-                    </td>
-                    <td class="samanya">ಸಂಸ್ಕೃತವಾಙ್ಮಯಮ್ <span class="acharya-name">ಸಜ್ಜಯಾಚಾರ್ಯಃ</span></td>
-                    <td></td>
-                    <td class="samanya">ಆಂಗ್ಲಮ್ <span class="acharya-name">ವಿಶ್ವೇಶ್ವರಾಚಾರ್ಯಃ</span></td>
-                    <td class="samanya">ಹಿತೋಪದೇಶಃ / ಪಂಚತಂತ್ರಮ್ <span class="acharya-name">ಶ್ರೀಧರಾಚಾರ್ಯಃ</span></td>
-                    <td class="samanya">ಕಂಠಪಾಠಃ <span class="acharya-name">ಸಮೀರಣಃ</span></td>
-                    <td></td>
-                </tr>
-                <!-- ವರ್ಚಃ ಗಣ (Split Example) -->
-                <tr>
-                    <th>ವರ್ಚಃ</th>
-                    <td class="samanya">ವೇದಃ - ಭರದ್ವಾಜಃ <span class="acharya-name">ಗುರುಪ್ರಸಾದಾಚಾರ್ಯಃ</span></td>
-                    <td class="samanya">ಸಿದ್ಧಾಂತಕೌಮುದೀ–1 <span class="acharya-name">ಅರುಣಾಚಾರ್ಯಃ</span></td>
-                    <td class="samanya">ವೇದಾಂತಸಾರಃ <span class="acharya-name">ಸಚಿನಃ</span></td>
-                    <td class="samanya">ಆಂಗ್ಲಮ್ <span class="acharya-name">ಆಚಾರ್ಯಃ</span></td>
-                    <td class="samanya">ದೀಪಿಕಾ / ಮುಕ್ತಾವಲೀ <span class="acharya-name">ಅಭಿರಾಮಾಚಾರ್ಯಃ</span></td>
-                    <td style="padding: 0;">
-                        <div class="split-cell">
-                            <div class="split-top vedanta" style="padding:12px;">ಗೀತಾಭಾಷ್ಯಮ್ <span class="acharya-name">ಶ್ರೀಧರಾಚಾರ್ಯಃ</span></div>
-                            <div class="vyakarana" style="padding:12px;">ಕೌಮುದೀ-3 / ಪ್ರಕ್ರಿಯಾ <span class="acharya-name">ಗುರುಪ್ರಸಾದಾಚಾರ್ಯಃ</span></div>
-                        </div>
-                    </td>
-                    <td></td>
-                </tr>
-                <!-- ಪ್ರೇಯಃ ಗಣ -->
-                <tr>
-                    <th>ಪ್ರೇಯಃ</th>
-                    <td class="samanya">ವೇದಃ - ವಿಶ್ವಾಮಿತ್ರಃ & ಗೌತಮಃ <span class="acharya-name">ಸಂಜಯಃ</span></td>
-                    <td class="samanya">ವೇದಾಂತಪರಿಭಾಷಾ <span class="acharya-name">ಸಚಿನಃ</span></td>
-                    <td style="padding: 0;">
-                        <div class="split-cell">
-                            <div class="split-top vedanta" style="padding:12px;">ಉಪನಿಷದ್ಭಾಷ್ಯಮ್ <span class="acharya-name">ಸಜ್ಜಯಾಚಾರ್ಯಃ</span></div>
-                            <div class="vyakarana" style="padding:12px;">ಕೌಮುದೀ/ಪ್ರೌಢಮನೋರಮಾ <span class="acharya-name">ಅರುಣಾಚಾರ್ಯಃ</span></div>
-                        </div>
-                    </td>
-                    <td class="samanya">ನ್ಯಾಯಪ್ರಕಾಶಃ <span class="acharya-name">ಪೃಥ್ವೀರಾಜಾಚಾರ್ಯಃ</span></td>
-                    <td class="samanya">ಸಿದ್ಧಾಂತಕೌಮುದೀ <br>(ಕಾರಕಮ್) <span class="acharya-name">ರವ್ಯಾಚಾರ್ಯಃ</span></td>
-                    <td></td>
-                    <td style="padding: 0;">
-                        <div class="split-cell">
-                            <div class="split-top vedanta" style="padding:12px;">ಗೀತಾಭಾಷ್ಯಮ್ <span class="acharya-name">ಮಹಾದೇವಾಚಾರ್ಯಃ</span></div>
-                            <div class="vyakarana" style="padding:12px;">ಪರಿಭಾಷೇಂದುಶೇಖರಃ <span class="acharya-name">ಗುರುಪ್ರಸಾದಾಚಾರ್ಯಃ</span></div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+<div class="container">
+    <div class="tab-buttons">
+        <button class="btn-tab active" onclick="switchView('yesterdayView', this)">ह्यस्तन-समयसारिणी (Yesterday)</button>
+        <button class="btn-tab" onclick="switchView('yearlyView', this)">वार्षिक-समयसारिणी (Yearly)</button>
     </div>
 
-    <button class="btn-primary" onclick="openLoginModal()">ಪಾಠೋಲ್ಲೇಖಂ ಕುರು (Enter Details)</button>
-    <a class="admin-link" onclick="openAdminModal()">ಅಡ್ಮಿನ್ ಲಾಗಿನ್ (Admin Access)</a>
+    <!-- YESTERDAY'S VIEW -->
+    <div id="yesterdayView" class="view-section active">
+        <h2 style="text-align: center; color: #5D4037;">ह्यस्तन-पाठ-विवरणम्</h2>
+        <div class="yesterday-card">
+            अद्य यावत् कोऽपि पाठः न उल्लिखितः।<br>
+            <span style="font-size: 0.9rem; color: #888;">(Google Sheets इत्यस्मात् दत्तांशः अत्र आगमिष्यति / Data will load here)</span>
+        </div>
+    </div>
+
+    <!-- YEARLY VIEW (ALL 8 GANAS) -->
+    <div id="yearlyView" class="view-section">
+        <h2 style="text-align: center; color: #5D4037;">वार्षिक-समयसारिणी (२०२६-२७)</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>गणः</th>
+                        <th>06.30 - 7.55</th>
+                        <th>8.30 - 9.25</th>
+                        <th>11.00 - 11.55</th>
+                        <th>1.30 - 2.25</th>
+                        <th>2.30 - 3.25</th>
+                        <th>3.30 - 4.25</th>
+                        <th>6.30 - 7.25</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>तपः</th>
+                        <td class="samanya">वेदः - कपिलः <span class="acharya-name">सचिनः</span></td>
+                        <td class="samanya">संस्कृतवाङ्मयम् <span class="acharya-name">सज्जयाचार्यः</span></td>
+                        <td></td>
+                        <td class="samanya">आङ्ग्लम् <span class="acharya-name">विश्वेश्वराचार्यः</span></td>
+                        <td class="samanya">हितोपदेशः / पञ्चतन्त्रम् <span class="acharya-name">श्रीधराचार्यः</span></td>
+                        <td class="samanya">कण्ठपाठः <span class="acharya-name">समीरणः</span></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>तेजः</th>
+                        <td class="samanya">वेदः - कश्यपः <span class="acharya-name">चिन्मयः</span></td>
+                        <td class="samanya">व्याकरणम् <span class="acharya-name">शिवसुब्रह्मण्यः</span></td>
+                        <td class="samanya">काव्यम् <span class="acharya-name">विनायकाचार्यः</span></td>
+                        <td class="samanya">आङ्ग्लम् <span class="acharya-name">सचिनः</span></td>
+                        <td class="samanya">कण्ठपाठः <span class="acharya-name">आत्रेयः</span></td>
+                        <td class="samanya">तर्कसङ्ग्रहः <span class="acharya-name">विनायकाचार्यः</span></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>ओजः</th>
+                        <td class="samanya">वेदः - अत्रिः <span class="acharya-name">विनायकाचार्यः</span></td>
+                        <td class="samanya">व्याकरणम् <span class="acharya-name">गुरुप्रसादाचार्यः</span></td>
+                        <td></td>
+                        <td class="samanya">आङ्ग्लम् <span class="acharya-name">आचार्यः</span></td>
+                        <td class="samanya">साहित्यसौष्ठवम्-१ <span class="acharya-name">प्राचार्यः</span></td>
+                        <td class="samanya">न्यायबोधिनी <span class="acharya-name">पृथ्वीराजाचार्यः</span></td>
+                        <td class="samanya">साहित्यसौष्ठवम्-२ <span class="acharya-name">चिन्मयः</span></td>
+                    </tr>
+                    <tr>
+                        <th>वर्चः</th>
+                        <td class="samanya">वेदः - भरद्वाजः <span class="acharya-name">गुरुप्रसादाचार्यः</span></td>
+                        <td class="samanya">सिद्धान्तकौमुदी-१ <span class="acharya-name">अरुणाचार्यः</span></td>
+                        <td class="samanya">वेदान्तसारः <span class="acharya-name">सचिनः</span></td>
+                        <td class="samanya">आङ्ग्लम् <span class="acharya-name">आचार्यः</span></td>
+                        <td class="samanya">दीपिका / मुक्तावली <span class="acharya-name">अभिरामाचार्यः</span></td>
+                        <td style="padding: 0;">
+                            <div class="split-cell">
+                                <div class="split-top vedanta" style="padding:5px;">गीताभाष्यम् <span class="acharya-name">श्रीधराचार्यः</span></div>
+                                <div class="vyakarana" style="padding:5px;">कौमुदी-३ / प्रक्रिया <span class="acharya-name">गुरुप्रसादाचार्यः</span></div>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>प्रेयः</th>
+                        <td class="samanya">वेदः - विश्वामित्रः/गौतमः <span class="acharya-name">सञ्जयः</span></td>
+                        <td class="samanya">वेदान्तपरिभाषा <span class="acharya-name">सचिनः</span></td>
+                        <td style="padding: 0;">
+                            <div class="split-cell">
+                                <div class="split-top vedanta" style="padding:5px;">उपनिषद्भाष्यम् <span class="acharya-name">सज्जयाचार्यः</span></div>
+                                <div class="vyakarana" style="padding:5px;">कौमुदी/प्रौढमनोरमा <span class="acharya-name">अरुणाचार्यः</span></div>
+                            </div>
+                        </td>
+                        <td class="samanya">न्यायप्रकाशः <span class="acharya-name">पृथ्वीराजाचार्यः</span></td>
+                        <td class="samanya">सिद्धान्तकौमुदी (कारकम्) <span class="acharya-name">रव्याचार्यः</span></td>
+                        <td></td>
+                        <td style="padding: 0;">
+                            <div class="split-cell">
+                                <div class="split-top vedanta" style="padding:5px;">गीताभाष्यम् <span class="acharya-name">महादेवाचार्यः</span></div>
+                                <div class="vyakarana" style="padding:5px;">परिभाषेन्दुशेखरः <span class="acharya-name">गुरुप्रसादाचार्यः</span></div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>श्रेयः</th>
+                        <td></td>
+                        <td class="samanya">न्यायप्रकाशः <span class="acharya-name">अभिरामाचार्यः</span></td>
+                        <td class="vyakarana">महाभाष्यम् <span class="acharya-name">रव्याचार्यः</span></td>
+                        <td style="padding: 0;">
+                            <div class="split-cell">
+                                <div class="split-top vedanta" style="padding:5px;">गीताभाष्यम् <span class="acharya-name">सचिनः</span></div>
+                                <div class="vyakarana" style="padding:5px;">परिभाषेन्दुशेखरः <span class="acharya-name">अरुणाचार्यः</span></div>
+                            </div>
+                        </td>
+                        <td class="vyakarana">कौमुदी <span class="acharya-name">शिवसुब्रह्मण्यः</span></td>
+                        <td style="padding: 0;">
+                            <div class="split-cell">
+                                <div class="split-top vedanta" style="padding:5px;">सि.ले.सङ्ग्रहः <span class="acharya-name">महादेवाचार्यः</span></div>
+                                <div class="vyakarana" style="padding:5px;">प्रौढमनोरमा <span class="acharya-name">रव्याचार्यः</span></div>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>आज्ञः</th>
+                        <td style="padding: 0;">
+                            <div class="split-cell">
+                                <div class="split-top samanya" style="padding:5px;">वेदः-जमदग्निः <span class="acharya-name">श्रीधराचार्यः</span></div>
+                                <div class="samanya" style="padding:5px;">वेदः-वसिष्ठः <span class="acharya-name">पृथ्वीराजः</span></div>
+                            </div>
+                        </td>
+                        <td class="vedanta">अद्वैतसिद्धिः <span class="acharya-name">महादेवाचार्यः</span></td>
+                        <td class="vyakarana">प.ल.म./भूषणसारः <span class="acharya-name">शम्भु-आचार्यः</span></td>
+                        <td class="vyakarana">परिभाषेन्दुशेखरः <span class="acharya-name">अरुणाचार्यः</span></td>
+                        <td style="padding: 0;">
+                            <div class="split-cell">
+                                <div class="split-top vedanta" style="padding:5px;">ब्रह्मसूत्रम् <span class="acharya-name">महादेवाचार्यः</span></div>
+                                <div class="vyakarana" style="padding:5px;">महाभाष्यम् <span class="acharya-name">अरुणाचार्यः</span></div>
+                            </div>
+                        </td>
+                        <td style="padding: 0;">
+                            <div class="split-cell">
+                                <div class="split-top vedanta" style="padding:5px;">उपनिषद्भाष्यम् <span class="acharya-name">सञ्जयाचार्यः</span></div>
+                                <div class="vyakarana" style="padding:5px;">प्रौढमनोरमा <span class="acharya-name">रव्याचार्यः</span></div>
+                            </div>
+                        </td>
+                        <td style="padding: 0;">
+                            <div class="split-cell">
+                                <div class="split-top vedanta" style="padding:5px;">सि.ले.सङ्ग्रहः <span class="acharya-name">श्रीधराचार्यः</span></div>
+                                <div class="vyakarana" style="padding:5px;">महाभाष्यम् <span class="acharya-name">सुब्रह्मण्य. आ.</span></div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>यशः</th>
+                        <td class="samanya">याज्ञवल्क्यः <span class="acharya-name">विष्णुः</span></td>
+                        <td class="vyakarana">प.ल.म./भूषणसारः <span class="acharya-name">शम्भु-आचार्यः</span></td>
+                        <td></td>
+                        <td></td>
+                        <td class="vyakarana">महाभाष्यम् <span class="acharya-name">रव्याचार्यः</span></td>
+                        <td style="padding: 0;">
+                            <div class="split-cell">
+                                <div class="split-top vedanta" style="padding:5px;">ब्रह्मसूत्रम् <span class="acharya-name">प्राचार्यः</span></div>
+                                <div class="vedanta" style="padding:5px;">अद्वैतसिद्धिः <span class="acharya-name">पुष्कराचार्यः</span></div>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <button class="btn-primary" onclick="openLoginModal()">पाठोल्लेखं कुरु</button>
+    <a class="admin-link" onclick="openAdminModal()">प्रबन्धक-प्रवेशः (Admin Login)</a>
 </div>
 
-<!-- Forms & Modals would go here (same as previous logic, omitted for layout clarity) -->
+<!-- Login Modal for Acharyas -->
+<div class="modal" id="loginModal">
+    <div class="modal-content">
+        <h3 style="color: var(--header-bg);">आचार्य-प्रवेशः</h3>
+        <select id="acharyaSelect" class="form-select">
+            <option value="">-- आचार्यं चिनोतु --</option>
+            <option value="सचिनः">सचिनः</option>
+            <option value="सज्जयाचार्यः">सज्जयाचार्यः</option>
+            <option value="विश्वेश्वराचार्यः">विश्वेश्वराचार्यः</option>
+            <option value="श्रीधराचार्यः">श्रीधराचार्यः</option>
+            <option value="समीरणः">समीरणः</option>
+            <option value="चिन्मयः">चिन्मयः</option>
+            <option value="शिवसुब्रह्मण्यः">शिवसुब्रह्मण्यः</option>
+            <option value="विनायकाचार्यः">विनायकाचार्यः</option>
+            <option value="आत्रेयः">आत्रेयः</option>
+            <option value="गुरुप्रसादाचार्यः">गुरुप्रसादाचार्यः</option>
+            <option value="प्राचार्यः">प्राचार्यः</option>
+            <option value="पृथ्वीराजाचार्यः">पृथ्वीराजाचार्यः</option>
+            <option value="अभिरामाचार्यः">अभिरामाचार्यः</option>
+            <option value="रव्याचार्यः">रव्याचार्यः</option>
+            <option value="महादेवाचार्यः">महादेवाचार्यः</option>
+            <option value="अरुणाचार्यः">अरुणाचार्यः</option>
+            <option value="सञ्जयः">सञ्जयः</option>
+            <option value="शम्भु-आचार्यः">शम्भु-आचार्यः</option>
+            <option value="पुष्कराचार्यः">पुष्कराचार्यः</option>
+            <option value="सुब्रह्मण्य. आ.">सुब्रह्मण्य. आ.</option>
+            <option value="आचार्यः">आचार्यः</option>
+            <option value="विष्णुः">विष्णुः</option>
+        </select>
+        <input type="password" id="acharyaPin" class="form-input" placeholder="दूरवाणी सङ्ख्या (Mobile No) / PIN">
+        <button class="btn-primary" style="margin-bottom:10px; font-family: 'Laila', sans-serif;" onclick="verifyAcharya()">प्रविशतु</button>
+        <button class="btn-primary" style="background-color: #95a5a6; font-family: 'Laila', sans-serif;" onclick="closeModals()">निरस्यतु</button>
+    </div>
+</div>
+
+<!-- Admin Modal -->
 <div class="modal" id="adminModal">
     <div class="modal-content">
-        <h3 style="color: var(--header-bg); font-family: 'Yatra One', serif;">ಅಡ್ಮಿನ್ ವ್ಯವಸ್ಥೆ</h3>
-        <p>ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ:</p>
-        <input type="password" id="adminPin" placeholder="****" style="width: 80%; padding: 10px; margin-bottom: 20px; text-align: center;">
-        <button class="btn-primary" style="margin: 0 auto; margin-bottom:10px;" onclick="verifyAdmin()">ಲಾಗಿನ್</button>
-        <button class="btn-primary" style="background-color: #95a5a6; margin: 0 auto;" onclick="closeModals()">ರದ್ದು</button>
+        <h3 style="color: var(--header-bg);">प्रबन्धक-व्यवस्था</h3>
+        <p style="font-size: 1.1rem; color: #5D4037;">कूटशब्दं (Admin PIN) लिखतु:</p>
+        <input type="password" id="adminPin" class="form-input" placeholder="****" style="text-align: center;">
+        <button class="btn-primary" style="margin-bottom:10px; font-family: 'Laila', sans-serif;" onclick="verifyAdmin()">प्रविशतु</button>
+        <button class="btn-primary" style="background-color: #95a5a6; font-family: 'Laila', sans-serif;" onclick="closeModals()">निरस्यतु</button>
     </div>
 </div>
 
 <script>
-    function openLoginModal() { alert("ಆಚಾರ್ಯರ ಲಾಗಿನ್ ಫಾರ್ಮ್ ಓಪನ್ ಆಗುತ್ತದೆ."); }
+    // Acharya Mobile Numbers (Passwords) mapping
+    const acharyaPasswords = {
+        "सचिनः": "9739581142",
+        "सज्जयाचार्यः": "8762181320",
+        "विश्वेश्वराचार्यः": "7338056216",
+        "श्रीधराचार्यः": "8277778160",
+        "समीरणः": "12345",
+        "चिन्मयः": "6361904023",
+        "शिवसुब्रह्मण्यः": "12345",
+        "विनायकाचार्यः": "6363189416",
+        "आत्रेयः": "7411740923",
+        "गुरुप्रसादाचार्यः": "6360826384",
+        "प्राचार्यः": "9480404552",
+        "पृथ्वीराजाचार्यः": "9902679817",
+        "अभिरामाचार्यः": "9986683290",
+        "रव्याचार्यः": "9480463935",
+        "महादेवाचार्यः": "7090946517",
+        "अरुणाचार्यः": "8105889761",
+        "सञ्जयः": "8762181320", // Including Sanjay as per list
+        "शम्भु-आचार्यः": "9482493321",
+        "पुष्कराचार्यः": "8680842724",
+        "सुब्रह्मण्य. आ.": "8762970370",
+        "आचार्यः": "9880598008",
+        "विष्णुः": "12345"
+    };
+
+    function switchView(viewId, btnElement) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.btn-tab').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(viewId).classList.add('active');
+        btnElement.classList.add('active');
+    }
+
+    function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
     function openAdminModal() { document.getElementById('adminModal').style.display = 'flex'; }
-    function closeModals() { document.getElementById('adminModal').style.display = 'none'; }
+    
+    function closeModals() { 
+        document.getElementById('adminModal').style.display = 'none'; 
+        document.getElementById('loginModal').style.display = 'none'; 
+        document.getElementById('adminPin').value = '';
+        document.getElementById('acharyaPin').value = '';
+        document.getElementById('acharyaSelect').value = '';
+    }
     
     function verifyAdmin() {
         const pin = document.getElementById('adminPin').value;
-        if(pin === '9999') { // Admin Demo PIN
-            alert("ಅಡ್ಮಿನ್ ಲಾಗಿನ್ ಯಶಸ್ವಿಯಾಗಿದೆ! ಈಗ ನೀವು ದಿನಾಂಕವನ್ನು ಬದಲಾಯಿಸಬಹುದು (Backdate Entry) ಮತ್ತು ಡೇಟಾ ಡೌನ್‌ಲೋಡ್ ಮಾಡಬಹುದು.");
+        if(pin === '9999') { 
+            alert("प्रबन्धक-प्रवेशः सफलः! (Admin Login Successful)");
             closeModals();
         } else {
-            alert("ತಪ್ಪಾದ ಪಾಸ್‌ವರ್ಡ್!");
+            alert("असमीचीनः कूटशब्दः! (Wrong Admin PIN!)");
+        }
+    }
+
+    function verifyAcharya() {
+        const name = document.getElementById('acharyaSelect').value;
+        const pin = document.getElementById('acharyaPin').value;
+        
+        if(!name) {
+            alert("कृपया आचार्यं चिनोतु! (Please select an Acharya)");
+            return;
+        }
+
+        if(acharyaPasswords[name] === pin) {
+            alert("प्रवेशः सफलः! स्वागतम् " + name);
+            closeModals();
+            // Here the form logic will open
+        } else {
+            alert("असमीचीनः कूटशब्दः (दूरवाणी सङ्ख्या)! (Wrong Password/Mobile No!)");
         }
     }
 </script>
@@ -320,7 +523,6 @@ html_code = """<!DOCTYPE html>
 </body>
 </html>
 """
-
-with open('/mnt/data/Pathollekh_V2_Beautiful.html', 'w', encoding='utf-8') as f:
+with open('/mnt/data/Pathollekh_V4_Complete.html', 'w', encoding='utf-8') as f:
     f.write(html_code)
-print("Beautiful layout created successfully.")
+print("Complete V4 generated successfully.")
