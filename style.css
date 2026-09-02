@@ -1,0 +1,99 @@
+:root {
+    --bg-color: #F4F9F4; --header-bg: #2E7D32; --header-gradient: linear-gradient(135deg, #2E7D32, #4CAF50);
+    --accent-orange: #D35400; --text-dark: #2E3B32; --table-border: #C8E6C9; --card-bg: #FFFFFF;
+    --samanya-text: #0277BD; --vedanta-text: #AD1457; --vyakarana-text: #C62828; 
+    --cell-submitted: #E8F5E9; --cell-unsubmitted: #FFFFFF;
+}
+
+body { font-family: 'Laila', sans-serif; background-color: var(--bg-color); color: var(--text-dark); margin: 0; padding: 0; background-image: radial-gradient(#e8f5e9 1px, transparent 1px); background-size: 20px 20px; }
+
+/* ಇಲ್ಲಿ Yatra One ಸೇರಿಸಲಾಗಿದೆ */
+h1, h2, h3, th { font-family: 'Yatra One', cursive; }
+
+header { background: var(--header-gradient); color: white; text-align: center; padding: 20px 15px; box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3); border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; cursor: pointer; position: sticky; top: 0; z-index: 50; }
+header h1 { margin: 0; font-size: 2.2rem; letter-spacing: 1px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 25px 20px; }
+.tab-buttons { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+.btn-tab { background-color: var(--card-bg); color: var(--header-bg); border: 2px solid var(--header-bg); padding: 10px 25px; border-radius: 30px; font-size: 1.1rem; font-weight: 700; cursor: pointer; font-family: 'Laila', sans-serif; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.btn-tab.active, .btn-tab:hover { background-color: var(--header-bg); color: white; transform: translateY(-2px); }
+
+.view-section { display: none; animation: fadeIn 0.5s; }
+.view-section.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin-top: 30px; }
+.stat-card { background: var(--card-bg); padding: 25px 20px; border-radius: 20px; box-shadow: 0 8px 20px rgba(46, 125, 50, 0.08); text-align: center; border: 1px solid #E8F5E9; position: relative; overflow: hidden; }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--header-gradient); }
+.stat-card h3 { color: #33691E; font-size: 1.15rem; margin-top: 0; margin-bottom: 20px; }
+.circle-progress { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; font-size: 1.5rem; font-weight: bold; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.circle-progress::before { content: ""; position: absolute; width: 76px; height: 76px; background: white; border-radius: 50%; }
+.circle-progress span { position: relative; z-index: 1; font-family: 'Yatra One', cursive; }
+
+.data-card { background: var(--card-bg); border-left: 6px solid var(--accent-orange); padding: 25px; border-radius: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.06); margin-bottom: 20px; text-align: left; }
+.log-entry { border: 1px solid #E8F5E9; padding: 15px; margin-bottom: 15px; border-radius: 10px; transition: all 0.3s; background: #FAFAFA; cursor: pointer; }
+.log-entry:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(0,0,0,0.1); background: white; border-color: var(--header-bg); }
+.log-title { color: var(--header-bg); font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; }
+.log-subtitle { color: var(--accent-orange); font-size: 0.9rem; margin-bottom: 10px; font-weight: 600; }
+.log-desc { color: #424242; line-height: 1.5; }
+
+.table-wrapper { overflow-x: auto; background: var(--card-bg); border-radius: 15px; box-shadow: 0 8px 25px rgba(46, 125, 50, 0.08); border: 1px solid var(--table-border); margin-bottom: 30px; }
+table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+th, td { border: 1px solid var(--table-border); padding: 12px; text-align: center; vertical-align: middle; font-size: 0.95rem; position: relative; }
+th { background-color: #F1F8E9; font-weight: 700; font-size: 1.05rem; color: #1B5E20; }
+td { font-weight: 600; transition: background 0.3s ease; }
+.samanya { color: var(--samanya-text); } .vedanta { color: var(--vedanta-text); } .vyakarana { color: var(--vyakarana-text); }
+.acharya-name { display: block; font-size: 0.85rem; font-weight: 400; margin-top: 5px; color: #689F38; }
+.split-cell { display: flex; flex-direction: column; height: 100%; }
+.split-top { border-bottom: 1px solid var(--table-border); padding-bottom: 6px; margin-bottom: 6px; }
+
+.cell-submitted { background-color: var(--cell-submitted); border: 2px solid #81C784; cursor: pointer; }
+.cell-submitted:hover { background-color: #C8E6C9; }
+.cell-unsubmitted { background-color: var(--cell-unsubmitted); opacity: 0.6; filter: grayscale(50%); }
+.tooltip-text { visibility: hidden; width: 200px; background-color: rgba(46, 125, 50, 0.95); color: #fff; text-align: center; border-radius: 8px; padding: 10px; position: absolute; z-index: 100; bottom: 100%; left: 50%; margin-left: -100px; opacity: 0; transition: opacity 0.3s; font-size: 0.9rem; font-weight: normal; box-shadow: 0 4px 8px rgba(0,0,0,0.2); pointer-events: none; }
+.cell-submitted:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+/* ಇಲ್ಲಿ Yatra One ಸೇರಿಸಲಾಗಿದೆ */
+.btn-primary { background: var(--header-gradient); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: inline-block; margin: 10px 5px; box-shadow: 0 6px 12px rgba(46, 125, 50, 0.25); font-family: 'Yatra One', cursive; transition: all 0.2s; }
+.btn-primary:active { transform: scale(0.95); }
+.btn-primary:disabled { background: #9E9E9E; cursor: not-allowed; box-shadow: none; }
+.btn-outline { background: transparent; border: 2px solid var(--header-bg); color: var(--header-bg); box-shadow: none; }
+.btn-danger { background: linear-gradient(135deg, #C62828, #E53935); }
+
+.form-card { background: var(--card-bg); padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(46, 125, 50, 0.1); max-width: 600px; margin: 0 auto; border: 1px solid var(--table-border); }
+.form-group { margin-bottom: 20px; text-align: left; }
+.form-group label { display: block; font-weight: 700; color: #33691E; margin-bottom: 8px; font-size: 1.1rem; }
+.form-control { width: 100%; padding: 12px; border: 1.5px solid #A5D6A7; border-radius: 8px; font-family: inherit; font-size: 1rem; box-sizing: border-box; background-color: #FAFAFA; }
+
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
+.modal-content { background: var(--card-bg); padding: 35px; border-radius: 20px; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.2); border: 2px solid #81C784; max-height: 80vh; overflow-y: auto;}
+
+.section-title { text-align: center; color: #2E7D32; font-size: 1.8rem; margin-bottom: 20px; }
+.loading-spinner { text-align: center; color: var(--header-bg); font-size: 1.2rem; padding: 20px; }
+.holiday-banner { background: #FFEBEE; color: #C62828; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; border: 1px solid #FFCDD2; margin-bottom: 20px; font-size: 1.2rem; }
+
+.filter-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; background: #E8F5E9; padding: 15px; border-radius: 10px; justify-content: center;}
+.filter-row .form-control { flex: 1; min-width: 150px; }
+
+#reportSnapshotArea { background: white; padding: 30px; border-radius: 10px; display: none; margin-top: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+/* ಇಲ್ಲಿ Yatra One ಸೇರಿಸಲಾಗಿದೆ */
+.report-header { text-align: center; color: #D35400; font-family: 'Yatra One', cursive; border-bottom: 3px solid #2E7D32; padding-bottom: 10px; margin-bottom: 20px; }
+.report-meta { text-align: center; color: #555; margin-bottom: 20px; font-weight: bold; }
+.report-table { width: 100%; border-collapse: collapse; }
+.report-table th, .report-table td { border: 1px solid #ccc; padding: 10px; text-align: left; font-size: 0.95rem; }
+.report-table th { background: #F1F8E9; color: #1B5E20; }
+
+.reminder-banner { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); border: 2px dashed #FF9800; border-radius: 15px; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(230, 81, 0, 0.1); flex-wrap: wrap; gap: 15px; }
+.reminder-text { color: #E65100; font-weight: bold; font-size: 1.1rem; flex: 1; min-width: 250px; }
+
+/* ಇಲ್ಲಿ Yatra One ಸೇರಿಸಲಾಗಿದೆ */
+.notification-marquee { background: linear-gradient(90deg, #FFF3E0, #FFE0B2); color: #D35400; padding: 10px 15px; font-size: 1.2rem; font-weight: bold; border-bottom: 2px solid #FFCC80; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-family: 'Laila', sans-serif; }
+.notif-item { margin-right: 50px; }
+.notif-author { color: #2E7D32; font-family: 'Yatra One', cursive; }
+
+.attendance-container { margin-top: 15px; padding: 15px; background: #F1F8E9; border: 1px solid #A5D6A7; border-radius: 8px; max-height: 250px; overflow-y: auto; }
+.attendance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.student-checkbox { display: flex; align-items: center; background: white; padding: 8px 10px; border-radius: 6px; border: 1px solid #C8E6C9; cursor: pointer; transition: 0.2s; }
+.student-checkbox:hover { background: #E8F5E9; }
+.student-checkbox input { margin-right: 8px; cursor: pointer; width: 18px; height: 18px; }
+.student-checkbox label { margin: 0; font-size: 0.95rem; font-weight: 600; cursor: pointer; color: #2E3B32; }
