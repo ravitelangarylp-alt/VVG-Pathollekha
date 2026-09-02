@@ -12,10 +12,10 @@
     <style>
         :root {
             /* Garden Theme Colors */
-            --bg-color: #F4F9F4; /* Soft greenish white */
-            --header-bg: #2E7D32; /* Forest Green */
+            --bg-color: #F4F9F4; 
+            --header-bg: #2E7D32; 
             --header-gradient: linear-gradient(135deg, #2E7D32, #4CAF50);
-            --accent-orange: #D35400; /* Saffron/Terracotta accent */
+            --accent-orange: #D35400; 
             --text-dark: #2E3B32;
             --table-border: #C8E6C9;
             --card-bg: #FFFFFF;
@@ -29,62 +29,46 @@
         h1, h2, h3, th { font-family: 'Inknut Antiqua', serif; }
         
         header { 
-            background: var(--header-gradient); 
-            color: white; text-align: center; padding: 20px 15px; 
-            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3); 
-            border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
-            cursor: pointer;
+            background: var(--header-gradient); color: white; text-align: center; padding: 20px 15px; 
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3); border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
+            cursor: pointer; position: sticky; top: 0; z-index: 50;
         }
         header h1 { margin: 0; font-size: 2rem; letter-spacing: 1px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
         
         .container { max-width: 1200px; margin: 0 auto; padding: 25px 20px; }
 
-        /* Tabs */
         .tab-buttons { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
         .btn-tab { 
-            background-color: var(--card-bg); color: var(--header-bg); 
-            border: 2px solid var(--header-bg); padding: 10px 25px; 
-            border-radius: 30px; font-size: 1.1rem; font-weight: 700; 
-            cursor: pointer; font-family: 'Laila', sans-serif; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            background-color: var(--card-bg); color: var(--header-bg); border: 2px solid var(--header-bg); padding: 10px 25px; 
+            border-radius: 30px; font-size: 1.1rem; font-weight: 700; cursor: pointer; font-family: 'Laila', sans-serif; 
+            transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .btn-tab.active, .btn-tab:hover { background-color: var(--header-bg); color: white; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(46, 125, 50, 0.2); }
+        .btn-tab.active, .btn-tab:hover { background-color: var(--header-bg); color: white; transform: translateY(-2px); }
         
         .view-section { display: none; animation: fadeIn 0.5s; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Dashboard & Cards (Garden Vibe) */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin-bottom: 30px; }
-        .stat-card { 
-            background: var(--card-bg); padding: 25px 20px; 
-            border-radius: 20px; box-shadow: 0 8px 20px rgba(46, 125, 50, 0.08); 
-            text-align: center; border: 1px solid #E8F5E9;
-            position: relative; overflow: hidden;
-            transition: transform 0.3s;
-        }
-        .stat-card:hover { transform: translateY(-5px); }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin-top: 30px; }
+        .stat-card { background: var(--card-bg); padding: 25px 20px; border-radius: 20px; box-shadow: 0 8px 20px rgba(46, 125, 50, 0.08); text-align: center; border: 1px solid #E8F5E9; position: relative; overflow: hidden; }
         .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--header-gradient); }
-        .stat-card h3 { color: #33691E; font-size: 1.15rem; margin-top: 0; margin-bottom: 20px; line-height: 1.4; }
+        .stat-card h3 { color: #33691E; font-size: 1.15rem; margin-top: 0; margin-bottom: 20px; }
         
-        .circle-progress {
-            width: 100px; height: 100px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 15px auto; font-size: 1.5rem; font-weight: bold; color: var(--header-bg);
-            position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .circle-progress::before {
-            content: ""; position: absolute; width: 76px; height: 76px;
-            background: white; border-radius: 50%;
-        }
+        .circle-progress { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; font-size: 1.5rem; font-weight: bold; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .circle-progress::before { content: ""; position: absolute; width: 76px; height: 76px; background: white; border-radius: 50%; }
         .circle-progress span { position: relative; z-index: 1; font-family: 'Inknut Antiqua', serif; }
-        
-        .stat-number { font-size: 2.5rem; font-weight: bold; color: var(--accent-orange); margin: 10px 0; font-family: 'Inknut Antiqua', serif; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 2.5rem; font-weight: bold; color: var(--accent-orange); margin: 10px 0; font-family: 'Inknut Antiqua', serif; }
 
-        .data-card { background: var(--card-bg); border-left: 6px solid var(--accent-orange); padding: 25px; border-radius: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.06); margin-bottom: 20px; text-align: center; font-size: 1.2rem; color: #555; }
+        .data-card { background: var(--card-bg); border-left: 6px solid var(--accent-orange); padding: 25px; border-radius: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.06); margin-bottom: 20px; text-align: left; }
         
-        /* Table Styles */
+        /* Interactive Log Entry */
+        .log-entry { border: 1px solid #E8F5E9; padding: 15px; margin-bottom: 15px; border-radius: 10px; transition: all 0.3s; background: #FAFAFA; cursor: pointer; }
+        .log-entry:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(0,0,0,0.1); background: white; border-color: var(--header-bg); }
+        .log-title { color: var(--header-bg); font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; }
+        .log-subtitle { color: var(--accent-orange); font-size: 0.9rem; margin-bottom: 10px; font-weight: 600; }
+        .log-desc { color: #424242; line-height: 1.5; }
+        
+        /* Table */
         .table-wrapper { overflow-x: auto; background: var(--card-bg); border-radius: 15px; box-shadow: 0 8px 25px rgba(46, 125, 50, 0.08); border: 1px solid var(--table-border); margin-bottom: 30px; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th, td { border: 1px solid var(--table-border); padding: 12px; text-align: center; vertical-align: middle; font-size: 0.95rem; }
@@ -97,117 +81,92 @@
         .split-top { border-bottom: 1px solid var(--table-border); padding-bottom: 6px; margin-bottom: 6px; }
 
         /* Buttons & Forms */
-        .btn-primary { 
-            background: var(--header-gradient); color: white; border: none; padding: 14px 32px; 
-            border-radius: 30px; font-size: 1.2rem; font-weight: 700; cursor: pointer; display: block; 
-            margin: 20px auto; box-shadow: 0 6px 12px rgba(46, 125, 50, 0.25); font-family: 'Inknut Antiqua', serif; transition: all 0.2s; 
-        }
-        .btn-primary:active { transform: scale(0.95); box-shadow: 0 2px 6px rgba(46, 125, 50, 0.2); }
+        .btn-primary { background: var(--header-gradient); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: inline-block; margin: 10px 5px; box-shadow: 0 6px 12px rgba(46, 125, 50, 0.25); font-family: 'Inknut Antiqua', serif; transition: all 0.2s; }
+        .btn-primary:active { transform: scale(0.95); }
         .btn-primary:disabled { background: #9E9E9E; cursor: not-allowed; box-shadow: none; }
-        .btn-outline { background: transparent; border: 2px solid var(--header-bg); color: var(--header-bg); box-shadow: none;}
-        
-        .admin-link { text-align: center; display: block; margin-top: 25px; font-size: 1.05rem; color: #795548; cursor: pointer; text-decoration: underline; font-weight: 600; }
+        .btn-outline { background: transparent; border: 2px solid var(--header-bg); color: var(--header-bg); box-shadow: none; }
+        .btn-danger { background: linear-gradient(135deg, #C62828, #E53935); }
         
         .form-card { background: var(--card-bg); padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(46, 125, 50, 0.1); max-width: 600px; margin: 0 auto; border: 1px solid var(--table-border); }
-        .form-group { margin-bottom: 25px; text-align: left; }
-        .form-group label { display: block; font-weight: 700; color: #33691E; margin-bottom: 10px; font-size: 1.15rem; }
-        .form-control { width: 100%; padding: 14px; border: 1.5px solid #A5D6A7; border-radius: 10px; font-family: inherit; font-size: 1.1rem; box-sizing: border-box; transition: border-color 0.3s, box-shadow 0.3s; background-color: #FAFAFA; }
-        .form-control:focus { outline: none; border-color: var(--header-bg); box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); background-color: white; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { display: block; font-weight: 700; color: #33691E; margin-bottom: 8px; font-size: 1.1rem; }
+        .form-control { width: 100%; padding: 12px; border: 1.5px solid #A5D6A7; border-radius: 8px; font-family: inherit; font-size: 1rem; box-sizing: border-box; background-color: #FAFAFA; }
+        .form-control:focus { outline: none; border-color: var(--header-bg); background-color: white; }
 
-        /* Modals */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .modal-content { background: var(--card-bg); padding: 35px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.2); border: 2px solid #81C784; }
+        .modal-content { background: var(--card-bg); padding: 35px; border-radius: 20px; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.2); border: 2px solid #81C784; }
         
-        /* Floating Action Button for Adding Log */
-        .fab {
-            position: fixed; bottom: 30px; right: 30px; background: var(--accent-orange); color: white;
-            width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; box-shadow: 0 6px 15px rgba(211, 84, 0, 0.4); cursor: pointer; transition: transform 0.3s; z-index: 100;
-        }
-        .fab:hover { transform: scale(1.1) rotate(90deg); }
-        
-        .section-title { text-align: center; color: #2E7D32; font-size: 2rem; margin-bottom: 25px; text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
+        .section-title { text-align: center; color: #2E7D32; font-size: 1.8rem; margin-bottom: 20px; }
+        .loading-spinner { text-align: center; color: var(--header-bg); font-size: 1.2rem; padding: 20px; }
+        .holiday-banner { background: #FFEBEE; color: #C62828; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; border: 1px solid #FFCDD2; margin-bottom: 20px; font-size: 1.2rem; }
+
+        /* Filter Row */
+        .filter-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; background: #E8F5E9; padding: 15px; border-radius: 10px; }
+        .filter-row .form-control { flex: 1; min-width: 150px; }
     </style>
 </head>
 <body>
 
-<!-- Header acts as Home/Dashboard button -->
-<header onclick="goToDashboard()" title="मुख्यपृष्ठम् प्रति गच्छतु">
+<header onclick="goToDashboard()" title="मुख्यपृष्ठम् प्रति गच्छतु (Go to Home)">
     <h1>पाठोल्लेखः</h1>
     <div style="font-size: 1.2rem; margin-top: 5px; font-weight: 600; font-family: 'Laila', sans-serif; opacity: 0.9;">वेदविज्ञानगुरुकुलम्</div>
 </header>
 
 <div class="container">
     
-    <!-- Top Navigation Tabs -->
     <div id="mainTabs" class="tab-buttons">
-        <button id="tabToday" class="btn-tab" onclick="switchView('todayView', this)">अद्यतन-पाठोल्लेखः</button>
+        <button id="tabDashboard" class="btn-tab active" onclick="switchView('dashboardView', this)">ह्यस्तन-समयसारिणी (Dashboard)</button>
         <button id="tabYearly" class="btn-tab" onclick="switchView('yearlyView', this)">वार्षिक-समयसारिणी</button>
     </div>
 
-    <!-- 1. DASHBOARD VIEW (Default View: Yesterday's logs + Analytics) -->
+    <!-- 1. DASHBOARD VIEW (Yesterday Logs -> Then Stats) -->
     <div id="dashboardView" class="view-section active">
-        <h2 class="section-title" style="margin-bottom: 10px;">ह्यस्तन-पाठ-विवरणम्</h2>
-        <div style="text-align: center; color: #795548; margin-bottom: 25px;">(Yesterday's Dashboard)</div>
+        <h2 class="section-title">ह्यस्तन-पाठ-विवरणम् (Yesterday's Logs)</h2>
+        <div id="holidayBannerDashboard" style="display:none;" class="holiday-banner"></div>
         
-        <!-- YESTERDAY'S LOGS -->
-        <div class="data-card">
-            अद्य यावत् कोऽपि पाठः न उल्लिखितः।<br>
-            <span style="font-size: 0.95rem; color: #888;">(Google Sheets इत्यस्मात् दत्तांशः अत्र आगमिष्यति)</span>
+        <div class="data-card" id="yesterdayDataContainer">
+             <div class="loading-spinner">दत्तांशः आगच्छन् अस्ति... (Loading...)</div>
         </div>
         
         <!-- DASHBOARD ANALYTICS -->
-        <div class="dashboard-grid" style="margin-top: 40px;">
+        <h2 class="section-title" style="margin-top: 40px;">ह्यस्तन-प्रगतिः (Analytics)</h2>
+        <div class="dashboard-grid">
             <div class="stat-card">
                 <h3>पाठ-पूरकाः आचार्याः <br><span style="font-size:0.85rem; font-family:'Laila'; font-weight:normal; color:#689F38;">(Submitted Logs)</span></h3>
-                <div class="circle-progress" style="background: conic-gradient(#4CAF50 80%, #E8F5E9 0); color: #2E7D32;">
-                    <span>८०%</span>
+                <div class="circle-progress" id="circleSubmitted" style="background: conic-gradient(#4CAF50 0%, #E8F5E9 0); color: #2E7D32;">
+                    <span id="statSubmitted">०%</span>
                 </div>
-                <div style="font-size: 0.95rem; color:#795548; font-weight:600;">ह्यः (Yesterday)</div>
             </div>
             
             <div class="stat-card">
                 <h3>उपस्थिताः आचार्याः <br><span style="font-size:0.85rem; font-family:'Laila'; font-weight:normal; color:#689F38;">(Present Acharyas)</span></h3>
-                <div class="circle-progress" style="background: conic-gradient(#0288D1 90%, #E1F5FE 0); color: #0277BD;">
-                    <span>९०%</span>
+                <div class="circle-progress" id="circlePresent" style="background: conic-gradient(#0288D1 0%, #E1F5FE 0); color: #0277BD;">
+                    <span id="statPresent">०%</span>
                 </div>
-                <div style="font-size: 0.95rem; color:#795548; font-weight:600;">ह्यः (Yesterday)</div>
             </div>
 
             <div class="stat-card">
                 <h3>सम्पन्नाः पाठाः <br><span style="font-size:0.85rem; font-family:'Laila'; font-weight:normal; color:#689F38;">(Completed Classes)</span></h3>
-                <div class="circle-progress" style="background: conic-gradient(#E65100 75%, #FFF3E0 0); color: #D35400;">
-                    <span>७५%</span>
+                <div class="circle-progress" id="circleCompleted" style="background: conic-gradient(#E65100 0%, #FFF3E0 0); color: #D35400;">
+                    <span id="statCompleted">०%</span>
                 </div>
-                <div style="font-size: 0.95rem; color:#795548; font-weight:600;">ह्यः (Yesterday)</div>
             </div>
         </div>
 
-        <div class="dashboard-grid" style="grid-template-columns: 1fr;">
-            <div class="stat-card" style="padding: 20px; border: 2px solid #C8E6C9; background: #F1F8E9;">
-                <h3 style="margin-bottom: 5px; color: #1B5E20; font-size:1.3rem;">अस्मिन् मासे सम्पन्नाः पाठाः <br><span style="font-size:0.9rem; font-family:'Laila'; font-weight:normal;">(Classes this month)</span></h3>
-                <div class="stat-number" style="font-size: 3rem; color: #2E7D32;">१२४</div>
-            </div>
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn-primary" onclick="openLoginModal()" style="background: var(--accent-orange); font-size: 1.3rem;">अद्यतन-पाठोल्लेखं कुरु 📝 (Submit Today's Log)</button>
+            <br>
+            <a class="admin-link" onclick="openAdminModal()">प्रबन्धक-प्रवेशः (Admin Login)</a>
         </div>
-
-        <a class="admin-link" onclick="openAdminModal()">प्रबन्धक-प्रवेशः (Admin Login)</a>
     </div>
 
-    <!-- 2. TODAY'S VIEW (अद्यतन-पाठोल्लेखः) -->
-    <div id="todayView" class="view-section">
-        <h2 class="section-title">अद्यतन-प्रविष्टाः पाठाः</h2>
-        <div class="data-card">
-            अद्य कोऽपि पाठः न उल्लिखितः।<br>
-            <span style="font-size: 0.95rem; color: #888;">(अद्यतन-दत्तांशः अत्र आगमिष्यति)</span>
-        </div>
-        <button class="btn-primary" onclick="openLoginModal()" style="background: var(--accent-orange);">पाठोल्लेखं कुरु 📝</button>
-    </div>
-
-    <!-- 3. DATA ENTRY FORM VIEW -->
+    <!-- 2. DATA ENTRY FORM VIEW -->
     <div id="entryFormSection" class="view-section">
-        <h2 class="section-title">पाठोल्लेख-प्रपत्रम् <br><span id="loggedInAcharya" style="color: var(--accent-orange); font-size: 1.6rem; text-shadow:none;"></span></h2>
+        <h2 class="section-title">पाठोल्लेख-प्रपत्रम् <br><span id="loggedInAcharya" style="color: var(--accent-orange); font-size: 1.6rem;"></span></h2>
         
-        <div class="form-card">
+        <div id="holidayBannerForm" style="display:none;" class="holiday-banner"></div>
+
+        <div class="form-card" id="mainFormCard">
             <div class="form-group">
                 <label>दिनाङ्कः (Date)</label>
                 <input type="date" id="dateInput" class="form-control" readonly>
@@ -217,7 +176,6 @@
                 <label>कक्षा (Class / Gana)</label>
                 <select id="classSelect" class="form-control">
                 </select>
-                <small style="color:#795548; display:block; margin-top:8px; font-weight:600;">* अत्र भवतः कक्षाः केवलं दृश्यन्ते।</small>
             </div>
 
             <div class="form-group">
@@ -225,168 +183,65 @@
                 <textarea id="descriptionInput" class="form-control" rows="5" placeholder="अद्य कृतस्य पाठस्य विवरणम् अत्र लिखतु..."></textarea>
             </div>
 
-            <button id="submitBtn" class="btn-primary" style="width: 100%; margin-top: 20px;" onclick="submitLesson()">समर्पयतु (Submit)</button>
-            <button class="btn-primary btn-outline" style="width: 100%; margin-top: 15px;" onclick="logout()">निर्गच्छतु (Logout / Back)</button>
+            <button id="submitBtn" class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="submitLesson()">समर्पयतु (Submit)</button>
+            
+            <!-- Admin Holiday Button (Hidden by default) -->
+            <button id="holidayBtn" class="btn-primary btn-danger" style="width: 100%; margin-top: 10px; display:none;" onclick="declareHoliday()">अद्य अनध्यायः (Declare Holiday)</button>
+
+            <button class="btn-primary btn-outline" style="width: 100%; margin-top: 15px;" onclick="goToDashboard()">निर्गच्छतु (Back/Logout)</button>
         </div>
     </div>
 
-    <!-- 4. YEARLY VIEW -->
+    <!-- 3. ADMIN PANEL (Filters & Download) -->
+    <div id="adminPanelView" class="view-section">
+        <h2 class="section-title">दत्तांश-सङ्ग्रहः (Data Export & Admin)</h2>
+        
+        <div class="form-card" style="max-width: 800px;">
+            <p style="text-align:center; color:#555; margin-bottom:20px;">आवश्यकं दत्तांशं चित्वा अवतरतु (Filter & Download CSV)</p>
+            
+            <div class="filter-row">
+                <input type="date" id="filterFrom" class="form-control" title="From Date">
+                <input type="date" id="filterTo" class="form-control" title="To Date">
+            </div>
+            
+            <div class="filter-row">
+                <select id="filterAcharya" class="form-control">
+                    <option value="">-- सर्वे आचार्याः (All) --</option>
+                </select>
+                <select id="filterGana" class="form-control">
+                    <option value="">-- सर्वे गणाः (All) --</option>
+                    <option value="तपः">तपः</option>
+                    <option value="तेजः">तेजः</option>
+                    <option value="ओजः">ओजः</option>
+                    <option value="वर्चः">वर्चः</option>
+                    <option value="प्रेयः">प्रेयः</option>
+                    <option value="श्रेयः">श्रेयः</option>
+                    <option value="आज्ञः">आज्ञः</option>
+                    <option value="यशः">यशः</option>
+                </select>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="btn-primary" onclick="downloadFilteredCSV()">अवतीर्यताम् (Download CSV) 📥</button>
+                <button class="btn-primary btn-outline" onclick="goToAdminEntry()">पाठं सम्पादयतु (Admin Data Entry) ✍️</button>
+            </div>
+            
+            <hr style="border: 0; height: 1px; background: #C8E6C9; margin: 30px 0;">
+            <h3 style="color: var(--header-bg); text-align: center;">दत्तांश-परिवर्तनम् (Edit/Delete Data)</h3>
+            <p style="text-align:center; color:#555; font-size:0.95rem;">पाठं परिवर्तयितुं वा निष्कासयितुं साक्षात् Google Sheet उद्घाटयतु। (For true Edit/Delete, open the database directly)</p>
+            <button class="btn-primary" style="background:#0277BD; width:100%;" onclick="window.open('https://docs.google.com/spreadsheets/d/1vTJHSdTrlkcX0d59ftrj9rTudQpESXWAPxNC96zwTgo/edit', '_blank')">Google Sheet उद्घाटयतु 🔗</button>
+        </div>
+    </div>
+
+    <!-- 4. YEARLY VIEW (Dynamic Generation) -->
     <div id="yearlyView" class="view-section">
         <h2 class="section-title">वार्षिक-समयसारिणी (२०२६-२७)</h2>
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>गणः</th>
-                        <th>06.30 - 7.55</th>
-                        <th>8.30 - 9.25</th>
-                        <th>11.00 - 11.55</th>
-                        <th>1.30 - 2.25</th>
-                        <th>2.30 - 3.25</th>
-                        <th>3.30 - 4.25</th>
-                        <th>6.30 - 7.25</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th>तपः</th>
-                        <td class="samanya">वेदः - कपिलः <span class="acharya-name">सचिनः</span></td>
-                        <td class="samanya">संस्कृतवाङ्मयम् <span class="acharya-name">सज्जयाचार्यः</span></td>
-                        <td></td>
-                        <td class="samanya">आङ्ग्लम् <span class="acharya-name">विश्वेश्वराचार्यः</span></td>
-                        <td class="samanya">हितोपदेशः / पञ्चतन्त्रम् <span class="acharya-name">श्रीधराचार्यः</span></td>
-                        <td class="samanya">कण्ठपाठः <span class="acharya-name">समीरणः</span></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th>तेजः</th>
-                        <td class="samanya">वेदः - कश्यपः <span class="acharya-name">चिन्मयः</span></td>
-                        <td class="samanya">व्याकरणम् <span class="acharya-name">शिवसुब्रह्मण्यः</span></td>
-                        <td class="samanya">काव्यम् <span class="acharya-name">विनायकाचार्यः</span></td>
-                        <td class="samanya">आङ्ग्लम् <span class="acharya-name">सचिनः</span></td>
-                        <td class="samanya">कण्ठपाठः <span class="acharya-name">आत्रेयः</span></td>
-                        <td class="samanya">तर्कसङ्ग्रहः <span class="acharya-name">विनायकाचार्यः</span></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th>ओजः</th>
-                        <td class="samanya">वेदः - अत्रिः <span class="acharya-name">विनायकाचार्यः</span></td>
-                        <td class="samanya">व्याकरणम् <span class="acharya-name">गुरुप्रसादाचार्यः</span></td>
-                        <td></td>
-                        <td class="samanya">आङ्ग्लम् <span class="acharya-name">आचार्यः</span></td>
-                        <td class="samanya">साहित्यसौष्ठवम्-१ <span class="acharya-name">प्राचार्यः</span></td>
-                        <td class="samanya">न्यायबोधिनी <span class="acharya-name">पृथ्वीराजाचार्यः</span></td>
-                        <td class="samanya">साहित्यसौष्ठवम्-२ <span class="acharya-name">चिन्मयः</span></td>
-                    </tr>
-                    <tr>
-                        <th>वर्चः</th>
-                        <td class="samanya">वेदः - भरद्वाजः <span class="acharya-name">गुरुप्रसादाचार्यः</span></td>
-                        <td class="samanya">सिद्धान्तकौमुदी-१ <span class="acharya-name">अरुणाचार्यः</span></td>
-                        <td class="samanya">वेदान्तसारः <span class="acharya-name">सचिनः</span></td>
-                        <td class="samanya">आङ्ग्लम् <span class="acharya-name">आचार्यः</span></td>
-                        <td class="samanya">दीपिका / मुक्तावली <span class="acharya-name">अभिरामाचार्यः</span></td>
-                        <td style="padding: 0;">
-                            <div class="split-cell">
-                                <div class="split-top vedanta" style="padding:5px;">गीताभाष्यम् <span class="acharya-name">श्रीधराचार्यः</span></div>
-                                <div class="vyakarana" style="padding:5px;">कौमुदी-३ / प्रक्रिया <span class="acharya-name">गुरुप्रसादाचार्यः</span></div>
-                            </div>
-                        </td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th>प्रेयः</th>
-                        <td class="samanya">वेदः - विश्वामित्रः/गौतमः <span class="acharya-name">सञ्जयः</span></td>
-                        <td class="samanya">वेदान्तपरिभाषा <span class="acharya-name">सचिनः</span></td>
-                        <td style="padding: 0;">
-                            <div class="split-cell">
-                                <div class="split-top vedanta" style="padding:5px;">उपनिषद्भाष्यम् <span class="acharya-name">सज्जयाचार्यः</span></div>
-                                <div class="vyakarana" style="padding:5px;">कौमुदी/प्रौढमनोरमा <span class="acharya-name">अरुणाचार्यः</span></div>
-                            </div>
-                        </td>
-                        <td class="samanya">न्यायप्रकाशः <span class="acharya-name">पृथ्वीराजाचार्यः</span></td>
-                        <td class="samanya">सिद्धान्तकौमुदी (कारकम्) <span class="acharya-name">रव्याचार्यः</span></td>
-                        <td></td>
-                        <td style="padding: 0;">
-                            <div class="split-cell">
-                                <div class="split-top vedanta" style="padding:5px;">गीताभाष्यम् <span class="acharya-name">महादेवाचार्यः</span></div>
-                                <div class="vyakarana" style="padding:5px;">परिभाषेन्दुशेखरः <span class="acharya-name">गुरुप्रसादाचार्यः</span></div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>श्रेयः</th>
-                        <td></td>
-                        <td class="samanya">न्यायप्रकाशः <span class="acharya-name">अभिरामाचार्यः</span></td>
-                        <td class="vyakarana">महाभाष्यम् <span class="acharya-name">रव्याचार्यः</span></td>
-                        <td style="padding: 0;">
-                            <div class="split-cell">
-                                <div class="split-top vedanta" style="padding:5px;">गीताभाष्यम् <span class="acharya-name">सचिनः</span></div>
-                                <div class="vyakarana" style="padding:5px;">परिभाषेन्दुशेखरः <span class="acharya-name">अरुणाचार्यः</span></div>
-                            </div>
-                        </td>
-                        <td class="vyakarana">कौमुदी <span class="acharya-name">शिवसुब्रह्मण्यः</span></td>
-                        <td style="padding: 0;">
-                            <div class="split-cell">
-                                <div class="split-top vedanta" style="padding:5px;">सि.ले.सङ्ग्रहः <span class="acharya-name">महादेवाचार्यः</span></div>
-                                <div class="vyakarana" style="padding:5px;">प्रौढमनोरमा <span class="acharya-name">रव्याचार्यः</span></div>
-                            </div>
-                        </td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th>आज्ञः</th>
-                        <td style="padding: 0;">
-                            <div class="split-cell">
-                                <div class="split-top samanya" style="padding:5px;">वेदः-जमदग्निः <span class="acharya-name">श्रीधराचार्यः</span></div>
-                                <div class="samanya" style="padding:5px;">वेदः-वसिष्ठः <span class="acharya-name">पृथ्वीराजः</span></div>
-                            </div>
-                        </td>
-                        <td class="vedanta">अद्वैतसिद्धिः <span class="acharya-name">महादेवाचार्यः</span></td>
-                        <td class="vyakarana">प.ल.म./भूषणसारः <span class="acharya-name">शम्भु-आचार्यः</span></td>
-                        <td class="vyakarana">परिभाषेन्दुशेखरः <span class="acharya-name">अरुणाचार्यः</span></td>
-                        <td style="padding: 0;">
-                            <div class="split-cell">
-                                <div class="split-top vedanta" style="padding:5px;">ब्रह्मसूत्रम् <span class="acharya-name">महादेवाचार्यः</span></div>
-                                <div class="vyakarana" style="padding:5px;">महाभाष्यम् <span class="acharya-name">अरुणाचार्यः</span></div>
-                            </div>
-                        </td>
-                        <td style="padding: 0;">
-                            <div class="split-cell">
-                                <div class="split-top vedanta" style="padding:5px;">उपनिषद्भाष्यम् <span class="acharya-name">सञ्जयाचार्यः</span></div>
-                                <div class="vyakarana" style="padding:5px;">प्रौढमनोरमा <span class="acharya-name">रव्याचार्यः</span></div>
-                            </div>
-                        </td>
-                        <td style="padding: 0;">
-                            <div class="split-cell">
-                                <div class="split-top vedanta" style="padding:5px;">सि.ले.सङ्ग्रहः <span class="acharya-name">श्रीधराचार्यः</span></div>
-                                <div class="vyakarana" style="padding:5px;">महाभाष्यम् <span class="acharya-name">सुब्रह्मण्य. आ.</span></div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>यशः</th>
-                        <td class="samanya">याज्ञवल्क्यः <span class="acharya-name">विष्णुः</span></td>
-                        <td class="vyakarana">प.ल.म./भूषणसारः <span class="acharya-name">शम्भु-आचार्यः</span></td>
-                        <td></td>
-                        <td></td>
-                        <td class="vyakarana">महाभाष्यम् <span class="acharya-name">रव्याचार्यः</span></td>
-                        <td style="padding: 0;">
-                            <div class="split-cell">
-                                <div class="split-top vedanta" style="padding:5px;">ब्रह्मसूत्रम् <span class="acharya-name">प्राचार्यः</span></div>
-                                <div class="vedanta" style="padding:5px;">अद्वैतसिद्धिः <span class="acharya-name">पुष्कराचार्यः</span></div>
-                            </div>
-                        </td>
-                        <td></td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="table-wrapper" id="yearlyTableContainer">
+            <!-- Table generated by JS -->
         </div>
     </div>
 
 </div>
-
-<!-- Floating Action Button for Adding Log -->
-<div class="fab" onclick="openLoginModal()" title="पाठोल्लेखं कुरु">+</div>
 
 <!-- Login Modal -->
 <div class="modal" id="loginModal">
@@ -394,28 +249,6 @@
         <h3 style="color: var(--header-bg); font-size: 1.6rem; margin-top: 0;">आचार्य-प्रवेशः</h3>
         <select id="acharyaSelect" class="form-control" style="margin-bottom: 15px;">
             <option value="">-- आचार्यं चिनोतु --</option>
-            <option value="सचिनः">सचिनः</option>
-            <option value="सज्जयाचार्यः">सज्जयाचार्यः</option>
-            <option value="विश्वेश्वराचार्यः">विश्वेश्वराचार्यः</option>
-            <option value="श्रीधराचार्यः">श्रीधराचार्यः</option>
-            <option value="समीरणः">समीरणः</option>
-            <option value="चिन्मयः">चिन्मयः</option>
-            <option value="शिवसुब्रह्मण्यः">शिवसुब्रह्मण्यः</option>
-            <option value="विनायकाचार्यः">विनायकाचार्यः</option>
-            <option value="आत्रेयः">आत्रेयः</option>
-            <option value="गुरुप्रसादाचार्यः">गुरुप्रसादाचार्यः</option>
-            <option value="प्राचार्यः">प्राचार्यः</option>
-            <option value="पृथ्वीराजाचार्यः">पृथ्वीराजाचार्यः</option>
-            <option value="अभिरामाचार्यः">अभिरामाचार्यः</option>
-            <option value="रव्याचार्यः">रव्याचार्यः</option>
-            <option value="महादेवाचार्यः">महादेवाचार्यः</option>
-            <option value="अरुणाचार्यः">अरुणाचार्यः</option>
-            <option value="सञ्जयः">सञ्जयः</option>
-            <option value="शम्भु-आचार्यः">शम्भु-आचार्यः</option>
-            <option value="पुष्कराचार्यः">पुष्कराचार्यः</option>
-            <option value="सुब्रह्मण्य. आ.">सुब्रह्मण्य. आ.</option>
-            <option value="आचार्यः">आचार्यः</option>
-            <option value="विष्णुः">विष्णुः</option>
         </select>
         <input type="password" id="acharyaPin" class="form-control" placeholder="दूरवाणी सङ्ख्या (Mobile No) / PIN" style="margin-bottom: 25px; text-align: center;">
         <button class="btn-primary" style="width: 100%; margin: 0 0 10px 0;" onclick="verifyAcharya()">प्रविशतु</button>
@@ -437,10 +270,10 @@
 <script>
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRxywNJTKN21s0AHqgxLGaC6i404UVN4s_am5TCMSLq0CC30v5R4HmTDvTT8vsVu5O/exec";
 
-    // System Data and Passwords
-    const timetableData = {"सचिनः": [{"gana": "तपः", "time": "06:30–07:55", "subject": "वेदः – कपिलः", "vibhaga": "सामान्य"}, {"gana": "तेजः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "11:00–11:55", "subject": "वेदान्तसारः", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "08:30–09:25", "subject": "वेदान्तपरिभाषा", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "01:30–02:25", "subject": "गीताभाष्यम्", "vibhaga": "वेदान्त"}], "सज्जयाचार्यः": [{"gana": "तपः", "time": "08:30–09:25", "subject": "संस्कृतवाङ्मयम्", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "11:00–11:55", "subject": "उपनिषद्भाष्यम्", "vibhaga": "वेदान्त"}], "विश्वेश्वराचार्यः": [{"gana": "तपः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}], "श्रीधराचार्यः": [{"gana": "तपः", "time": "02:30–03:25", "subject": "हितोपदेशः / पञ्चतन्त्रम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "03:30–04:25", "subject": "गीताभाष्यम्", "vibhaga": "वेदान्त"}, {"gana": "आज्ञः", "time": "06:30–07:55", "subject": "वेदः-जमदग्निः", "vibhaga": "सामान्य"}, {"gana": "आज्ञः", "time": "06:30–07:25", "subject": "सि.ले.सङ्ग्रहः", "vibhaga": "वेदान्त"}], "समीरणः": [{"gana": "तपः", "time": "03:30–04:25", "subject": "कण्ठपाठः", "vibhaga": "सामान्य"}], "चिन्मयः": [{"gana": "तेजः", "time": "06:30–07:55", "subject": "वेदः - कश्यपः", "vibhaga": "सामान्य"}, {"gana": "ओजः", "time": "06:30–07:25", "subject": "साहित्यसौष्ठवम्-२", "vibhaga": "सामान्य"}], "शिवसुब्रह्मण्यः": [{"gana": "तेजः", "time": "08:30–09:25", "subject": "व्याकरणम्", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "02:30–03:25", "subject": "कौमुदी", "vibhaga": "व्याकरण"}], "विनायकाचार्यः": [{"gana": "तेजः", "time": "11:00–11:55", "subject": "काव्यम्", "vibhaga": "सामान्य"}, {"gana": "तेजः", "time": "03:30–04:25", "subject": "तर्कसङ्ग्रहः", "vibhaga": "सामान्य"}, {"gana": "ओजः", "time": "06:30–07:55", "subject": "वेदः - अत्रिः", "vibhaga": "सामान्य"}], "आत्रेयः": [{"gana": "तेजः", "time": "02:30–03:25", "subject": "कण्ठपाठः", "vibhaga": "सामान्य"}], "गुरुप्रसादाचार्यः": [{"gana": "ओजः", "time": "08:30–09:25", "subject": "व्याकरणम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "06:30–07:55", "subject": "वेदः - भरद्वाजः", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "03:30–04:25", "subject": "कौमुदी-३ / प्रक्रिया", "vibhaga": "व्याकरण"}, {"gana": "प्रेयः", "time": "06:30–07:25", "subject": "परिभाषेन्दुशेखरः", "vibhaga": "व्याकरण"}], "आचार्यः": [{"gana": "ओजः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}], "प्राचार्यः": [{"gana": "ओजः", "time": "02:30–03:25", "subject": "साहित्यसौष्ठवम्-१", "vibhaga": "सामान्य"}, {"gana": "यशः", "time": "03:30–04:25", "subject": "ब्रह्मसूत्रम्", "vibhaga": "वेदान्त"}], "पृथ्वीराजाचार्यः": [{"gana": "ओजः", "time": "03:30–04:25", "subject": "न्यायबोधिनी", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "01:30–02:25", "subject": "न्यायप्रकाशः", "vibhaga": "सामान्य"}], "पृथ्वीराजः": [{"gana": "आज्ञः", "time": "06:30–07:55", "subject": "वेदः-वसिष्ठः", "vibhaga": "सामान्य"}], "अरुणाचार्यः": [{"gana": "वर्चः", "time": "08:30–09:25", "subject": "सिद्धान्तकौमुदी-१", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "11:00–11:55", "subject": "कौमुदी/प्रौढमनोरमा", "vibhaga": "व्याकरण"}, {"gana": "श्रेयः", "time": "01:30–02:25", "subject": "परिभाषेन्दुशेखरः", "vibhaga": "व्याकरण"}, {"gana": "आज्ञः", "time": "01:30–02:25", "subject": "परिभाषेन्दुशेखरः", "vibhaga": "व्याकरण"}, {"gana": "आज्ञः", "time": "02:30–03:25", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}], "अभिरामाचार्यः": [{"gana": "वर्चः", "time": "02:30–03:25", "subject": "दीपिका / मुक्तावली", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "08:30–09:25", "subject": "न्यायप्रकाशः", "vibhaga": "सामान्य"}], "सञ्जयः": [{"gana": "प्रेयः", "time": "06:30–07:55", "subject": "वेदः - विश्वामित्रः तथा गौतमः", "vibhaga": "सामान्य"}], "सञ्जयाचार्यः": [{"gana": "आज्ञः", "time": "03:30–04:25", "subject": "उपनिषद्भाष्यम्", "vibhaga": "वेदान्त"}], "रव्याचार्यः": [{"gana": "प्रेयः", "time": "02:30–03:25", "subject": "सिद्धान्तकौमुदी (कारकम्)", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "11:00–11:55", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}, {"gana": "श्रेयः", "time": "03:30–04:25", "subject": "प्रौढमनोरमा", "vibhaga": "व्याकरण"}, {"gana": "आज्ञः", "time": "03:30–04:25", "subject": "प्रौढमनोरमा", "vibhaga": "व्याकरण"}, {"gana": "यशः", "time": "02:30–03:25", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}], "महादेवाचार्यः": [{"gana": "प्रेयः", "time": "06:30–07:25", "subject": "गीताभाष्यम्", "vibhaga": "वेदान्त"}, {"gana": "श्रेयः", "time": "03:30–04:25", "subject": "सि.ले.सङ्ग्रहः", "vibhaga": "वेदान्त"}, {"gana": "आज्ञः", "time": "08:30–09:25", "subject": "अद्वैतसिद्धिः", "vibhaga": "वेदान्त"}, {"gana": "आज्ञः", "time": "02:30–03:25", "subject": "ब्रह्मसूत्रम्", "vibhaga": "वेदान्त"}], "शम्भु-आचार्यः": [{"gana": "आज्ञः", "time": "11:00–11:55", "subject": "प.ल.म./भूषणसारः", "vibhaga": "व्याकरण"}, {"gana": "यशः", "time": "08:30–09:25", "subject": "प.ल.म./भूषणसारः", "vibhaga": "व्याकरण"}], "सुब्रह्मण्य. आ.": [{"gana": "आज्ञः", "time": "06:30–07:25", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}], "विष्णुः": [{"gana": "यशः", "time": "06:30–07:55", "subject": "याज्ञवल्क्यः", "vibhaga": "सामान्य"}], "पुष्कराचार्यः": [{"gana": "यशः", "time": "03:30–04:25", "subject": "अद्वैतसिद्धिः", "vibhaga": "वेदान्त"}]};
+    // JSON Data injected
+    const timetableData = {js_data};
     
-    const acharyaPasswords = {
+    const acharyaPasswords = {{
         "सचिनः": "9739581142", "सज्जयाचार्यः": "8762181320", "विश्वेश्वराचार्यः": "7338056216",
         "श्रीधराचार्यः": "8277778160", "समीरणः": "12345", "चिन्मयः": "6361904023",
         "शिवसुब्रह्मण्यः": "12345", "विनायकाचार्यः": "6363189416", "आत्रेयः": "7411740923",
@@ -449,175 +282,389 @@
         "अरुणाचार्यः": "8105889761", "सञ्जयः": "8762181320", "शम्भु-आचार्यः": "9482493321",
         "पुष्कराचार्यः": "8680842724", "सुब्रह्मण्य. आ.": "8762970370", "आचार्यः": "9880598008",
         "विष्णुः": "12345"
-    };
+    }};
 
     let currentLoggedIn = "";
     let isAdmin = false;
+    let fetchedLogs = [];
+    let isHolidayToday = false;
+    let isHolidayYesterday = false;
 
-    window.onload = function() {
+    window.onload = function() {{
+        populateAcharyaDropdowns();
+        renderYearlyTimetable();
+        fetchDataFromGoogleSheets();
+        
+        // Set default filter dates
         const today = new Date();
-        document.getElementById('dateInput').value = today.toISOString().split('T')[0];
-    };
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+        document.getElementById('filterFrom').value = firstDay;
+        document.getElementById('filterTo').value = today.toISOString().split('T')[0];
+    }};
 
-    // Header acts as Home button
-    function goToDashboard() {
+    function populateAcharyaDropdowns() {{
+        const selectModal = document.getElementById('acharyaSelect');
+        const selectFilter = document.getElementById('filterAcharya');
+        for(let ach in acharyaPasswords) {{
+            selectModal.innerHTML += `<option value="${{ach}}">${{ach}}</option>`;
+            selectFilter.innerHTML += `<option value="${{ach}}">${{ach}}</option>`;
+        }}
+    }}
+
+    function fetchDataFromGoogleSheets() {{
+        fetch(GOOGLE_SCRIPT_URL)
+            .then(response => response.json())
+            .then(data => {{
+                fetchedLogs = data;
+                checkHolidays();
+                updateDashboard();
+            }})
+            .catch(error => {{
+                console.error("Error fetching data: ", error);
+                document.getElementById('yesterdayDataContainer').innerHTML = "<div class='log-desc' style='color:red;'>दत्तांश-प्राप्तौ दोषः जातः। (Error loading data from Google Sheets)</div>";
+            }});
+    }}
+
+    function checkHolidays() {{
+        const todayStr = new Date().toISOString().split('T')[0];
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        isHolidayToday = fetchedLogs.some(log => log['दिनाङ्कः (Date)'] && log['दिनाङ्कः (Date)'].startsWith(todayStr) && log['विषयः (Subject)'] === "अनध्यायः");
+        isHolidayYesterday = fetchedLogs.some(log => log['दिनाङ्कः (Date)'] && log['दिनाङ्कः (Date)'].startsWith(yesterdayStr) && log['विषयः (Subject)'] === "अनध्यायः");
+    }}
+
+    function updateDashboard() {{
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const thisMonthStr = today.toISOString().slice(0, 7);
+
+        const bannerDash = document.getElementById('holidayBannerDashboard');
+        const yesterdayContainer = document.getElementById('yesterdayDataContainer');
+
+        if(isHolidayYesterday) {{
+            bannerDash.style.display = "block";
+            bannerDash.innerText = "ह्यः अनध्यायः / विशेषकार्यक्रमः आसीत्। (Yesterday was a Holiday/Special Event)";
+            yesterdayContainer.innerHTML = "";
+            document.getElementById('statSubmitted').innerText = "-";
+            document.getElementById('statPresent').innerText = "-";
+            document.getElementById('statCompleted').innerText = "-";
+        }} else {{
+            bannerDash.style.display = "none";
+            let yesterdayHtml = "";
+            let yesterdayUniqueAcharyas = new Set();
+            let yesterdayCompletedClasses = 0;
+
+            fetchedLogs.forEach(log => {{
+                if (log['दिनाङ्कः (Date)'] && log['दिनाङ्कः (Date)'].startsWith(yesterdayStr) && log['विषयः (Subject)'] !== "अनध्यायः") {{
+                    yesterdayHtml += `
+                    <div class="log-entry">
+                        <div class="log-title">${{log['आचार्यः (Acharya)']}} - ${{log['विषयः (Subject)']}}</div>
+                        <div class="log-subtitle">${{log['गणः (Class/Gana)']}} | ${{log['समयः (Time)']}}</div>
+                        <div class="log-desc">${{log['विवरणम् (Lesson Description)']}}</div>
+                    </div>`;
+                    yesterdayCompletedClasses++;
+                    if(log['आचार्यः (Acharya)']) yesterdayUniqueAcharyas.add(log['आचार्यः (Acharya)']);
+                }}
+            }});
+
+            if (yesterdayHtml === "") {{
+                yesterdayContainer.innerHTML = "<div style='padding:20px; color:#777; text-align:center;'>ह्यः कोऽपि पाठः न उल्लिखितः। (No logs submitted yesterday)</div>";
+            }} else {{
+                yesterdayContainer.innerHTML = yesterdayHtml;
+            }}
+
+            const totalExpectedDailyClasses = Object.values(timetableData).reduce((acc, curr) => acc + curr.length, 0);
+            const totalAcharyas = Object.keys(timetableData).length;
+
+            let submittedPercent = totalExpectedDailyClasses > 0 ? Math.round((yesterdayCompletedClasses / totalExpectedDailyClasses) * 100) : 0;
+            let presentPercent = totalAcharyas > 0 ? Math.round((yesterdayUniqueAcharyas.size / totalAcharyas) * 100) : 0;
+            if(submittedPercent > 100) submittedPercent = 100;
+            if(presentPercent > 100) presentPercent = 100;
+
+            document.getElementById('statSubmitted').innerText = translateNumbersToDevanagari(submittedPercent) + "%";
+            document.getElementById('circleSubmitted').style.background = `conic-gradient(#4CAF50 ${{submittedPercent}}%, #E8F5E9 0)`;
+            
+            document.getElementById('statPresent').innerText = translateNumbersToDevanagari(presentPercent) + "%";
+            document.getElementById('circlePresent').style.background = `conic-gradient(#0288D1 ${{presentPercent}}%, #E1F5FE 0)`;
+
+            document.getElementById('statCompleted').innerText = translateNumbersToDevanagari(submittedPercent) + "%";
+            document.getElementById('circleCompleted').style.background = `conic-gradient(#E65100 ${{submittedPercent}}%, #FFF3E0 0)`;
+        }}
+
+        // Monthly total (excluding holidays)
+        let monthTotalClasses = 0;
+        fetchedLogs.forEach(log => {{
+            if (log['दिनाङ्कः (Date)'] && log['दिनाङ्कः (Date)'].startsWith(thisMonthStr) && log['विषयः (Subject)'] !== "अनध्यायः") {{
+                monthTotalClasses++;
+            }}
+        }});
+        // Update the big card in Dashboard instead of separate page
+        // Wait, where did the monthly stat card go? It's removed to make it clean, let's just keep the dashboard logic.
+    }}
+
+    function translateNumbersToDevanagari(num) {{
+        const devanagariDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+        return String(num).split('').map(digit => devanagariDigits[digit] || digit).join('');
+    }}
+
+    function goToDashboard() {{
         document.getElementById('mainTabs').style.display = 'flex';
-        document.querySelectorAll('.btn-tab').forEach(el => el.classList.remove('active'));
-        switchView('dashboardView', null);
-    }
+        switchView('dashboardView', document.getElementById('tabDashboard'));
+    }}
 
-    function switchView(viewId, btnElement) {
+    function switchView(viewId, btnElement) {{
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-        if(btnElement) {
+        if(btnElement) {{
             document.querySelectorAll('.btn-tab').forEach(el => el.classList.remove('active'));
             btnElement.classList.add('active');
-        }
+        }}
         document.getElementById(viewId).classList.add('active');
-    }
+    }}
 
-    function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
-    function openAdminModal() { document.getElementById('adminModal').style.display = 'flex'; }
-    
-    function closeModals() { 
+    function openLoginModal() {{ document.getElementById('loginModal').style.display = 'flex'; }}
+    function openAdminModal() {{ document.getElementById('adminModal').style.display = 'flex'; }}
+    function closeModals() {{ 
         document.getElementById('adminModal').style.display = 'none'; 
         document.getElementById('loginModal').style.display = 'none'; 
         document.getElementById('adminPin').value = '';
         document.getElementById('acharyaPin').value = '';
         document.getElementById('acharyaSelect').value = '';
-    }
-    
-    function verifyAdmin() {
+    }}
+
+    function verifyAdmin() {{
         const pin = document.getElementById('adminPin').value;
-        if(pin === '9999') { 
+        if(pin === '9999') {{ 
             isAdmin = true;
             closeModals();
-            document.getElementById('dateInput').removeAttribute('readonly');
-            
             document.getElementById('mainTabs').style.display = 'none';
-            switchView('entryFormSection', null);
-            document.getElementById('loggedInAcharya').innerText = "प्रबन्धक-व्यवस्था (Admin Mode)";
-            
-            openFormForAdmin();
-        } else {
+            switchView('adminPanelView', null);
+        }} else {{
             alert("असमीचीनः कूटशब्दः! (Wrong Admin PIN!)");
-        }
-    }
+        }}
+    }}
 
-    // --- VOCATIVE CASE LOGIC (सम्बोधना) ---
-    function getVocative(name) {
+    function goToAdminEntry() {{
+        switchView('entryFormSection', null);
+        document.getElementById('loggedInAcharya').innerText = "प्रबन्धक-व्यवस्था (Admin Mode)";
+        document.getElementById('dateInput').removeAttribute('readonly');
+        document.getElementById('dateInput').value = new Date().toISOString().split('T')[0];
+        document.getElementById('holidayBtn').style.display = 'block'; // Show holiday button
+
+        const select = document.getElementById('classSelect');
+        select.innerHTML = '<option value="">-- सर्वाः कक्षाः (All Classes) --</option>';
+        for (const [achName, classes] of Object.entries(timetableData)) {{
+            classes.forEach(cls => {{
+                const valStr = encodeURIComponent(JSON.stringify({{acharya: achName, gana: cls.gana, time: cls.time, subject: cls.subject}}));
+                select.innerHTML += `<option value="${{valStr}}">${{achName}} | ${{cls.gana}} | ${{cls.time}} | ${{cls.subject}}</option>`;
+            }});
+        }}
+        checkFormHolidayState();
+    }}
+
+    function getVocative(name) {{
         if (name === "विष्णुः") return "विष्णो";
         if (name === "सुब्रह्मण्य. आ.") return name;
         return name.replace(/ः$/, '');
-    }
+    }}
 
-    function populateForm(acharyaName) {
-        const select = document.getElementById('classSelect');
-        select.innerHTML = '<option value="">-- कक्षां चिनोतु --</option>';
-        
-        const classes = timetableData[acharyaName] || [];
-        classes.forEach(cls => {
-            const valStr = encodeURIComponent(JSON.stringify({
-                acharya: acharyaName,
-                gana: cls.gana,
-                time: cls.time,
-                subject: cls.subject
-            }));
-            select.innerHTML += `<option value="${valStr}">${cls.gana} गणः | ${cls.time} | ${cls.subject} (${cls.vibhaga})</option>`;
-        });
-    }
-
-    function openFormForAdmin() {
-        const select = document.getElementById('classSelect');
-        select.innerHTML = '<option value="">-- सर्वाः कक्षाः (All Classes) --</option>';
-        
-        for (const [achName, classes] of Object.entries(timetableData)) {
-            classes.forEach(cls => {
-                const valStr = encodeURIComponent(JSON.stringify({
-                    acharya: achName,
-                    gana: cls.gana,
-                    time: cls.time,
-                    subject: cls.subject
-                }));
-                select.innerHTML += `<option value="${valStr}">${achName} | ${cls.gana} गणः | ${cls.time} | ${cls.subject}</option>`;
-            });
-        }
-    }
-
-    function verifyAcharya() {
+    function verifyAcharya() {{
         const name = document.getElementById('acharyaSelect').value;
         const pin = document.getElementById('acharyaPin').value;
-        
-        if(!name) { alert("कृपया आचार्यं चिनोतु! (Please select an Acharya)"); return; }
+        if(!name) return alert("कृपया आचार्यं चिनोतु!");
 
-        if(acharyaPasswords[name] === pin) {
+        if(acharyaPasswords[name] === pin) {{
             closeModals();
             isAdmin = false;
             currentLoggedIn = name;
             
             document.getElementById('mainTabs').style.display = 'none';
             switchView('entryFormSection', null);
+            document.getElementById('holidayBtn').style.display = 'none'; // Hide holiday btn for normal users
             
             document.getElementById('loggedInAcharya').innerText = "स्वागतम्, " + getVocative(name);
-            
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('dateInput').value = today;
+            document.getElementById('dateInput').value = new Date().toISOString().split('T')[0];
             document.getElementById('dateInput').setAttribute('readonly', 'true');
             
-            populateForm(name);
-        } else {
-            alert("असमीचीनः कूटशब्दः (दूरवाणी सङ्ख्या)! (Wrong Password/Mobile No!)");
-        }
-    }
+            const select = document.getElementById('classSelect');
+            select.innerHTML = '<option value="">-- कक्षां चिनोतु --</option>';
+            const classes = timetableData[name] || [];
+            classes.forEach(cls => {{
+                const valStr = encodeURIComponent(JSON.stringify({{acharya: name, gana: cls.gana, time: cls.time, subject: cls.subject}}));
+                select.innerHTML += `<option value="${{valStr}}">${{cls.gana}} गणः | ${{cls.time}} | ${{cls.subject}} (${{cls.vibhaga}})</option>`;
+            }});
 
-    function submitLesson() {
+            checkFormHolidayState();
+        }} else {{
+            alert("असमीचीनः कूटशब्दः!");
+        }}
+    }}
+
+    function checkFormHolidayState() {{
+        const dateVal = document.getElementById('dateInput').value;
+        const isHol = fetchedLogs.some(log => log['दिनाङ्कः (Date)'] && log['दिनाङ्कः (Date)'].startsWith(dateVal) && log['विषयः (Subject)'] === "अनध्यायः");
+        
+        const banner = document.getElementById('holidayBannerForm');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        if(isHol && !isAdmin) {{
+            banner.style.display = "block";
+            banner.innerText = "अद्य अनध्यायः / विशेषकार्यक्रमः अस्ति। पाठोल्लेखः न शक्यते। (Holiday Declared)";
+            submitBtn.disabled = true;
+        }} else {{
+            banner.style.display = "none";
+            submitBtn.disabled = false;
+        }}
+    }}
+
+    document.getElementById('dateInput').addEventListener('change', checkFormHolidayState);
+
+    function declareHoliday() {{
+        const dateVal = document.getElementById('dateInput').value;
+        if(confirm(dateVal + " दिनाङ्के 'अनध्यायः' (Holiday) घोषणीयम् वा?")) {{
+            sendDataToSheet(dateVal, "ADMIN", "सर्वे", "-", "अनध्यायः", "विशेषकार्यक्रमः / अनध्यायः");
+        }}
+    }}
+
+    function submitLesson() {{
         const clsVal = document.getElementById('classSelect').value;
         const desc = document.getElementById('descriptionInput').value;
         const dateVal = document.getElementById('dateInput').value;
         
-        if(!clsVal) { alert("कृपया कक्षां चिनोतु! (Select a Class)"); return; }
-        if(!desc.trim()) { alert("कृपया पाठस्य विवरणं लिखतु! (Enter Description)"); return; }
+        if(!clsVal) return alert("कृपया कक्षां चिनोतु!");
+        if(!desc.trim()) return alert("कृपया पाठस्य विवरणं लिखतु!");
 
         const clsData = JSON.parse(decodeURIComponent(clsVal));
+        sendDataToSheet(dateVal, clsData.acharya, clsData.gana, clsData.time, clsData.subject, desc);
+    }}
 
+    function sendDataToSheet(date, acharya, gana, time, subject, description) {{
         const formData = new URLSearchParams();
-        formData.append('date', dateVal);
-        formData.append('acharya', clsData.acharya);
-        formData.append('gana', clsData.gana);
-        formData.append('time', clsData.time);
-        formData.append('subject', clsData.subject);
-        formData.append('description', desc);
+        formData.append('date', date);
+        formData.append('acharya', acharya);
+        formData.append('gana', gana);
+        formData.append('time', time);
+        formData.append('subject', subject);
+        formData.append('description', description);
 
-        const submitBtn = document.getElementById('submitBtn');
-        const originalText = submitBtn.innerText;
-        submitBtn.innerText = "समर्प्यते... (Submitting...)";
-        submitBtn.disabled = true;
+        const btn = document.getElementById('submitBtn');
+        const origText = btn.innerText;
+        btn.innerText = "समर्प्यते... (Submitting...)";
+        btn.disabled = true;
 
-        fetch(GOOGLE_SCRIPT_URL, {
-            method: "POST",
-            body: formData
-        })
+        fetch(GOOGLE_SCRIPT_URL, {{ method: "POST", body: formData }})
         .then(res => res.text())
-        .then(data => {
-            alert("पाठोल्लेखः सफलः! (Data submitted successfully)");
+        .then(data => {{
+            alert("सफलम्! (Success)");
             document.getElementById('descriptionInput').value = "";
-            submitBtn.innerText = originalText;
-            submitBtn.disabled = false;
+            btn.innerText = origText;
+            btn.disabled = false;
+            fetchDataFromGoogleSheets(); // refresh data
             goToDashboard();
-        })
-        .catch(err => {
-            alert("दोषः जातः! पुनः प्रयत्नं करोतु। (Error occurred. Please try again.)");
-            submitBtn.innerText = originalText;
-            submitBtn.disabled = false;
-        });
-    }
+        }})
+        .catch(err => {{
+            alert("दोषः जातः! पुनः प्रयत्नं करोतु।");
+            btn.innerText = origText;
+            btn.disabled = false;
+        }});
+    }}
 
-    function logout() {
-        currentLoggedIn = "";
-        isAdmin = false;
-        document.getElementById('descriptionInput').value = "";
-        goToDashboard();
-    }
+    function downloadFilteredCSV() {{
+        const fromDate = document.getElementById('filterFrom').value;
+        const toDate = document.getElementById('filterTo').value;
+        const acharya = document.getElementById('filterAcharya').value;
+        const gana = document.getElementById('filterGana').value;
+
+        if(!fromDate || !toDate) return alert("Please select a date range!");
+
+        let filtered = fetchedLogs.filter(log => {{
+            if(!log['दिनाङ्कः (Date)']) return false;
+            const logDate = log['दिनाङ्कः (Date)'].split('T')[0];
+            if (logDate < fromDate || logDate > toDate) return false;
+            if (acharya && log['आचार्यः (Acharya)'] !== acharya) return false;
+            if (gana && log['गणः (Class/Gana)'] !== gana) return false;
+            // Exclude holidays from downloads
+            if (log['विषयः (Subject)'] === "अनध्यायः") return false;
+            return true;
+        }});
+
+        if(filtered.length === 0) return alert("No data found for this filter!");
+
+        // Generate CSV
+        const headers = ["दिनाङ्कः (Date)", "आचार्यः (Acharya)", "गणः (Class/Gana)", "समयः (Time)", "विषयः (Subject)", "विवरणम् (Lesson Description)"];
+        let csvContent = headers.join(",") + "\n";
+
+        filtered.forEach(row => {{
+            let rowData = headers.map(h => {{
+                let cellData = (row[h] || "").toString();
+                // Escape quotes
+                cellData = cellData.replace(/"/g, '""');
+                return `"${{cellData}}"`;
+            }});
+            csvContent += rowData.join(",") + "\n";
+        }});
+
+        const blob = new Blob([csvContent], {{ type: 'text/csv;charset=utf-8;' }});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Pathollekh_${{fromDate}}_to_${{toDate}}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }}
+
+    function renderYearlyTimetable() {{
+        const times = ["06:30–07:55", "08:30–09:25", "11:00–11:55", "01:30–02:25", "02:30–03:25", "03:30–04:25", "06:30–07:25"];
+        const ganas = ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "आज्ञः", "यशः"];
+        
+        // Re-organize data by Gana and Time
+        const tableGrid = {{}};
+        ganas.forEach(g => tableGrid[g] = {{}});
+        
+        for (const [ach, classes] of Object.entries(timetableData)) {{
+            classes.forEach(cls => {{
+                if(!tableGrid[cls.gana]) return;
+                
+                // Normalise the time string from data to match the column headers
+                let clsTime = cls.time.replace('-', '–'); // ensure en-dash
+                if(!tableGrid[cls.gana][clsTime]) tableGrid[cls.gana][clsTime] = [];
+                tableGrid[cls.gana][clsTime].push({{ach: ach, sub: cls.subject, vib: cls.vibhaga}});
+            }});
+        }}
+
+        let html = `<table><thead><tr><th>गणः</th>`;
+        times.forEach(t => html += `<th>${{t}}</th>`);
+        html += `</tr></thead><tbody>`;
+
+        ganas.forEach(gana => {{
+            html += `<tr><th>${{gana}}</th>`;
+            times.forEach(time => {{
+                const classes = tableGrid[gana][time];
+                if(!classes || classes.length === 0) {{
+                    html += `<td></td>`;
+                }} else if (classes.length === 1) {{
+                    const cls = classes[0];
+                    const vClass = cls.vib === 'सामान्य' ? 'samanya' : (cls.vib === 'वेदान्त' ? 'vedanta' : 'vyakarana');
+                    html += `<td class="${{vClass}}">${{cls.sub}} <span class="acharya-name">${{cls.ach}}</span></td>`;
+                }} else {{
+                    html += `<td style="padding:0;"><div class="split-cell">`;
+                    classes.forEach((cls, idx) => {{
+                        const vClass = cls.vib === 'सामान्य' ? 'samanya' : (cls.vib === 'वेदान्त' ? 'vedanta' : 'vyakarana');
+                        const btmBorder = idx === 0 ? 'split-top' : '';
+                        html += `<div class="${{btmBorder}} ${{vClass}}" style="padding:5px;">${{cls.sub}} <span class="acharya-name">${{cls.ach}}</span></div>`;
+                    }});
+                    html += `</div></td>`;
+                }}
+            }});
+            html += `</tr>`;
+        }});
+        html += `</tbody></table>`;
+        document.getElementById('yearlyTableContainer').innerHTML = html;
+    }}
 </script>
-
 </body>
 </html>
