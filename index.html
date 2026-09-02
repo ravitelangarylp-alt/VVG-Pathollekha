@@ -66,7 +66,12 @@
 
         .data-card { background: var(--card-bg); border-left: 6px solid var(--accent-orange); padding: 25px; border-radius: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.06); margin-bottom: 20px; text-align: left; }
         
-        /* Table Styles */
+        .log-entry { border: 1px solid #E8F5E9; padding: 15px; margin-bottom: 15px; border-radius: 10px; transition: all 0.3s; background: #FAFAFA; cursor: pointer; }
+        .log-entry:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(0,0,0,0.1); background: white; border-color: var(--header-bg); }
+        .log-title { color: var(--header-bg); font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; }
+        .log-subtitle { color: var(--accent-orange); font-size: 0.9rem; margin-bottom: 10px; font-weight: 600; }
+        .log-desc { color: #424242; line-height: 1.5; }
+        
         .table-wrapper { overflow-x: auto; background: var(--card-bg); border-radius: 15px; box-shadow: 0 8px 25px rgba(46, 125, 50, 0.08); border: 1px solid var(--table-border); margin-bottom: 30px; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th, td { border: 1px solid var(--table-border); padding: 12px; text-align: center; vertical-align: middle; font-size: 0.95rem; position: relative; }
@@ -78,16 +83,13 @@
         .split-cell { display: flex; flex-direction: column; height: 100%; }
         .split-top { border-bottom: 1px solid var(--table-border); padding-bottom: 6px; margin-bottom: 6px; }
 
-        /* Dashboard Timetable specific styles */
         .cell-submitted { background-color: var(--cell-submitted); border: 2px solid #81C784; cursor: pointer; }
         .cell-submitted:hover { background-color: #C8E6C9; }
         .cell-unsubmitted { background-color: var(--cell-unsubmitted); opacity: 0.6; filter: grayscale(50%); }
         
-        /* Tooltip */
         .tooltip-text { visibility: hidden; width: 200px; background-color: rgba(46, 125, 50, 0.95); color: #fff; text-align: center; border-radius: 8px; padding: 10px; position: absolute; z-index: 100; bottom: 100%; left: 50%; margin-left: -100px; opacity: 0; transition: opacity 0.3s; font-size: 0.9rem; font-weight: normal; box-shadow: 0 4px 8px rgba(0,0,0,0.2); pointer-events: none; }
         .cell-submitted:hover .tooltip-text { visibility: visible; opacity: 1; }
 
-        /* Buttons & Forms */
         .btn-primary { background: var(--header-gradient); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: inline-block; margin: 10px 5px; box-shadow: 0 6px 12px rgba(46, 125, 50, 0.25); font-family: 'Inknut Antiqua', serif; transition: all 0.2s; }
         .btn-primary:active { transform: scale(0.95); }
         .btn-primary:disabled { background: #9E9E9E; cursor: not-allowed; box-shadow: none; }
@@ -109,13 +111,19 @@
         .filter-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; background: #E8F5E9; padding: 15px; border-radius: 10px; justify-content: center;}
         .filter-row .form-control { flex: 1; min-width: 150px; }
 
-        /* Download Report Card Styles */
         #reportSnapshotArea { background: white; padding: 30px; border-radius: 10px; display: none; margin-top: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
         .report-header { text-align: center; color: #D35400; font-family: 'Inknut Antiqua', serif; border-bottom: 3px solid #2E7D32; padding-bottom: 10px; margin-bottom: 20px; }
         .report-meta { text-align: center; color: #555; margin-bottom: 20px; font-weight: bold; }
         .report-table { width: 100%; border-collapse: collapse; }
         .report-table th, .report-table td { border: 1px solid #ccc; padding: 10px; text-align: left; font-size: 0.95rem; }
         .report-table th { background: #F1F8E9; color: #1B5E20; }
+        
+        .reminder-banner {
+            background: linear-gradient(135deg, #FFF3E0, #FFE0B2); border: 2px dashed #FF9800; border-radius: 15px;
+            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(230, 81, 0, 0.1); flex-wrap: wrap; gap: 15px;
+        }
+        .reminder-text { color: #E65100; font-weight: bold; font-size: 1.1rem; flex: 1; min-width: 250px; }
     </style>
 </head>
 <body>
@@ -126,6 +134,14 @@
 </header>
 
 <div class="container">
+
+    <!-- REMINDER BANNER (For one-time Setup) -->
+    <div class="reminder-banner" id="reminderBanner">
+        <div class="reminder-text">
+            ⏰ किं भवान् पाठोल्लेखं विस्मरति? ಪ್ರತಿದಿನ ರಾತ್ರಿ 8:00 ಗಂಟೆಗೆ ನೆನಪಿಸಲು ಅಲಾರಂ ಸೆಟ್ ಮಾಡಿಕೊಳ್ಳಿ!
+        </div>
+        <button class="btn-primary" style="margin:0; background:#FF9800; padding:10px 20px; font-size:1rem;" onclick="setupDailyReminder()">🔔 प्रतिदिन-स्मरणम् (Set Alarm)</button>
+    </div>
     
     <div id="mainTabs" class="tab-buttons">
         <button id="tabDashboard" class="btn-tab active" onclick="switchView('dashboardView', this)">ह्यस्तन-समयसारिणी (Dashboard)</button>
@@ -247,12 +263,10 @@
                 <button class="btn-primary btn-outline" onclick="goToAdminEntry()">पाठं सम्पादयतु (Admin Entry) ✍️</button>
             </div>
 
-            <!-- Report Snapshot Area for Image Download -->
             <div id="reportSnapshotArea">
                 <h2 class="report-header">वेदविज्ञानगुरुकुलम् - पाठोल्लेख-वरदिः</h2>
                 <div class="report-meta" id="reportMetaText"></div>
                 <table class="report-table" id="reportTableBody">
-                    <!-- Dynamic Rows -->
                 </table>
             </div>
             <div style="text-align: center; margin-top:15px; display:none;" id="downloadPhotoBtnDiv">
@@ -270,7 +284,6 @@
     <div id="yearlyView" class="view-section">
         <h2 class="section-title">वार्षिक-समयसारिणी (२०२६-२७)</h2>
         <div class="table-wrapper" id="yearlyTableContainer">
-            <!-- Table generated by JS -->
         </div>
     </div>
 
@@ -313,7 +326,8 @@
 <script>
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRxywNJTKN21s0AHqgxLGaC6i404UVN4s_am5TCMSLq0CC30v5R4HmTDvTT8vsVu5O/exec";
 
-    const timetableData = {"सचिनः": [{"gana": "तपः", "time": "06:30–07:55", "subject": "वेदः – कपिलः", "vibhaga": "सामान्य"}, {"gana": "तेजः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "11:00–11:55", "subject": "वेदान्तसारः", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "08:30–09:25", "subject": "वेदान्तपरिभाषा", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "01:30–02:25", "subject": "गीताभाष्यम्", "vibhaga": "वेदान्त"}], "सज्जयाचार्यः": [{"gana": "तपः", "time": "08:30–09:25", "subject": "संस्कृतवाङ्मयम्", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "11:00–11:55", "subject": "उपनिषद्भाष्यम्", "vibhaga": "वेदान्त"}], "विश्वेश्वराचार्यः": [{"gana": "तपः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}], "श्रीधराचार्यः": [{"gana": "तपः", "time": "02:30–03:25", "subject": "हितोपदेशः / पञ्चतन्त्रम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "03:30–04:25", "subject": "गीताभाष्यम्", "vibhaga": "वेदान्त"}, {"gana": "आज्ञः", "time": "06:30–07:55", "subject": "वेदः-जमदग्निः", "vibhaga": "सामान्य"}, {"gana": "आज्ञः", "time": "06:30–07:25", "subject": "सि.ले.सङ्ग्रहः", "vibhaga": "वेदान्त"}], "समीरणः": [{"gana": "तपः", "time": "03:30–04:25", "subject": "कण्ठपाठः", "vibhaga": "सामान्य"}], "चिन्मयः": [{"gana": "तेजः", "time": "06:30–07:55", "subject": "वेदः - कश्यपः", "vibhaga": "सामान्य"}, {"gana": "ओजः", "time": "06:30–07:25", "subject": "साहित्यसौष्ठवम्-२", "vibhaga": "सामान्य"}], "शिवसुब्रह्मण्यः": [{"gana": "तेजः", "time": "08:30–09:25", "subject": "व्याकरणम्", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "02:30–03:25", "subject": "कौमुदी", "vibhaga": "व्याकरण"}], "विनायकाचार्यः": [{"gana": "तेजः", "time": "11:00–11:55", "subject": "काव्यम्", "vibhaga": "सामान्य"}, {"gana": "तेजः", "time": "03:30–04:25", "subject": "तर्कसङ्ग्रहः", "vibhaga": "सामान्य"}, {"gana": "ओजः", "time": "06:30–07:55", "subject": "वेदः - अत्रिः", "vibhaga": "सामान्य"}], "आत्रेयः": [{"gana": "तेजः", "time": "02:30–03:25", "subject": "कण्ठपाठः", "vibhaga": "सामान्य"}], "गुरुप्रसादाचार्यः": [{"gana": "ओजः", "time": "08:30–09:25", "subject": "व्याकरणम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "06:30–07:55", "subject": "वेदः - भरद्वाजः", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "03:30–04:25", "subject": "कौमुदी-३ / प्रक्रिया", "vibhaga": "व्याकरण"}, {"gana": "प्रेयः", "time": "06:30–07:25", "subject": "परिभाषेन्दुशेखरः", "vibhaga": "व्याकरण"}], "आचार्यः": [{"gana": "ओजः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}, {"gana": "आज्ञः", "time": "05:15–06:00", "subject": "ब्रह्मसूत्रम्", "vibhaga": "वेदान्त"}], "प्राचार्यः": [{"gana": "ओजः", "time": "02:30–03:25", "subject": "साहित्यसौष्ठवम्-१", "vibhaga": "सामान्य"}, {"gana": "यशः", "time": "03:30–04:25", "subject": "ब्रह्मसूत्रम्", "vibhaga": "वेदान्त"}], "पृथ्वीराजाचार्यः": [{"gana": "ओजः", "time": "03:30–04:25", "subject": "न्यायबोधिनी", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "01:30–02:25", "subject": "न्यायप्रकाशः", "vibhaga": "सामान्य"}], "पृथ्वीराजः": [{"gana": "आज्ञः", "time": "06:30–07:55", "subject": "वेदः-वसिष्ठः", "vibhaga": "सामान्य"}], "अरुणाचार्यः": [{"gana": "वर्चः", "time": "08:30–09:25", "subject": "सिद्धान्तकौमुदी-१", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "11:00–11:55", "subject": "कौमुदी/प्रौढमनोरमा", "vibhaga": "व्याकरण"}, {"gana": "श्रेयः", "time": "01:30–02:25", "subject": "परिभाषेन्दुशेखरः", "vibhaga": "व्याकरण"}, {"gana": "आज्ञः", "time": "01:30–02:25", "subject": "परिभाषेन्दुशेखरः", "vibhaga": "व्याकरण"}, {"gana": "आज्ञः", "time": "02:30–03:25", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}], "अभिरामाचार्यः": [{"gana": "वर्चः", "time": "02:30–03:25", "subject": "दीपिका / मुक्तावली", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "08:30–09:25", "subject": "न्यायप्रकाशः", "vibhaga": "सामान्य"}], "सञ्जयः": [{"gana": "प्रेयः", "time": "06:30–07:55", "subject": "वेदः - विश्वामित्रः तथा गौतमः", "vibhaga": "सामान्य"}], "सञ्जयाचार्यः": [{"gana": "आज्ञः", "time": "03:30–04:25", "subject": "उपनिषद्भाष्यम्", "vibhaga": "वेदान्त"}], "रव्याचार्यः": [{"gana": "प्रेयः", "time": "02:30–03:25", "subject": "सिद्धान्तकौमुदी (कारकम्)", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "11:00–11:55", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}, {"gana": "श्रेयः", "time": "03:30–04:25", "subject": "प्रौढमनोरमा", "vibhaga": "व्याकरण"}, {"gana": "आज्ञः", "time": "03:30–04:25", "subject": "प्रौढमनोरमा", "vibhaga": "व्याकरण"}, {"gana": "यशः", "time": "02:30–03:25", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}], "महादेवाचार्यः": [{"gana": "प्रेयः", "time": "06:30–07:25", "subject": "गीताभाष्यम्", "vibhaga": "वेदान्त"}, {"gana": "श्रेयः", "time": "03:30–04:25", "subject": "सि.ले.सङ्ग्रहः", "vibhaga": "वेदान्त"}, {"gana": "आज्ञः", "time": "08:30–09:25", "subject": "अद्वैतसिद्धिः", "vibhaga": "वेदान्त"}, {"gana": "आज्ञः", "time": "02:30–03:25", "subject": "ब्रह्मसूत्रम्", "vibhaga": "वेदान्त"}], "शम्भु-आचार्यः": [{"gana": "आज्ञः", "time": "11:00–11:55", "subject": "प.ल.म./भूषणसारः", "vibhaga": "व्याकरण"}, {"gana": "यशः", "time": "08:30–09:25", "subject": "प.ल.म./भूषणसारः", "vibhaga": "व्याकरण"}], "सुब्रह्मण्य. आ.": [{"gana": "आज्ञः", "time": "06:30–07:25", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}], "विष्णुः": [{"gana": "यशः", "time": "06:30–07:55", "subject": "याज्ञवल्क्यः", "vibhaga": "सामान्य"}], "पुष्कराचार्यः": [{"gana": "यशः", "time": "03:30–04:25", "subject": "अद्वैतसिद्धिः", "vibhaga": "वेदान्त"}]};
+    // Timetable Data
+    const timetableData = {"सचिनः": [{"gana": "तपः", "time": "06:30–07:55", "subject": "वेदः – कपिलः", "vibhaga": "सामान्य"}, {"gana": "तेजः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "11:00–11:55", "subject": "वेदान्तसारः", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "08:30–09:25", "subject": "वेदान्तपरिभाषा", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "01:30–02:25", "subject": "गीताभाष्यम्", "vibhaga": "वेदान्त"}], "सज्जयाचार्यः": [{"gana": "तपः", "time": "08:30–09:25", "subject": "संस्कृतवाङ्मयम्", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "11:00–11:55", "subject": "उपनिषद्भाष्यम्", "vibhaga": "वेदान्त"}], "विश्वेश्वराचार्यः": [{"gana": "तपः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}], "श्रीधराचार्यः": [{"gana": "तपः", "time": "02:30–03:25", "subject": "हितोपदेशः / पञ्चतन्त्रम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "03:30–04:25", "subject": "गीताभाष्यम्", "vibhaga": "वेदान्त"}, {"gana": "आज्ञः", "time": "06:30–07:55", "subject": "वेदः-जमदग्निः", "vibhaga": "सामान्य"}, {"gana": "आज्ञः", "time": "06:30–07:25", "subject": "सि.ले.सङ्ग्रहः", "vibhaga": "वेदान्त"}], "समीरणः": [{"gana": "तपः", "time": "03:30–04:25", "subject": "कण्ठपाठः", "vibhaga": "सामान्य"}], "चिन्मयः": [{"gana": "तेजः", "time": "06:30–07:55", "subject": "वेदः - कश्यपः", "vibhaga": "सामान्य"}, {"gana": "ओजः", "time": "06:30–07:25", "subject": "साहित्यसौष्ठवम्-२", "vibhaga": "सामान्य"}], "शिवसुब्रह्मण्यः": [{"gana": "तेजः", "time": "08:30–09:25", "subject": "व्याकरणम्", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "02:30–03:25", "subject": "कौमुदी", "vibhaga": "व्याकरण"}], "विनायकाचार्यः": [{"gana": "तेजः", "time": "11:00–11:55", "subject": "काव्यम्", "vibhaga": "सामान्य"}, {"gana": "तेजः", "time": "03:30–04:25", "subject": "तर्कसङ्ग्रहः", "vibhaga": "सामान्य"}, {"gana": "ओजः", "time": "06:30–07:55", "subject": "वेदः - अत्रिः", "vibhaga": "सामान्य"}], "आत्रेयः": [{"gana": "तेजः", "time": "02:30–03:25", "subject": "कण्ठपाठः", "vibhaga": "सामान्य"}], "गुरुप्रसादाचार्यः": [{"gana": "ओजः", "time": "08:30–09:25", "subject": "व्याकरणम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "06:30–07:55", "subject": "वेदः - भरद्वाजः", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "03:30–04:25", "subject": "कौमुदी-३ / प्रक्रिया", "vibhaga": "व्याकरण"}, {"gana": "प्रेयः", "time": "06:30–07:25", "subject": "परिभाषेन्दुशेखरः", "vibhaga": "व्याकरण"}], "आचार्यः": [{"gana": "ओजः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}, {"gana": "वर्चः", "time": "01:30–02:25", "subject": "आङ्ग्लम्", "vibhaga": "सामान्य"}, {"gana": "आज्ञः", "time": "05:15–06:00", "subject": "ब्रह्मसूत्रम्", "vibhaga": "वेदान्त"}], "प्राचार्यः": [{"gana": "ओजः", "time": "02:30–03:25", "subject": "साहित्यसौष्ठवम्-१", "vibhaga": "सामान्य"}, {"gana": "यशः", "time": "03:30–04:25", "subject": "ब्रह्मसूत्रम्", "vibhaga": "वेदान्त"}], "पृथ्वीराजाचार्यः": [{"gana": "ओजः", "time": "03:30–04:25", "subject": "न्यायबोधिनी", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "01:30–02:25", "subject": "न्यायप्रकाशः", "vibhaga": "सामान्य"}], "पृथ्वीराजः": [{"gana": "आज्ञः", "time": "06:30–07:55", "subject": "वेदः-वसिष्ठः", "vibhaga": "सामान्य"}], "अरुणाचार्यः": [{"gana": "वर्चः", "time": "08:30–09:25", "subject": "सिद्धान्तकौमुदी-१", "vibhaga": "सामान्य"}, {"gana": "प्रेयः", "time": "11:00–11:55", "subject": "कौमुदी/प्रौढमनोरमा", "vibhaga": "व्याकरण"}, {"gana": "श्रेयः", "time": "01:30–02:25", "subject": "परिभाषेन्दुशेखरः", "vibhaga": "व्याकरण"}, {"gana": "आज्ञः", "time": "01:30–02:25", "subject": "परिभाषेन्दुशेखरः", "vibhaga": "व्याकरण"}, {"gana": "आज्ञः", "time": "02:30–03:25", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}], "अभिरामाचार्यः": [{"gana": "वर्चः", "time": "02:30–03:25", "subject": "दीपिका / मुक्तावली", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "08:30–09:25", "subject": "न्यायप्रकाशः", "vibhaga": "सामान्य"}], "सञ्जयः": [{"gana": "प्रेयः", "time": "06:30–07:55", "subject": "वेदः - विश्वामित्रः तथा गौतमः", "vibhaga": "सामान्य"}], "सञ्जयाचार्यः": [{"gana": "आज्ञः", "time": "03:30–04:25", "subject": "उपनिषद्भाष्यम् / सि.ले.सङ्ग्रह-२", "vibhaga": "वेदान्त"}], "रव्याचार्यः": [{"gana": "प्रेयः", "time": "02:30–03:25", "subject": "सिद्धान्तकौमुदी (कारकम्)", "vibhaga": "सामान्य"}, {"gana": "श्रेयः", "time": "11:00–11:55", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}, {"gana": "श्रेयः", "time": "03:30–04:25", "subject": "प्रौढमनोरमा", "vibhaga": "व्याकरण"}, {"gana": "आज्ञः", "time": "03:30–04:25", "subject": "प्रौढमनोरमा", "vibhaga": "व्याकरण"}, {"gana": "यशः", "time": "02:30–03:25", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}], "महादेवाचार्यः": [{"gana": "प्रेयः", "time": "06:30–07:25", "subject": "गीताभाष्यम्", "vibhaga": "वेदान्त"}, {"gana": "श्रेयः", "time": "03:30–04:25", "subject": "सि.ले.सङ्ग्रहः", "vibhaga": "वेदान्त"}, {"gana": "आज्ञः", "time": "08:30–09:25", "subject": "अद्वैतसिद्धिः", "vibhaga": "वेदान्त"}, {"gana": "आज्ञः", "time": "02:30–03:25", "subject": "ब्रह्मसूत्रम्", "vibhaga": "वेदान्त"}], "शम्भु-आचार्यः": [{"gana": "आज्ञः", "time": "11:00–11:55", "subject": "प.ल.म./भूषणसारः", "vibhaga": "व्याकरण"}, {"gana": "यशः", "time": "08:30–09:25", "subject": "प.ल.म./भूषणसारः", "vibhaga": "व्याकरण"}], "सुब्रह्मण्य. आ.": [{"gana": "आज्ञः", "time": "06:30–07:25", "subject": "महाभाष्यम्", "vibhaga": "व्याकरण"}], "विष्णुः": [{"gana": "यशः", "time": "06:30–07:55", "subject": "याज्ञवल्क्यः", "vibhaga": "सामान्य"}], "पुष्कराचार्यः": [{"gana": "यशः", "time": "03:30–04:25", "subject": "अद्वैतसिद्धिः", "vibhaga": "वेदान्त"}]};
     
     const acharyaPasswords = {
         "सचिनः": "9739581142", "सज्जयाचार्यः": "8762181320", "विश्वेश्वराचार्यः": "7338056216",
@@ -343,6 +357,49 @@
         document.getElementById('filterTo').value = today.toISOString().split('T')[0];
     };
 
+    // --- ALARM/REMINDER FUNCTION ---
+    function setupDailyReminder() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        
+        const dtStart = yyyy + mm + dd + "T200000"; // 8 PM local time
+        const dtEnd = yyyy + mm + dd + "T201000";
+        const websiteUrl = "https://ravitelangarylp-alt.github.io/VVG-Pathollekha/";
+        
+        const icsData = "BEGIN:VCALENDAR\n" +
+            "VERSION:2.0\n" +
+            "PRODID:-//Veda Vijnana Gurukulam//Pathollekh//EN\n" +
+            "BEGIN:VEVENT\n" +
+            "DTSTART:" + dtStart + "\n" +
+            "DTEND:" + dtEnd + "\n" +
+            "RRULE:FREQ=DAILY\n" +
+            "SUMMARY:पाठोल्लेखः - स्मरणम्\n" +
+            "DESCRIPTION:आचार्य, कृपया अद्यतन-पाठस्य विवरणम् अत्र लिखतु।\nलिंक: " + websiteUrl + "\n" +
+            "BEGIN:VALARM\n" +
+            "TRIGGER:-PT0M\n" +
+            "ACTION:DISPLAY\n" +
+            "DESCRIPTION:Reminder\n" +
+            "END:VALARM\n" +
+            "END:VEVENT\n" +
+            "END:VCALENDAR";
+
+        const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Pathollekh_Reminder.ics';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        // Hide banner after clicking
+        document.getElementById('reminderBanner').style.display = 'none';
+        alert("ಅಲಾರಂ ಫೈಲ್ ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ. ಅದನ್ನು ಓಪನ್ ಮಾಡಿ 'Save' ಒತ್ತಿದರೆ, ಪ್ರತಿದಿನ ರಾತ್ರಿ 8 ಗಂಟೆಗೆ ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ರಿಮೈಂಡರ್ ಬರುತ್ತದೆ!");
+    }
+
     function populateAcharyaDropdowns() {
         const selectModal = document.getElementById('acharyaSelect');
         const selectFilter = document.getElementById('filterAcharya');
@@ -359,7 +416,7 @@
                 fetchedLogs = data;
                 checkHolidays();
                 updateTodayView();
-                renderYesterdayTimetableGrid(); // Creates the dashboard grid
+                renderYesterdayTimetableGrid(); 
             })
             .catch(error => {
                 console.error("Error fetching data: ", error);
@@ -408,7 +465,6 @@
         document.getElementById('detailsModal').style.display = 'flex';
     }
 
-    // --- RENDER YESTERDAY'S DASHBOARD GRID ---
     function renderYesterdayTimetableGrid() {
         const today = new Date();
         const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
@@ -426,14 +482,12 @@
         }
         bannerDash.style.display = "none";
 
-        // Map yesterday's logs for quick lookup
         const yMap = {};
         let yesterdayCompletedClasses = 0;
         let yesterdayUniqueAcharyas = new Set();
         
         fetchedLogs.forEach(log => {
             if (log['दिनाङ्कः (Date)'] && log['दिनाङ्कः (Date)'].startsWith(yesterdayStr) && log['विषयः (Subject)'] !== "अनध्यायः") {
-                // create key: Gana | Time | Acharya
                 let timeStr = log['समयः (Time)'].replace('-', '–');
                 const key = log['गणः (Class/Gana)'] + '|' + timeStr + '|' + log['आचार्यः (Acharya)'];
                 yMap[key] = log['विवरणम् (Lesson Description)'];
@@ -443,7 +497,6 @@
             }
         });
 
-        // Build the Grid (same structure as yearly, but with colors)
         const times = ["06:30–07:55", "08:30–09:25", "11:00–11:55", "01:30–02:25", "02:30–03:25", "03:30–04:25", "06:30–07:25"];
         const ganas = ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "आज्ञः", "यशः"];
         
@@ -506,7 +559,6 @@
         html += `</tbody></table></div>`;
         document.getElementById('yesterdayDataContainer').innerHTML = html;
 
-        // Analytics Updates
         const totalExpectedDailyClasses = Object.values(timetableData).reduce((acc, curr) => acc + curr.length, 0);
         const totalAcharyas = Object.keys(timetableData).length;
 
@@ -691,7 +743,6 @@
         });
     }
 
-    // --- VISUAL REPORT GENERATION & DOWNLOAD ---
     function generateReport() {
         const fromDate = document.getElementById('filterFrom').value;
         const toDate = document.getElementById('filterTo').value;
@@ -712,7 +763,6 @@
 
         if(filtered.length === 0) return alert("No data found for this filter!");
 
-        // Build Visual Report
         let metaText = `दिनाङ्कः: ${fromDate} तः ${toDate} पर्यन्तम्`;
         if(acharya) metaText += ` | आचार्यः: ${acharya}`;
         if(gana) metaText += ` | गणः: ${gana}`;
@@ -746,7 +796,6 @@
         });
     }
 
-    // --- YEARLY TIMETABLE ---
     function renderYearlyTimetable() {
         const times = ["06:30–07:55", "08:30–09:25", "11:00–11:55", "01:30–02:25", "02:30–03:25", "03:30–04:25", "06:30–07:25"];
         const ganas = ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "आज्ञः", "यशः"];
