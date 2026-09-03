@@ -3,10 +3,27 @@ let isHolidayToday = false; let isHolidayYesterday = false;
 
 window.onload = function() {
     populateAcharyaDropdowns(); renderYearlyTimetable(); fetchDataFromGoogleSheets();
-    const today = new Date(); const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+    const today = new Date(); 
+    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    const dp = document.getElementById('dashboardDatePicker');
+    dp.max = today.toISOString().split('T')[0];
+    dp.value = yesterdayStr;
+
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
     document.getElementById('filterFrom').value = firstDay; document.getElementById('filterTo').value = today.toISOString().split('T')[0];
     document.getElementById('notifStartDate').value = today.toISOString().split('T')[0]; document.getElementById('notifEndDate').value = today.toISOString().split('T')[0];
 };
+
+function getSanskritDayAndDate(dateStr) {
+    const d = new Date(dateStr);
+    const days = ["भानुवासरः", "सोमवासरः", "मङ्गलवासरः", "बुधवासरः", "गुरुवासरः", "शुक्रवासरः", "शनिवासरः"];
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy} - ${days[d.getDay()]}`;
+}
 
 function setupDailyReminder() {
     const now = new Date(); const yyyy = now.getFullYear(); const mm = String(now.getMonth() + 1).padStart(2, '0'); const dd = String(now.getDate()).padStart(2, '0');
@@ -25,14 +42,12 @@ function populateAcharyaDropdowns() {
 function fetchDataFromGoogleSheets() {
     fetch(GOOGLE_SCRIPT_URL).then(res => res.json()).then(data => {
         fetchedLogs = data.logs || []; fetchedNotifications = data.notifications || [];
-        checkHolidays(); updateTodayView(); renderYesterdayTimetableGrid(); displayActiveNotifications();
-        
-        // If already in form (after submit), refresh the dropdown
+        updateTodayView(); changeDashboardDate(); displayActiveNotifications();
         if(currentLoggedIn && document.getElementById('entryFormSection').classList.contains('active')) {
              populateClassDropdown(currentLoggedIn, document.getElementById('dateInput').value);
         }
     }).catch(err => {
-        console.error(err); document.getElementById('yesterdayDataContainer').innerHTML = "<div class='log-desc' style='color:red;'>दत्तांश-प्राप्तौ दोषः जातः।</div>";
+        console.error(err); document.getElementById('yesterdayDataContainer').innerHTML = "<div class='log-desc' style='color:red;'>दत्तांश-प्राप्तौ दोषः जातः। (ದಯವಿಟ್ಟು Apps Script ಅನ್ನು New Version ಆಗಿ Deploy ಮಾಡಿ!)</div>";
     });
 }
 
@@ -73,13 +88,6 @@ function submitNotification() {
     }).catch(err => { alert("दोषः जातः!"); btn.innerText = orig; btn.disabled = false; });
 }
 
-function checkHolidays() {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1); const yesterdayStr = yesterday.toISOString().split('T')[0];
-    isHolidayToday = fetchedLogs.some(log => log['दिनाङ्कः (Date)'] && log['दिनाङ्कः (Date)'].startsWith(todayStr) && log['विषयः (Subject)'] === "अनध्यायः");
-    isHolidayYesterday = fetchedLogs.some(log => log['दिनाङ्कः (Date)'] && log['दिनाङ्कः (Date)'].startsWith(yesterdayStr) && log['विषयः (Subject)'] === "अनध्यायः");
-}
-
 function updateTodayView() {
     const todayStr = new Date().toISOString().split('T')[0]; let todayHtml = "";
     fetchedLogs.forEach(log => {
@@ -112,30 +120,43 @@ function getExpectedStudents(gana, subject, vibhaga, acharya) {
     }
 }
 
-function renderYesterdayTimetableGrid() {
-    const today = new Date(); const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1); const yesterdayStr = yesterday.toISOString().split('T')[0];
+function changeDashboardDate() {
+    const dateStr = document.getElementById('dashboardDatePicker').value;
+    if(dateStr) renderTimetableForDate(dateStr);
+}
+
+function renderTimetableForDate(targetDateStr) {
+    const formattedHeading = getSanskritDayAndDate(targetDateStr);
+    document.getElementById('dashboardDateHeading').innerText = `समयसारिणी (${formattedHeading})`;
+
     const bannerDash = document.getElementById('holidayBannerDashboard');
     const missedUL = document.getElementById('missedLogsList'); const absentUL = document.getElementById('absentStudentsList');
+    const otherTasksContainer = document.getElementById('otherTasksContainer');
 
-    if(isHolidayYesterday) {
-        bannerDash.style.display = "block"; bannerDash.innerText = "ह्यः अनध्यायः / विशेषकार्यक्रमः आसीत्।";
+    let isHolidayOnTarget = fetchedLogs.some(log => log['दिनाङ्कः (Date)'] && log['दिनाङ्कः (Date)'].startsWith(targetDateStr) && log['विषयः (Subject)'] === "अनध्यायः");
+
+    if(isHolidayOnTarget) {
+        bannerDash.style.display = "block"; bannerDash.innerText = "अस्मिन् दिने अनध्यायः / विशेषकार्यक्रमः आसीत्। (Holiday)";
         document.getElementById('yesterdayDataContainer').innerHTML = ""; 
+        otherTasksContainer.innerHTML = "";
         missedUL.innerHTML = "<li>अनध्यायः (Holiday)</li>"; absentUL.innerHTML = "<li>अनध्यायः (Holiday)</li>";
+        document.getElementById('statSubmitted').innerText = "-"; document.getElementById('statPresent').innerText = "-"; document.getElementById('statCompleted').innerText = "-";
         return;
     }
     bannerDash.style.display = "none";
     
-    const yMap = {}; 
+    const yMap = {}; let yComp = 0; let yAch = new Set();
     fetchedLogs.forEach(log => {
-        if (log['दिनाङ्कः (Date)'] && log['दिनाङ्कः (Date)'].startsWith(yesterdayStr) && log['विषयः (Subject)'] !== "अनध्यायः") {
+        if (log['दिनाङ्कः (Date)'] && log['दिनाङ्कः (Date)'].startsWith(targetDateStr) && log['विषयः (Subject)'] !== "अनध्यायः") {
             if(log['गणः (Class/Gana)'] !== "इतरकार्यम्") {
                yMap[log['गणः (Class/Gana)'] + '|' + log['समयः (Time)'].replace('-', '–') + '|' + log['आचार्यः (Acharya)']] = {desc: log['विवरणम् (Lesson Description)'], att: log['उपस्थिताः (Present)']};
             }
+            yComp++; if(log['आचार्यः (Acharya)']) yAch.add(log['आचार्यः (Acharya)']);
         }
     });
 
     const times = ["06:30–07:55", "08:30–09:25", "11:00–11:55", "01:30–02:25", "02:30–03:25", "03:30–04:25", "06:30–07:25"];
-    const ganas = ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "आज्ञः", "यशः"];
+    const ganas = ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "भ्राजः", "यशः"];
     const tableGrid = {}; ganas.forEach(g => tableGrid[g] = {});
     
     for (const [ach, classes] of Object.entries(timetableData)) {
@@ -189,18 +210,57 @@ function renderYesterdayTimetableGrid() {
     }); html += `</tbody></table></div>`;
     document.getElementById('yesterdayDataContainer').innerHTML = html;
 
+    // --- NEW: Render Other Tasks (Kalah 1, 2, 3) as an Expandable Toggle ---
+    let otherTasksHtml = `<button onclick="const kt = document.getElementById('kalahTasksDiv'); kt.style.display = kt.style.display === 'none' ? 'flex' : 'none';" style="width:100%; background:#E8F5E9; border:1px solid #81C784; color:#2E7D32; font-family:'Laila', sans-serif; font-size:1.1rem; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px; transition:0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">➕ इतरकार्याणि पश्यतु (View Other Tasks / Kalah)</button>`;
+    
+    otherTasksHtml += `<div id="kalahTasksDiv" style="display:none; flex-wrap:wrap; gap:15px; margin-top:15px;">`;
+    let hasOtherTasks = false;
+
+    for (const [ach, classes] of Object.entries(timetableData)) {
+        classes.forEach(cls => {
+            if(cls.gana === "इतरकार्यम्") {
+                hasOtherTasks = true;
+                let submittedLog = fetchedLogs.find(l => l['दिनाङ्कः (Date)'].startsWith(targetDateStr) && l['आचार्यः (Acharya)'] === ach && l['गणः (Class/Gana)'] === 'इतरकार्यम्' && l['विषयः (Subject)'] === cls.subject);
+                
+                if(submittedLog) {
+                    otherTasksHtml += `<div class="data-card" style="flex:1; min-width:220px; border-left-color:#4CAF50; padding:15px; margin-bottom:0; background:#FAFAFA;">
+                        <div style="font-weight:bold; color:#1B5E20; margin-bottom:5px; font-size:1.1rem;">${ach} <span style="color:#555; font-size:0.9rem;">(${cls.subject})</span></div>
+                        <div style="font-size:0.95rem; color:#424242; border-top:1px dashed #C8E6C9; padding-top:5px; margin-top:5px;">✅ ${escapeQuotes(submittedLog['विवरणम् (Lesson Description)'])}</div>
+                    </div>`;
+                } else {
+                    otherTasksHtml += `<div class="data-card" style="flex:1; min-width:220px; border-left-color:#D32F2F; padding:15px; margin-bottom:0; background:#FFF5F5;">
+                        <div style="font-weight:bold; color:#D32F2F; margin-bottom:5px; font-size:1.1rem;">${ach} <span style="color:#555; font-size:0.9rem;">(${cls.subject})</span></div>
+                        <div style="font-size:0.95rem; color:#D32F2F; border-top:1px dashed #FFCDD2; padding-top:5px; margin-top:5px;">❌ न उल्लिखितम् (Not Filled / Taken)</div>
+                    </div>`;
+                }
+            }
+        });
+    }
+    otherTasksHtml += `</div>`;
+    otherTasksContainer.innerHTML = hasOtherTasks ? otherTasksHtml : "";
+
+    // Lists
     if(missedList.length === 0) { missedUL.innerHTML = "<li style='color:green; font-weight:bold;'>सर्वे पाठाः सम्पन्नाः (All logs submitted)</li>"; } 
     else { missedUL.innerHTML = missedList.map(item => `<li>${item}</li>`).join(""); }
 
     let absentKeys = Object.keys(absentTally);
     if(absentKeys.length === 0) { absentUL.innerHTML = "<li style='color:green; font-weight:bold;'>सर्वे छात्राः उपस्थिताः (All students present)</li>"; } 
     else { absentKeys.sort((a,b) => absentTally[b] - absentTally[a]); absentUL.innerHTML = absentKeys.map(name => `<li><b>${name}</b> : ${absentTally[name]} वर्गेषु अनुपस्थितः</li>`).join(""); }
+
+    // Analytics percentage
+    let totDaily = 0; Object.values(timetableData).forEach(arr => { arr.forEach(c => { if(c.gana !== 'इतरकार्यम्') totDaily++; }); });
+    const totAch = Object.keys(acharyaPasswords).length;
+    let sPct = totDaily > 0 ? Math.round((yComp / totDaily) * 100) : 0;
+    let pPct = totAch > 0 ? Math.round((yAch.size / totAch) * 100) : 0;
+    if(sPct > 100) sPct = 100; if(pPct > 100) pPct = 100;
+    document.getElementById('statSubmitted').innerText = translateNumbersToDevanagari(sPct) + "%"; document.getElementById('circleSubmitted').style.background = `conic-gradient(#4CAF50 ${sPct}%, #E8F5E9 0)`;
+    document.getElementById('statPresent').innerText = translateNumbersToDevanagari(pPct) + "%"; document.getElementById('circlePresent').style.background = `conic-gradient(#0288D1 ${pPct}%, #E1F5FE 0)`;
+    document.getElementById('statCompleted').innerText = translateNumbersToDevanagari(sPct) + "%"; document.getElementById('circleCompleted').style.background = `conic-gradient(#E65100 ${sPct}%, #FFF3E0 0)`;
 }
 
 function goToDashboard() { document.getElementById('mainTabs').style.display = 'flex'; switchView('dashboardView', document.getElementById('tabDashboard')); }
 function switchView(viewId, btnElement) { document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active')); if(btnElement) { document.querySelectorAll('.btn-tab').forEach(el => el.classList.remove('active')); btnElement.classList.add('active'); } document.getElementById(viewId).classList.add('active'); }
 
-// ಹೊಸತು: ಲಾಗಿನ್ ಸ್ಕಿಪ್ ಲಾಜಿಕ್ (ಒಮ್ಮೆ ಪಿನ್ ಹಾಕಿದ್ದರೆ ಮತ್ತೆ ಕೇಳುವುದಿಲ್ಲ)
 function openLoginModal() { 
     if (currentLoggedIn) {
         switchView('entryFormSection', null);
@@ -248,7 +308,6 @@ function verifyAcharya() {
     } else { alert("असमीचीनः कूटशब्दः!"); }
 }
 
-// **ಹೊಸತು: ಲಾಕ್ ಮಾಡುವ ಲಾಜಿಕ್ ಮತ್ತು ಸ್ಟೇಟಸ್ ಡಿಸ್ಪ್ಲೇ**
 function populateClassDropdown(acharyaName, dateStr) {
     const select = document.getElementById('classSelect');
     select.innerHTML = '<option value="">-- कक्षां चिनोतु --</option>';
@@ -383,7 +442,7 @@ function sendDataToSheet(date, acharya, gana, time, subject, description, attend
 }
 
 function deleteRecord(actionType, rowIdx) {
-    if(!confirm("ಖಚಿತವಾಗಿಯೂ ಈ ಮಾಹಿತಿಯನ್ನು ಅಳಿಸಬೇಕೇ? (Are you sure you want to delete this?)")) return;
+    if(!confirm("ಖಚಿತವಾಗಿಯೂ ಈ ಮಾಹಿತಿಯನ್ನು अಳಿಸಬೇಕೇ? (Are you sure you want to delete this?)")) return;
     const formData = new URLSearchParams(); formData.append('action', actionType); formData.append('rowIdx', rowIdx);
     fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData }).then(res => res.text()).then(data => {
         alert("ಅಳಿಸಲಾಗಿದೆ! (Deleted Successfully)"); fetchDataFromGoogleSheets();
@@ -445,7 +504,7 @@ function downloadFilteredCSV() {
 
 function renderYearlyTimetable() {
     const times = ["06:30–07:55", "08:30–09:25", "11:00–11:55", "01:30–02:25", "02:30–03:25", "03:30–04:25", "06:30–07:25"];
-    const ganas = ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "आज्ञः", "यशः"];
+    const ganas = ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "भ्राजः", "यशः"];
     const tableGrid = {}; ganas.forEach(g => tableGrid[g] = {});
     for (const [ach, classes] of Object.entries(timetableData)) {
         classes.forEach(cls => { if(!tableGrid[cls.gana]) return; let clsTime = cls.time.replace('-', '–'); if(!tableGrid[cls.gana][clsTime]) tableGrid[cls.gana][clsTime] = []; tableGrid[cls.gana][clsTime].push({ach: ach, sub: cls.subject, vib: cls.vibhaga}); });

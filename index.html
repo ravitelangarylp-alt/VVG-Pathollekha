@@ -6,7 +6,6 @@
     <title>पाठोल्लेखः - वेदविज्ञानगुरुकुलम्</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Yatra One Font ಸೇರಿಸಲಾಗಿದೆ -->
     <link href="https://fonts.googleapis.com/css2?family=Laila:wght@400;600;700&family=Yatra+One&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -29,20 +28,32 @@
     </div>
     
     <div id="mainTabs" class="tab-buttons">
-        <button id="tabDashboard" class="btn-tab active" onclick="switchView('dashboardView', this)">ह्यस्तन-समयसारिणी (Dashboard)</button>
+        <button id="tabDashboard" class="btn-tab active" onclick="switchView('dashboardView', this)">समयसारिणी (Dashboard)</button>
         <button id="tabToday" class="btn-tab" onclick="switchView('todayView', this)">अद्यतन-पाठोल्लेखः</button>
         <button id="tabYearly" class="btn-tab" onclick="switchView('yearlyView', this)">वार्षिक-समयसारिणी</button>
     </div>
 
     <!-- 1. DASHBOARD VIEW -->
     <div id="dashboardView" class="view-section active">
-        <h2 class="section-title">ह्यस्तन-समयसारिणी (Yesterday's Logs)</h2>
+        
+        <!-- NEW: Date Picker and Dynamic Heading -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; gap:15px;">
+            <h2 class="section-title" id="dashboardDateHeading" style="margin: 0; color:#2E7D32; font-family:'Yatra One', cursive;">ह्यस्तन-समयसारिणी</h2>
+            <div style="display: flex; align-items: center; gap: 10px; background: #E8F5E9; padding: 8px 15px; border-radius: 8px; border:1px solid #A5D6A7;">
+                <label style="font-weight: bold; color: #1B5E20; font-size:0.9rem; margin:0;">📅 अन्य-दिनाङ्कं पश्यतु (Go to Date):</label>
+                <input type="date" id="dashboardDatePicker" class="form-control" style="width: auto; padding: 5px; margin:0;" onchange="changeDashboardDate()">
+            </div>
+        </div>
+
         <div id="holidayBannerDashboard" style="display:none;" class="holiday-banner"></div>
         <div id="yesterdayDataContainer"><div class="loading-spinner">दत्तांशः आगच्छन् अस्ति...</div></div>
         
+        <!-- NEW: Other Tasks (Kalah) Container -->
+        <div id="otherTasksContainer" style="margin-top: 25px;"></div>
+        
         <div class="dashboard-grid" style="margin-top: 40px; grid-template-columns: 1fr 1fr;">
             <div class="data-card" style="border-left-color: #D32F2F;">
-                <h3 style="color:#D32F2F; margin-top:0; border-bottom:1px solid #FFCDD2; padding-bottom:10px; font-family:'Laila', sans-serif;">अकृताः पाठाः (Missed Logs)</h3>
+                <h3 style="color:#D32F2F; margin-top:0; border-bottom:1px solid #FFCDD2; padding-bottom:10px; font-family:'Laila', sans-serif;">अकृताः पाठाः (Missed / Not Taken)</h3>
                 <ul id="missedLogsList" style="padding-left:20px; color:#424242; font-size:1rem; line-height:1.6;">
                     <li style="color:#888;">दत्तांशः आगच्छन् अस्ति...</li>
                 </ul>
@@ -56,8 +67,14 @@
             </div>
         </div>
 
+        <div class="dashboard-grid" style="margin-top: 30px;">
+            <div class="stat-card"><h3>पाठ-पूरकाः आचार्याः</h3><div class="circle-progress" id="circleSubmitted"><span id="statSubmitted">०%</span></div></div>
+            <div class="stat-card"><h3>उपस्थिताः आचार्याः</h3><div class="circle-progress" id="circlePresent"><span id="statPresent">०%</span></div></div>
+            <div class="stat-card"><h3>सम्पन्नाः पाठाः</h3><div class="circle-progress" id="circleCompleted"><span id="statCompleted">०%</span></div></div>
+        </div>
+
         <div style="text-align: center; margin-top: 30px;">
-            <a class="admin-link" onclick="openAdminModal()">प्रबन्धक-प्रवेशः (Admin Login)</a>
+            <a class="admin-link" onclick="openAdminModal()" style="cursor:pointer; color:#D35400; font-weight:bold; text-decoration:underline;">प्रबन्धक-प्रवेशः (Admin Login)</a>
         </div>
     </div>
 
@@ -82,14 +99,11 @@
 
         <div class="form-card" id="mainFormCard">
             <div class="form-group"><label>दिनाङ्कः (Date)</label><input type="date" id="dateInput" class="form-control" readonly></div>
-            
             <div class="form-group">
                 <label>कक्षा (Class / Gana)</label>
                 <select id="classSelect" class="form-control" onchange="renderAttendanceChecklist()"></select>
-                <!-- Status Box for Pending/Completed Classes -->
                 <div id="submissionStatus" style="font-size:1rem; margin-top:10px; font-weight:bold; background:#FAFAFA; padding:8px; border-radius:5px; border:1px dashed #A5D6A7; text-align:center;"></div>
             </div>
-            
             <div class="form-group"><label>पाठस्य विवरणम् (Lesson Description)</label><textarea id="descriptionInput" class="form-control" rows="5"></textarea></div>
             
             <div class="form-group" id="attendanceSection" style="display:none;">
@@ -113,7 +127,7 @@
             <div class="filter-row">
                 <select id="filterAcharya" class="form-control"><option value="">-- सर्वे आचार्याः (All) --</option></select>
                 <select id="filterGana" class="form-control">
-                    <option value="">-- सर्वे गणाः (All) --</option><option value="तपः">तपः</option><option value="तेजः">तेजः</option><option value="ओजः">ओजः</option><option value="वर्चः">वर्चः</option><option value="प्रेयः">प्रेयः</option><option value="श्रेयः">श्रेयः</option><option value="आज्ञः">आज्ञः</option><option value="यशः">यशः</option><option value="इतरकार्यम्">इतरकार्यम्</option>
+                    <option value="">-- सर्वे गणाः (All) --</option><option value="तपः">तपः</option><option value="तेजः">तेजः</option><option value="ओजः">ओजः</option><option value="वर्चः">वर्चः</option><option value="प्रेयः">प्रेयः</option><option value="श्रेयः">श्रेयः</option><option value="भ्राजः">भ्राजः</option><option value="यशः">यशः</option><option value="इतरकार्यम्">इतरकार्यम् (Other/Kalah)</option>
                 </select>
                 <input type="text" id="filterStudent" class="form-control" placeholder="छात्रस्य नाम (Student Name)">
             </div>
