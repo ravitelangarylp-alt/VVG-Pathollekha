@@ -1,8 +1,8 @@
 /* style.css - ಶುಭ್ರವಾದ ಹಸಿರು ಮತ್ತು ಬಿಳಿ ವಿನ್ಯಾಸ (Clean Green & White Theme) */
 :root {
-    --bg-color: #F8FBF8; /* ಕಣ್ಣಿಗೆ ತಂಪಾದ ತಿಳಿ ಹಸಿರು/ಬಿಳಿ ಹಿನ್ನೆಲೆ */
+    --bg-color: #F8FBF8;
     --header-bg: #FFFFFF; 
-    --primary-green: #2E7D32; /* ಮುಖ್ಯ ಹಸಿರು ಬಣ್ಣ */
+    --primary-green: #2E7D32;
     --accent-orange: #E65100; 
     --text-dark: #1B5E20; 
     --table-border: #E0E0E0; 
@@ -18,11 +18,8 @@ body { font-family: 'Laila', sans-serif; background-color: var(--bg-color); colo
 
 h1, h2, h3, th { font-family: 'Yatra One', cursive; }
 
-/* Clean White Header */
 header { background: #FFFFFF; color: var(--primary-green); text-align: center; padding: 25px 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; cursor: pointer; position: sticky; top: 0; z-index: 50; border-bottom: 1px solid #E8F5E9;}
 header h1 { margin: 0; font-size: 2.2rem; letter-spacing: 1px; text-shadow: none; }
-
-/* Header Date Fix for White Background */
 #headerTodayDate { color: var(--primary-green) !important; background: #E8F5E9 !important; border: 1px solid #C8E6C9 !important; }
 
 .container { max-width: 1200px; margin: 0 auto; padding: 25px 20px; }
@@ -69,7 +66,7 @@ td { font-weight: 600; transition: background 0.3s ease; }
 .btn-primary:active { transform: scale(0.95); }
 .btn-primary:disabled { background: #BDBDBD; cursor: not-allowed; box-shadow: none; }
 .btn-outline { background: transparent; border: 2px solid var(--primary-green); color: var(--primary-green); box-shadow: none; }
-.btn-danger { background: linear-gradient(135deg, #E53935, #EF5350); }
+.btn-danger { background: linear-gradient(135deg, #E53935, #EF5350); color: white; }
 
 .form-card { background: var(--card-bg); padding: 30px; border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.04); max-width: 600px; margin: 0 auto; border: 1px solid var(--table-border); }
 .form-group { margin-bottom: 20px; text-align: left; }
@@ -84,16 +81,6 @@ td { font-weight: 600; transition: background 0.3s ease; }
 .loading-spinner { text-align: center; color: var(--primary-green); font-size: 1.2rem; padding: 20px; font-weight: bold;}
 .holiday-banner { background: #FFEBEE; color: #C62828; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; border: 1px solid #FFCDD2; margin-bottom: 20px; font-size: 1.1rem; }
 
-.filter-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; background: #FAFAFA; padding: 15px; border-radius: 10px; justify-content: center; border: 1px solid #EEEEEE;}
-.filter-row .form-control { flex: 1; min-width: 150px; }
-
-#reportSnapshotArea { background: white; padding: 25px; border-radius: 10px; display: none; margin-top: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.05); border: 1px solid #E0E0E0;}
-.report-header { text-align: center; color: var(--accent-orange); font-family: 'Yatra One', cursive; border-bottom: 2px solid var(--primary-green); padding-bottom: 10px; margin-bottom: 15px; }
-.report-meta { text-align: center; color: #555; margin-bottom: 20px; font-weight: bold; font-size: 0.95rem;}
-.report-table { width: 100%; border-collapse: collapse; }
-.report-table th, .report-table td { border: 1px solid #E0E0E0; padding: 10px; text-align: left; font-size: 0.9rem; }
-.report-table th { background: #F1F8E9; color: var(--primary-green); font-weight:bold;}
-
 .reminder-banner { background: linear-gradient(135deg, #FFF8E1, #FFE0B2); border: 1px dashed #FFB74D; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 4px 8px rgba(230, 81, 0, 0.08); flex-wrap: wrap; gap: 15px; }
 .reminder-text { color: #E65100; font-weight: bold; font-size: 1.05rem; flex: 1; min-width: 250px; }
 
@@ -107,3 +94,30 @@ td { font-weight: 600; transition: background 0.3s ease; }
 .student-checkbox:hover { background: #F1F8E9; border-color:#A5D6A7;}
 .student-checkbox input { margin-right: 8px; cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary-green);}
 .student-checkbox label { margin: 0; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: #2E3B32; }
+
+/* --- Advanced Admin Reports Styles --- */
+.report-nav-tabs { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid var(--table-border); flex-wrap: wrap;}
+.rep-tab { background: transparent; border: none; padding: 10px 20px; font-size: 1.1rem; font-weight: bold; color: #757575; cursor: pointer; transition: 0.3s; margin-bottom: -2px; border-bottom: 3px solid transparent; font-family: 'Laila', sans-serif;}
+.rep-tab.active { color: var(--primary-green); border-bottom: 3px solid var(--primary-green); }
+
+.report-sub-tabs { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; padding: 15px; background: #F1F8E9; border-radius: 8px; border: 1px solid #C8E6C9; }
+.report-sub-tabs label { font-weight: 600; color: #1B5E20; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.95rem;}
+.report-sub-tabs input { accent-color: var(--primary-green); width: 16px; height: 16px; cursor: pointer;}
+
+.filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; background: #FAFAFA; padding: 20px; border-radius: 10px; border: 1px solid #E0E0E0; }
+.filter-col label { display: block; font-weight: bold; color: var(--primary-green); margin-bottom: 6px; font-size: 0.9rem; }
+.filter-col .form-control { padding: 8px; font-size: 0.95rem; border-color: #BDBDBD; }
+
+.active-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { background: #E8F5E9; color: #2E7D32; padding: 5px 12px; border-radius: 16px; font-size: 0.85rem; font-weight: bold; border: 1px solid #A5D6A7; display: flex; align-items: center; gap: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
+.chip span { color: #555; font-weight: normal; }
+
+.summary-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+.summary-card { background: white; padding: 15px; border-radius: 10px; border: 1px solid #E0E0E0; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); border-top: 4px solid var(--primary-green); }
+.summary-card h4 { margin: 0 0 10px 0; color: #757575; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.summary-card .val { font-size: 1.8rem; font-weight: bold; color: var(--primary-green); font-family: 'Yatra One', cursive; margin:0; }
+
+.report-header { color: var(--accent-orange); font-family: 'Yatra One', cursive; border-bottom: 2px solid var(--primary-green); padding-bottom: 10px; margin-bottom: 15px; }
+.report-table { width: 100%; border-collapse: collapse; background: white;}
+.report-table th, .report-table td { border: 1px solid #E0E0E0; padding: 10px; text-align: left; font-size: 0.9rem; }
+.report-table th { background: #F1F8E9; color: var(--primary-green); font-weight:bold; }

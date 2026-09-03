@@ -7,7 +7,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Laila:wght@400;600;700&family=Yatra+One&display=swap" rel="stylesheet">
+    
+    <!-- Export Libraries: PNG, Excel, PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,7 +21,6 @@
 <header onclick="goToDashboard()" title="मुख्यपृष्ठम् प्रति गच्छतु (Go to Home)">
     <h1>पाठोल्लेखः</h1>
     <div style="font-size: 1.2rem; margin-top: 5px; font-weight: 600; font-family: 'Laila', sans-serif; opacity: 0.9;">वेदविज्ञानगुरुकुलम्</div>
-    <!-- NEW: ಇವತ್ತಿನ ದಿನಾಂಕವನ್ನು ತೋರಿಸುವ ಜಾಗ -->
     <div id="headerTodayDate" style="font-size: 0.95rem; margin-top: 8px; font-weight: 700; color: #E8F5E9; background: rgba(0,0,0,0.1); display: inline-block; padding: 4px 15px; border-radius: 20px; font-family: 'Laila', sans-serif;">अद्यतन-दिनाङ्कः: ...</div>
 </header>
 
@@ -39,7 +44,6 @@
     <div id="dashboardView" class="view-section active">
         
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; gap:15px;">
-            <!-- NEW: ಫಾಂಟ್ ಸೈಜ್ ಚಿಕ್ಕದು ಮಾಡಲಾಗಿದೆ (font-size: 1.4rem) -->
             <h2 class="section-title" id="dashboardDateHeading" style="margin: 0; color:#2E7D32; font-family:'Yatra One', cursive; font-size: 1.4rem;">ह्यस्तन-समयसारिणी</h2>
             <div style="display: flex; align-items: center; gap: 10px; background: #FAFAFA; padding: 8px 15px; border-radius: 8px; border:1px solid #E0E0E0;">
                 <label style="font-weight: bold; color: #1B5E20; font-size:0.9rem; margin:0;">📅 अन्य-दिनाङ्कं पश्यतु (Go to Date):</label>
@@ -119,39 +123,106 @@
         </div>
     </div>
 
-    <!-- 4. ADMIN PANEL -->
+    <!-- 4. ADMIN PANEL (ADVANCED REPORTS) -->
     <div id="adminPanelView" class="view-section">
-        <h2 class="section-title">दत्तांश-निर्वहणम् (Admin Panel)</h2>
-        <div class="form-card" style="max-width: 900px;">
-            <p style="text-align:center; color:#555; margin-bottom:20px;">आवश्यकं दत्तांशं चित्वा विक्ष्यताम् (Filter & View / Delete Logs)</p>
-            <div class="filter-row"><input type="date" id="filterFrom" class="form-control"><input type="date" id="filterTo" class="form-control"></div>
-            <div class="filter-row">
-                <select id="filterAcharya" class="form-control"><option value="">-- सर्वे आचार्याः (All) --</option></select>
-                <select id="filterGana" class="form-control">
-                    <option value="">-- सर्वे गणाः (All) --</option><option value="तपः">तपः</option><option value="तेजः">तेजः</option><option value="ओजः">ओजः</option><option value="वर्चः">वर्चः</option><option value="प्रेयः">प्रेयः</option><option value="श्रेयः">श्रेयः</option><option value="भ्राजः">भ्राजः</option><option value="यशः">यशः</option><option value="इतरकार्यम्">इतरकार्यम् (Other/Kalah)</option>
-                </select>
-                <input type="text" id="filterStudent" class="form-control" placeholder="छात्रस्य नाम (Student Name)">
+        <h2 class="section-title">दत्तांश-निर्वहणम् (Advanced Reports Dashboard)</h2>
+        
+        <div class="form-card" style="max-width: 1100px; padding: 20px;">
+            
+            <!-- Report Type Navigation -->
+            <div class="report-nav-tabs">
+                <button class="rep-tab active" onclick="switchReportCategory('lesson', this)">📚 Lesson Reports</button>
+                <button class="rep-tab" onclick="switchReportCategory('attendance', this)">👤 Attendance Reports</button>
             </div>
             
+            <div class="report-sub-tabs" id="lessonSubTabs">
+                <label><input type="radio" name="repType" value="acharya_wise" checked onchange="handleReportTypeChange()"> Acharya-wise Report</label>
+                <label><input type="radio" name="repType" value="gana_wise" onchange="handleReportTypeChange()"> Gana-wise Report</label>
+                <label><input type="radio" name="repType" value="gana_class_wise" onchange="handleReportTypeChange()"> Gana + Class Report</label>
+                <label><input type="radio" name="repType" value="dept_all" onchange="handleReportTypeChange()"> Dept-wise (All)</label>
+                <label><input type="radio" name="repType" value="dept_vedanta" onchange="handleReportTypeChange()"> Dept: Vedanta</label>
+                <label><input type="radio" name="repType" value="dept_vyakarana" onchange="handleReportTypeChange()"> Dept: Vyakarana</label>
+                <label><input type="radio" name="repType" value="advanced_combined" onchange="handleReportTypeChange()"> Advanced / Combined Log</label>
+            </div>
+            <div class="report-sub-tabs" id="attendanceSubTabs" style="display:none;">
+                <label><input type="radio" name="repType" value="student_date_wise" onchange="handleReportTypeChange()"> Student Date-wise</label>
+                <label><input type="radio" name="repType" value="student_class_wise" onchange="handleReportTypeChange()"> Student Class-wise</label>
+                <label><input type="radio" name="repType" value="student_overall" checked onchange="handleReportTypeChange()"> Student Overall</label>
+                <label><input type="radio" name="repType" value="student_class_date" onchange="handleReportTypeChange()"> Student + Class + Date</label>
+            </div>
+
+            <!-- Cascading Filters -->
+            <div class="filter-grid" id="advancedFilters">
+                <div class="filter-col">
+                    <label>From Date</label>
+                    <input type="date" id="advFilterFrom" class="form-control">
+                </div>
+                <div class="filter-col">
+                    <label>To Date</label>
+                    <input type="date" id="advFilterTo" class="form-control">
+                </div>
+                <div class="filter-col">
+                    <label>Department (विभागः)</label>
+                    <select id="advFilterDept" class="form-control" onchange="populateCascadingFilters('dept')"></select>
+                </div>
+                <div class="filter-col">
+                    <label>Gana (गणः)</label>
+                    <select id="advFilterGana" class="form-control" onchange="populateCascadingFilters('gana')"></select>
+                </div>
+                <div class="filter-col">
+                    <label>Class/Subject (विषयः)</label>
+                    <select id="advFilterSubject" class="form-control" onchange="populateCascadingFilters('subject')"></select>
+                </div>
+                <div class="filter-col">
+                    <label>Acharya (आचार्यः)</label>
+                    <select id="advFilterAcharya" class="form-control" onchange="populateCascadingFilters('acharya')"></select>
+                </div>
+                <div class="filter-col">
+                    <label>Student (छात्रः)</label>
+                    <select id="advFilterStudent" class="form-control"></select>
+                </div>
+            </div>
+
+            <!-- Action Buttons & Chips -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 15px;">
+                <div id="activeFilterChips" class="active-chips"></div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary btn-outline" style="margin:0; padding: 8px 15px; font-size:1rem;" onclick="resetAdvancedFilters()">Reset Filters ↺</button>
+                    <button class="btn-primary" style="margin:0; padding: 8px 25px; font-size:1rem;" onclick="generateAdvancedReport()">Apply Filters ⚡</button>
+                </div>
+            </div>
+            
+            <hr style="border: 0; height: 1px; background: #E0E0E0; margin: 25px 0;">
+
+            <!-- Report Summary Cards -->
+            <div id="reportSummaryContainer" class="summary-cards-grid" style="display:none;"></div>
+
+            <!-- Report Table & Export Area -->
+            <div id="reportSnapshotArea" style="overflow-x: auto; display:none; margin-top:20px; background: white; padding: 25px; border-radius: 10px; border: 1px solid #E0E0E0;">
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <h2 class="report-header" id="reportHeaderTitle" style="margin:0; border:none; text-align:left;">Report Preview</h2>
+                    <div style="display:flex; align-items:center; gap:10px; background: #F5F5F5; padding: 5px 10px; border-radius: 8px; border: 1px solid #CCC;">
+                        <label style="font-weight:bold; color:#333; margin:0; font-size:0.9rem;">Download Report ▼</label>
+                        <select id="exportFormatSelect" class="form-control" style="width: auto; padding: 5px; margin:0; border-color:#999; font-size:0.9rem;">
+                            <option value="pdf">Download as PDF</option>
+                            <option value="excel">Download as Excel (.xlsx)</option>
+                            <option value="png">Download as PNG</option>
+                        </select>
+                        <button class="btn-primary" style="background:#1565C0; margin:0; padding: 6px 12px; font-size:0.9rem;" onclick="executeDownload()">Download 📥</button>
+                    </div>
+                </div>
+                <!-- Delete controls will only show in Advanced log -->
+                <div id="deleteControlHeader" style="display:none; text-align:right; font-size:0.8rem; color:#D32F2F; margin-bottom:5px;">* Delete option available in Advanced Log only</div>
+                <table class="report-table" id="reportTableBody"></table>
+            </div>
+
+            <!-- Admin Nav Tools -->
+            <hr style="border: 0; height: 1px; background: #C8E6C9; margin: 30px 0;">
             <div style="text-align: center; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
-                <button class="btn-primary" onclick="generateReport()">वरदिं पश्यतु (View Report) 📊</button>
                 <button class="btn-primary btn-outline" onclick="goToAdminEntry()">पाठं सम्पादयतु (Admin Entry) ✍️</button>
                 <button class="btn-primary" style="background:#8E24AA;" onclick="renderAdminNotifications()">सूचनाः पश्यतु (Notifications) 📢</button>
                 <button class="btn-primary" style="background:#424242;" onclick="goToDashboard()">मुख्यपृष्ठम् (Home) 🏠</button>
             </div>
-
-            <div id="reportSnapshotArea" style="overflow-x: auto; display:none; margin-top:20px;">
-                <h2 class="report-header" id="reportHeaderTitle">वेदविज्ञानगुरुकुलम् - पाठोल्लेख-वरदिः</h2>
-                <div class="report-meta" id="reportMetaText"></div>
-                <table class="report-table" id="reportTableBody"></table>
-            </div>
-
-            <div style="text-align: center; margin-top:15px; display:none;" id="downloadPhotoBtnDiv">
-                <button class="btn-primary" style="background:#00796B;" onclick="downloadAsPhoto()">फोटो रूपेण अवतीर्यताम् 🖼️</button>
-                <button class="btn-primary" style="background:#1565C0;" onclick="downloadFilteredCSV()">CSV रूपेण 📥</button>
-            </div>
-            <hr style="border: 0; height: 1px; background: #C8E6C9; margin: 30px 0;">
-            <button class="btn-primary" style="background:#0277BD; width:100%;" onclick="window.open('https://docs.google.com/spreadsheets/d/1vTJHSdTrlkcX0d59ftrj9rTudQpESXWAPxNC96zwTgo/edit', '_blank')">Google Sheet उद्घाटयतु 🔗</button>
         </div>
     </div>
 
