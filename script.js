@@ -4,12 +4,14 @@ let isHolidayToday = false; let isHolidayYesterday = false;
 window.onload = function() {
     populateAcharyaDropdowns(); renderYearlyTimetable(); fetchDataFromGoogleSheets();
     const today = new Date(); 
+    const todayStrForHeader = getSanskritDayAndDate(today.toISOString().split('T')[0]);
+    const headerDateElem = document.getElementById('headerTodayDate');
+    if(headerDateElem) { headerDateElem.innerText = `अद्यतन-दिनाङ्कः: ${todayStrForHeader}`; }
+
     const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split('T')[0];
-    
     const dp = document.getElementById('dashboardDatePicker');
-    dp.max = today.toISOString().split('T')[0];
-    dp.value = yesterdayStr;
+    dp.max = today.toISOString().split('T')[0]; dp.value = yesterdayStr;
 
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
     document.getElementById('filterFrom').value = firstDay; document.getElementById('filterTo').value = today.toISOString().split('T')[0];
@@ -25,13 +27,18 @@ function getSanskritDayAndDate(dateStr) {
     return `${dd}/${mm}/${yyyy} - ${days[d.getDay()]}`;
 }
 
+function translateNumbersToDevanagari(num) { 
+    const digits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९']; 
+    return String(num).split('').map(d => digits[d] || d).join(''); 
+}
+
 function setupDailyReminder() {
     const now = new Date(); const yyyy = now.getFullYear(); const mm = String(now.getMonth() + 1).padStart(2, '0'); const dd = String(now.getDate()).padStart(2, '0');
     const dtStart = yyyy + mm + dd + "T200000"; const dtEnd = yyyy + mm + dd + "T201000"; const websiteUrl = window.location.href;
     const icsData = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Veda Vijnana Gurukulam//Pathollekh//EN\nBEGIN:VEVENT\nDTSTART:" + dtStart + "\nDTEND:" + dtEnd + "\nRRULE:FREQ=DAILY\nSUMMARY:पाठोल्लेखः - स्मरणम्\nDESCRIPTION:आचार्य, कृपया अद्यतन-पाठस्य विवरणम् अत्र लिखतु।\nलिंक: " + websiteUrl + "\nBEGIN:VALARM\nTRIGGER:-PT0M\nACTION:DISPLAY\nDESCRIPTION:Reminder\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR";
     const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' }); const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'Pathollekh_Reminder.ics'; document.body.appendChild(a); a.click(); document.body.removeChild(a); window.URL.revokeObjectURL(url);
-    document.getElementById('reminderBanner').style.display = 'none'; alert("ಅಲಾರಂ ಫೈಲ್ ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ. 'Save' ಒತ್ತಿದರೆ ರಿಮೈಂಡರ್ ಬರುತ್ತದೆ!");
+    document.getElementById('reminderBanner').style.display = 'none'; alert("अलारम्-सञ्चिका (Alarm file) अवतीर्णा अस्ति। कृपया 'Save' नोदयतु!");
 }
 
 function populateAcharyaDropdowns() {
@@ -77,7 +84,7 @@ function displayActiveNotifications() {
 function submitNotification() {
     const msg = document.getElementById('notifMessage').value; const sDate = document.getElementById('notifStartDate').value; const eDate = document.getElementById('notifEndDate').value;
     const sTime = document.getElementById('notifStartTime').value; const eTime = document.getElementById('notifEndTime').value;
-    if(!msg.trim() || !sDate || !eDate) return alert("ದಯವಿಟ್ಟು ಸಂದೇಶ ಮತ್ತು ದಿನಾಂಕವನ್ನು ನಮೂದಿಸಿ!");
+    if(!msg.trim() || !sDate || !eDate) return alert("कृपया सूचनां दिनाङ्कं च लिखतु!");
 
     const formData = new URLSearchParams(); formData.append('action', 'addNotification'); formData.append('acharya', currentLoggedIn || "Admin"); formData.append('message', msg); formData.append('startDate', sDate); formData.append('endDate', eDate); formData.append('startTime', sTime); formData.append('endTime', eTime);
     const btn = document.getElementById('notifSubmitBtn'); const orig = btn.innerText; btn.innerText = "समर्प्यते..."; btn.disabled = true;
@@ -101,19 +108,22 @@ function updateTodayView() {
 function escapeQuotes(str) { return str ? str.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n') : ''; }
 function showDescModal(sub, desc, att) { 
     document.getElementById('detailSubject').innerText = sub; document.getElementById('detailDescription').innerText = desc; 
-    document.getElementById('detailAttendance').innerText = att || "ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ"; document.getElementById('detailsModal').style.display = 'flex'; 
+    document.getElementById('detailAttendance').innerText = att || "ಮಾಹಿತिः नास्ति"; document.getElementById('detailsModal').style.display = 'flex'; 
 }
 
-function getExpectedStudents(gana, subject, vibhaga, acharya) {
-    if(gana === "इतरकार्यम्") return [];
+// NEW: ಮರ್ಜ್ ಕ್ಲಾಸ್‌ಗಳ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಹುಡುಕುವ ಲಾಜಿಕ್ (Merged Class Logic)
+function getExpectedStudents(ganaStr, subject, vibhaga, acharya) {
+    if(ganaStr === "इतरकार्यम्") return [];
+    const ganas = ganaStr.split(' + '); // ಉದಾ: "श्रेयः + भ्राजः"
     const isVeda = subject.includes('वेदः');
+    
     if (isVeda) {
         const vedaGanaMatch = vedaAcharyaMapping[acharya];
         if(vedaGanaMatch) return studentsData.filter(s => s.vedapatha === vedaGanaMatch);
         return [];
     } else {
         return studentsData.filter(s => {
-            if(s.gana !== gana) return false;
+            if(!ganas.includes(s.gana)) return false;
             if(vibhaga === 'सामान्य') return true;
             return s.vibhaga === vibhaga;
         });
@@ -127,7 +137,7 @@ function changeDashboardDate() {
 
 function renderTimetableForDate(targetDateStr) {
     const formattedHeading = getSanskritDayAndDate(targetDateStr);
-    document.getElementById('dashboardDateHeading').innerText = `समयसारिणी (${formattedHeading})`;
+    document.getElementById('dashboardDateHeading').innerText = `समयसारिणी (दिनाङ्कः: ${formattedHeading})`;
 
     const bannerDash = document.getElementById('holidayBannerDashboard');
     const missedUL = document.getElementById('missedLogsList'); const absentUL = document.getElementById('absentStudentsList');
@@ -149,6 +159,7 @@ function renderTimetableForDate(targetDateStr) {
     fetchedLogs.forEach(log => {
         if (log['दिनाङ्कः (Date)'] && log['दिनाङ्कः (Date)'].startsWith(targetDateStr) && log['विषयः (Subject)'] !== "अनध्यायः") {
             if(log['गणः (Class/Gana)'] !== "इतरकार्यम्") {
+               // ಡೇಟಾಬೇಸ್‌ನಲ್ಲಿ "श्रेयः + भ्राजः" ಎಂದೇ ಇರುತ್ತದೆ.
                yMap[log['गणः (Class/Gana)'] + '|' + log['समयः (Time)'].replace('-', '–') + '|' + log['आचार्यः (Acharya)']] = {desc: log['विवरणम् (Lesson Description)'], att: log['उपस्थिताः (Present)']};
             }
             yComp++; if(log['आचार्यः (Acharya)']) yAch.add(log['आचार्यः (Acharya)']);
@@ -159,12 +170,18 @@ function renderTimetableForDate(targetDateStr) {
     const ganas = ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "भ्राजः", "यशः"];
     const tableGrid = {}; ganas.forEach(g => tableGrid[g] = {});
     
+    // NEW: ಮರ್ಜ್ ಕ್ಲಾಸ್‌ಗಳನ್ನು ಟೇಬಲ್‌ನ ಆಯಾ ಕಾಲಮ್‌ಗೆ ಹಾಕುವ ಲಾಜಿಕ್
     for (const [ach, classes] of Object.entries(timetableData)) {
         classes.forEach(cls => {
-            if(!tableGrid[cls.gana]) return; 
+            if(cls.gana === "इतरकार्यम्") return;
             let clsTime = cls.time.replace('-', '–');
-            if(!tableGrid[cls.gana][clsTime]) tableGrid[cls.gana][clsTime] = [];
-            tableGrid[cls.gana][clsTime].push({ach: ach, sub: cls.subject, vib: cls.vibhaga});
+            let targetGanas = cls.gana.split(' + ');
+            targetGanas.forEach(g => {
+                if(tableGrid[g]) {
+                    if(!tableGrid[g][clsTime]) tableGrid[g][clsTime] = [];
+                    tableGrid[g][clsTime].push({ach: ach, sub: cls.subject, vib: cls.vibhaga, originalGana: cls.gana});
+                }
+            });
         });
     }
 
@@ -172,6 +189,7 @@ function renderTimetableForDate(targetDateStr) {
     times.forEach(t => html += `<th>${t}</th>`); html += `</tr></thead><tbody>`;
     
     let missedList = []; let absentTally = {};
+    let alreadyCountedMissed = new Set(); // To avoid duplicate missed entries for merged classes
 
     ganas.forEach(gana => {
         html += `<tr><th>${gana}</th>`;
@@ -180,29 +198,29 @@ function renderTimetableForDate(targetDateStr) {
             if(!classes || classes.length === 0) { html += `<td></td>`; }
             else if (classes.length === 1) {
                 const cls = classes[0]; const vClass = cls.vib === 'सामान्य' ? 'samanya' : (cls.vib === 'वेदान्त' ? 'vedanta' : 'vyakarana');
-                const key = gana + '|' + time + '|' + cls.ach;
+                const key = cls.originalGana + '|' + time + '|' + cls.ach;
                 if(yMap[key]) { 
                     html += `<td class="cell-submitted ${vClass}" onclick="showDescModal('${cls.sub}', '${escapeQuotes(yMap[key].desc)}', '${escapeQuotes(yMap[key].att)}')"><div class="tooltip-text">${yMap[key].desc}</div>${cls.sub} <span class="acharya-name" style="color:#1B5E20; font-weight:bold;">${cls.ach}</span></td>`; 
-                    let expected = getExpectedStudents(gana, cls.sub, cls.vib, cls.ach);
+                    let expected = getExpectedStudents(cls.originalGana, cls.sub, cls.vib, cls.ach);
                     let presentStr = yMap[key].att || "";
-                    expected.forEach(st => { if(!presentStr.includes(st.name)) { absentTally[st.name] = (absentTally[st.name] || 0) + 1; } });
+                    expected.forEach(st => { if(st.gana === gana && !presentStr.includes(st.name)) { absentTally[st.name] = (absentTally[st.name] || 0) + 1; } });
                 } else { 
                     html += `<td class="cell-unsubmitted ${vClass}">${cls.sub} <span class="acharya-name">${cls.ach}</span></td>`; 
-                    missedList.push(`<b>${cls.ach}</b>: ${gana} (${cls.sub})`);
+                    if(!alreadyCountedMissed.has(key)) { missedList.push(`<b>${cls.ach}</b>: ${cls.originalGana} (${cls.sub})`); alreadyCountedMissed.add(key); }
                 }
             } else {
                 html += `<td style="padding:0;"><div class="split-cell">`;
                 classes.forEach((cls, idx) => {
                     const vClass = cls.vib === 'सामान्य' ? 'samanya' : (cls.vib === 'वेदान्त' ? 'vedanta' : 'vyakarana');
-                    const btmBorder = idx === 0 ? 'split-top' : ''; const key = gana + '|' + time + '|' + cls.ach;
+                    const btmBorder = idx === 0 ? 'split-top' : ''; const key = cls.originalGana + '|' + time + '|' + cls.ach;
                     if(yMap[key]) { 
                         html += `<div class="${btmBorder} cell-submitted ${vClass}" style="padding:5px; height:100%;" onclick="showDescModal('${cls.sub}', '${escapeQuotes(yMap[key].desc)}', '${escapeQuotes(yMap[key].att)}')"><div class="tooltip-text">${yMap[key].desc}</div>${cls.sub} <span class="acharya-name" style="color:#1B5E20; font-weight:bold;">${cls.ach}</span></div>`; 
-                        let expected = getExpectedStudents(gana, cls.sub, cls.vib, cls.ach);
+                        let expected = getExpectedStudents(cls.originalGana, cls.sub, cls.vib, cls.ach);
                         let presentStr = yMap[key].att || "";
-                        expected.forEach(st => { if(!presentStr.includes(st.name)) { absentTally[st.name] = (absentTally[st.name] || 0) + 1; } });
+                        expected.forEach(st => { if(st.gana === gana && !presentStr.includes(st.name)) { absentTally[st.name] = (absentTally[st.name] || 0) + 1; } });
                     } else { 
                         html += `<div class="${btmBorder} cell-unsubmitted ${vClass}" style="padding:5px; height:100%;">${cls.sub} <span class="acharya-name">${cls.ach}</span></div>`; 
-                        missedList.push(`<b>${cls.ach}</b>: ${gana} (${cls.sub})`);
+                        if(!alreadyCountedMissed.has(key)) { missedList.push(`<b>${cls.ach}</b>: ${cls.originalGana} (${cls.sub})`); alreadyCountedMissed.add(key); }
                     }
                 }); html += `</div></td>`;
             }
@@ -210,7 +228,6 @@ function renderTimetableForDate(targetDateStr) {
     }); html += `</tbody></table></div>`;
     document.getElementById('yesterdayDataContainer').innerHTML = html;
 
-    // --- NEW: Render Other Tasks (Kalah 1, 2, 3) as an Expandable Toggle ---
     let otherTasksHtml = `<button onclick="const kt = document.getElementById('kalahTasksDiv'); kt.style.display = kt.style.display === 'none' ? 'flex' : 'none';" style="width:100%; background:#E8F5E9; border:1px solid #81C784; color:#2E7D32; font-family:'Laila', sans-serif; font-size:1.1rem; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px; transition:0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">➕ इतरकार्याणि पश्यतु (View Other Tasks / Kalah)</button>`;
     
     otherTasksHtml += `<div id="kalahTasksDiv" style="display:none; flex-wrap:wrap; gap:15px; margin-top:15px;">`;
@@ -239,18 +256,17 @@ function renderTimetableForDate(targetDateStr) {
     otherTasksHtml += `</div>`;
     otherTasksContainer.innerHTML = hasOtherTasks ? otherTasksHtml : "";
 
-    // Lists
     if(missedList.length === 0) { missedUL.innerHTML = "<li style='color:green; font-weight:bold;'>सर्वे पाठाः सम्पन्नाः (All logs submitted)</li>"; } 
     else { missedUL.innerHTML = missedList.map(item => `<li>${item}</li>`).join(""); }
 
     let absentKeys = Object.keys(absentTally);
     if(absentKeys.length === 0) { absentUL.innerHTML = "<li style='color:green; font-weight:bold;'>सर्वे छात्राः उपस्थिताः (All students present)</li>"; } 
-    else { absentKeys.sort((a,b) => absentTally[b] - absentTally[a]); absentUL.innerHTML = absentKeys.map(name => `<li><b>${name}</b> : ${absentTally[name]} वर्गेषु अनुपस्थितः</li>`).join(""); }
+    else { absentKeys.sort((a,b) => absentTally[b] - absentTally[a]); absentUL.innerHTML = absentKeys.map(name => `<li><b>${name}</b> : ${translateNumbersToDevanagari(absentTally[name])} वर्गेषु अनुपस्थितः</li>`).join(""); }
 
-    // Analytics percentage
-    let totDaily = 0; Object.values(timetableData).forEach(arr => { arr.forEach(c => { if(c.gana !== 'इतरकार्यम्') totDaily++; }); });
+    let totDaily = 0; Object.values(timetableData).forEach(arr => { arr.forEach(c => { if(c.gana !== 'इतरकार्यम्') { let gn = c.gana.split(' + '); totDaily += gn.length; } }); });
+    let submittedDaily = 0; Object.values(tableGrid).forEach(times => { Object.values(times).forEach(classes => { classes.forEach(c => { const key = c.originalGana + '|' + c.time + '|' + c.ach; if(yMap[key]) submittedDaily++; }); }); });
     const totAch = Object.keys(acharyaPasswords).length;
-    let sPct = totDaily > 0 ? Math.round((yComp / totDaily) * 100) : 0;
+    let sPct = totDaily > 0 ? Math.round((submittedDaily / totDaily) * 100) : 0;
     let pPct = totAch > 0 ? Math.round((yAch.size / totAch) * 100) : 0;
     if(sPct > 100) sPct = 100; if(pPct > 100) pPct = 100;
     document.getElementById('statSubmitted').innerText = translateNumbersToDevanagari(sPct) + "%"; document.getElementById('circleSubmitted').style.background = `conic-gradient(#4CAF50 ${sPct}%, #E8F5E9 0)`;
@@ -442,10 +458,10 @@ function sendDataToSheet(date, acharya, gana, time, subject, description, attend
 }
 
 function deleteRecord(actionType, rowIdx) {
-    if(!confirm("ಖಚಿತವಾಗಿಯೂ ಈ ಮಾಹಿತಿಯನ್ನು अಳಿಸಬೇಕೇ? (Are you sure you want to delete this?)")) return;
+    if(!confirm("ಖಚಿತವಾಗಿಯೂ ಈ ಮಾಹಿತಿಯನ್ನು ಅಳಿಸಬೇಕೇ? (Are you sure you want to delete this?)")) return;
     const formData = new URLSearchParams(); formData.append('action', actionType); formData.append('rowIdx', rowIdx);
     fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData }).then(res => res.text()).then(data => {
-        alert("ಅಳಿಸಲಾಗಿದೆ! (Deleted Successfully)"); fetchDataFromGoogleSheets();
+        alert("अपाकृतम्! (Deleted Successfully)"); fetchDataFromGoogleSheets();
         if(actionType === 'deleteLog') generateReport(); 
         if(actionType === 'deleteNotification') renderAdminNotifications();
     }).catch(err => alert("दोषः जातः!"));
@@ -456,17 +472,17 @@ function generateReport() {
     const fromDate = document.getElementById('filterFrom').value; const toDate = document.getElementById('filterTo').value; const acharya = document.getElementById('filterAcharya').value; const gana = document.getElementById('filterGana').value; 
     const studentName = document.getElementById('filterStudent') ? document.getElementById('filterStudent').value.trim().toLowerCase() : "";
 
-    if(!fromDate || !toDate) return alert("Please select a date range!");
+    if(!fromDate || !toDate) return alert("कृपया दिनाङ्कं चिनोतु!");
     let filtered = fetchedLogs.filter(log => {
         if(!log['दिनाङ्कः (Date)']) return false; const logDate = log['दिनाङ्कः (Date)'].split('T')[0];
         if (logDate < fromDate || logDate > toDate) return false; 
         if (acharya && log['आचार्यः (Acharya)'] !== acharya) return false; 
-        if (gana && log['गणः (Class/Gana)'] !== gana) return false; 
+        if (gana && log['गणः (Class/Gana)'] !== gana && !log['गणः (Class/Gana)'].includes(gana)) return false; 
         if (studentName) { let att = log['उपस्थिताः (Present)'] || ""; if(!att.toLowerCase().includes(studentName)) return false; }
         return true;
     });
     
-    if(filtered.length === 0) return alert("No data found for this filter!");
+    if(filtered.length === 0) return alert("दत्तांशः नास्ति! (No data found)");
     let metaText = `दिनाङ्कः: ${fromDate} तः ${toDate} पर्यन्तम्`; if(acharya) metaText += ` | आचार्यः: ${acharya}`; if(gana) metaText += ` | गणः: ${gana}`; document.getElementById('reportMetaText').innerText = metaText;
     
     let tableHtml = `<tr><th>दिनाङ्कः</th><th>आचार्यः</th><th>गणः</th><th>समयः</th><th>विषयः</th><th>विवरणम्</th><th>उपस्थिताः</th><th>Action</th></tr>`;
@@ -479,7 +495,7 @@ function generateReport() {
 
 function renderAdminNotifications() {
     document.getElementById('reportHeaderTitle').innerText = "वेदविज्ञानगुरुकुलम् - सक्रियाः सूचनाः (Notifications)"; document.getElementById('reportMetaText').innerText = "All Active & Past Notifications";
-    if(fetchedNotifications.length === 0) return alert("No Notifications found!");
+    if(fetchedNotifications.length === 0) return alert("सूचनाः न सन्ति! (No Notifications)");
     let tableHtml = `<tr><th>Timestamp</th><th>आचार्यः</th><th>Message</th><th>Start Date</th><th>End Date</th><th>Action</th></tr>`;
     fetchedNotifications.forEach(row => { 
         let sDate = row['StartDate'] ? row['StartDate'].split('T')[0] : ''; let eDate = row['EndDate'] ? row['EndDate'].split('T')[0] : '';
@@ -495,20 +511,33 @@ function downloadAsPhoto() {
 
 function downloadFilteredCSV() {
     const fromDate = document.getElementById('filterFrom').value; const toDate = document.getElementById('filterTo').value; const acharya = document.getElementById('filterAcharya').value; const gana = document.getElementById('filterGana').value; const studentName = document.getElementById('filterStudent') ? document.getElementById('filterStudent').value.trim().toLowerCase() : "";
-    let filtered = fetchedLogs.filter(log => { if(!log['दिनाङ्कः (Date)']) return false; const logDate = log['दिनाङ्कः (Date)'].split('T')[0]; if (logDate < fromDate || logDate > toDate) return false; if (acharya && log['आचार्यः (Acharya)'] !== acharya) return false; if (gana && log['गणः (Class/Gana)'] !== gana) return false; if (studentName) { let att = log['उपस्थिताः (Present)'] || ""; if(!att.toLowerCase().includes(studentName)) return false; } return true; });
+    let filtered = fetchedLogs.filter(log => { if(!log['दिनाङ्कः (Date)']) return false; const logDate = log['दिनाङ्कः (Date)'].split('T')[0]; if (logDate < fromDate || logDate > toDate) return false; if (acharya && log['आचार्यः (Acharya)'] !== acharya) return false; if (gana && log['गणः (Class/Gana)'] !== gana && !log['गणः (Class/Gana)'].includes(gana)) return false; if (studentName) { let att = log['उपस्थिताः (Present)'] || ""; if(!att.toLowerCase().includes(studentName)) return false; } return true; });
     const headers = ["दिनाङ्कः (Date)", "आचार्यः (Acharya)", "गणः (Class/Gana)", "समयः (Time)", "विषयः (Subject)", "विवरणम् (Lesson Description)", "उपस्थिताः (Present)"];
     let csvContent = headers.join(",") + "\n";
     filtered.forEach(row => { let rowData = headers.map(h => `"${(row[h] || "").toString().replace(/"/g, '""')}"`); csvContent += rowData.join(",") + "\n"; });
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `Pathollekh_${fromDate}_to_${toDate}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
 }
 
+// NEW: ವಾರ್ಷಿಕ ಸಮಯಸಾರಣಿಯಲ್ಲೂ ಮರ್ಜ್ ಕ್ಲಾಸ್‌ಗಳು ಪ್ರದರ್ಶನಗೊಳ್ಳಲು
 function renderYearlyTimetable() {
     const times = ["06:30–07:55", "08:30–09:25", "11:00–11:55", "01:30–02:25", "02:30–03:25", "03:30–04:25", "06:30–07:25"];
     const ganas = ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "भ्राजः", "यशः"];
     const tableGrid = {}; ganas.forEach(g => tableGrid[g] = {});
+    
     for (const [ach, classes] of Object.entries(timetableData)) {
-        classes.forEach(cls => { if(!tableGrid[cls.gana]) return; let clsTime = cls.time.replace('-', '–'); if(!tableGrid[cls.gana][clsTime]) tableGrid[cls.gana][clsTime] = []; tableGrid[cls.gana][clsTime].push({ach: ach, sub: cls.subject, vib: cls.vibhaga}); });
+        classes.forEach(cls => { 
+            if(cls.gana === "इतरकार्यम्") return;
+            let clsTime = cls.time.replace('-', '–'); 
+            let targetGanas = cls.gana.split(' + ');
+            targetGanas.forEach(g => {
+                if(tableGrid[g]) {
+                    if(!tableGrid[g][clsTime]) tableGrid[g][clsTime] = [];
+                    tableGrid[g][clsTime].push({ach: ach, sub: cls.subject, vib: cls.vibhaga, originalGana: cls.gana});
+                }
+            });
+        });
     }
+
     let html = `<table><thead><tr><th>गणः</th>`; times.forEach(t => html += `<th>${t}</th>`); html += `</tr></thead><tbody>`;
     ganas.forEach(gana => {
         html += `<tr><th>${gana}</th>`;

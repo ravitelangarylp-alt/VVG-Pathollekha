@@ -15,6 +15,8 @@
 <header onclick="goToDashboard()" title="मुख्यपृष्ठम् प्रति गच्छतु (Go to Home)">
     <h1>पाठोल्लेखः</h1>
     <div style="font-size: 1.2rem; margin-top: 5px; font-weight: 600; font-family: 'Laila', sans-serif; opacity: 0.9;">वेदविज्ञानगुरुकुलम्</div>
+    <!-- NEW: ಇವತ್ತಿನ ದಿನಾಂಕವನ್ನು ತೋರಿಸುವ ಜಾಗ -->
+    <div id="headerTodayDate" style="font-size: 0.95rem; margin-top: 8px; font-weight: 700; color: #E8F5E9; background: rgba(0,0,0,0.1); display: inline-block; padding: 4px 15px; border-radius: 20px; font-family: 'Laila', sans-serif;">अद्यतन-दिनाङ्कः: ...</div>
 </header>
 
 <div id="notificationBanner" class="notification-marquee" style="display:none;">
@@ -36,10 +38,10 @@
     <!-- 1. DASHBOARD VIEW -->
     <div id="dashboardView" class="view-section active">
         
-        <!-- NEW: Date Picker and Dynamic Heading -->
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; gap:15px;">
-            <h2 class="section-title" id="dashboardDateHeading" style="margin: 0; color:#2E7D32; font-family:'Yatra One', cursive;">ह्यस्तन-समयसारिणी</h2>
-            <div style="display: flex; align-items: center; gap: 10px; background: #E8F5E9; padding: 8px 15px; border-radius: 8px; border:1px solid #A5D6A7;">
+            <!-- NEW: ಫಾಂಟ್ ಸೈಜ್ ಚಿಕ್ಕದು ಮಾಡಲಾಗಿದೆ (font-size: 1.4rem) -->
+            <h2 class="section-title" id="dashboardDateHeading" style="margin: 0; color:#2E7D32; font-family:'Yatra One', cursive; font-size: 1.4rem;">ह्यस्तन-समयसारिणी</h2>
+            <div style="display: flex; align-items: center; gap: 10px; background: #FAFAFA; padding: 8px 15px; border-radius: 8px; border:1px solid #E0E0E0;">
                 <label style="font-weight: bold; color: #1B5E20; font-size:0.9rem; margin:0;">📅 अन्य-दिनाङ्कं पश्यतु (Go to Date):</label>
                 <input type="date" id="dashboardDatePicker" class="form-control" style="width: auto; padding: 5px; margin:0;" onchange="changeDashboardDate()">
             </div>
@@ -48,7 +50,6 @@
         <div id="holidayBannerDashboard" style="display:none;" class="holiday-banner"></div>
         <div id="yesterdayDataContainer"><div class="loading-spinner">दत्तांशः आगच्छन् अस्ति...</div></div>
         
-        <!-- NEW: Other Tasks (Kalah) Container -->
         <div id="otherTasksContainer" style="margin-top: 25px;"></div>
         
         <div class="dashboard-grid" style="margin-top: 40px; grid-template-columns: 1fr 1fr;">
