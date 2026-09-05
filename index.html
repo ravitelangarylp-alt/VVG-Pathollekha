@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Laila:wght@400;600;700&family=Yatra+One&display=swap" rel="stylesheet">
     
-    <!-- Export Libraries: PNG, Excel, PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -42,7 +41,6 @@
 
     <!-- 1. DASHBOARD VIEW -->
     <div id="dashboardView" class="view-section active">
-        
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; gap:15px;">
             <h2 class="section-title" id="dashboardDateHeading" style="margin: 0; color:#2E7D32; font-family:'Yatra One', cursive; font-size: 1.4rem;">ह्यस्तन-समयसारिणी</h2>
             <div style="display: flex; align-items: center; gap: 10px; background: #FAFAFA; padding: 8px 15px; border-radius: 8px; border:1px solid #E0E0E0;">
@@ -53,22 +51,16 @@
 
         <div id="holidayBannerDashboard" style="display:none;" class="holiday-banner"></div>
         <div id="yesterdayDataContainer"><div class="loading-spinner">दत्तांशः आगच्छन् अस्ति...</div></div>
-        
         <div id="otherTasksContainer" style="margin-top: 25px;"></div>
         
         <div class="dashboard-grid" style="margin-top: 40px; grid-template-columns: 1fr 1fr;">
             <div class="data-card" style="border-left-color: #D32F2F;">
                 <h3 style="color:#D32F2F; margin-top:0; border-bottom:1px solid #FFCDD2; padding-bottom:10px; font-family:'Laila', sans-serif;">अकृताः पाठाः (Missed / Not Taken)</h3>
-                <ul id="missedLogsList" style="padding-left:20px; color:#424242; font-size:1rem; line-height:1.6;">
-                    <li style="color:#888;">दत्तांशः आगच्छन् अस्ति...</li>
-                </ul>
+                <ul id="missedLogsList" style="padding-left:20px; color:#424242; font-size:1rem; line-height:1.6;"></ul>
             </div>
-            
             <div class="data-card" style="border-left-color: #F57C00;">
                 <h3 style="color:#F57C00; margin-top:0; border-bottom:1px solid #FFE0B2; padding-bottom:10px; font-family:'Laila', sans-serif;">अनुपस्थिताः छात्राः (Absent Students)</h3>
-                <ul id="absentStudentsList" style="padding-left:20px; color:#424242; font-size:1rem; line-height:1.6;">
-                    <li style="color:#888;">दत्तांशः आगच्छन् अस्ति...</li>
-                </ul>
+                <ul id="absentStudentsList" style="padding-left:20px; color:#424242; font-size:1rem; line-height:1.6;"></ul>
             </div>
         </div>
 
@@ -86,7 +78,7 @@
     <!-- 2. TODAY'S VIEW -->
     <div id="todayView" class="view-section">
         <h2 class="section-title">अद्यतन-प्रविष्टाः पाठाः (Today's Logs)</h2>
-        <div class="data-card" id="todayDataContainer"><div class="loading-spinner">अद्यतन-दत्तांशः आगच्छन् अस्ति...</div></div>
+        <div class="data-card" id="todayDataContainer"><div class="loading-spinner">दत्तांशः आगच्छन् अस्ति...</div></div>
         <div style="text-align: center;">
             <button class="btn-primary" onclick="openLoginModal()" style="background: var(--accent-orange); font-size: 1.3rem;">अद्यतन-पाठोल्लेखं कुरु 📝</button>
         </div>
@@ -96,8 +88,13 @@
     <div id="entryFormSection" class="view-section">
         <h2 class="section-title">पाठोल्लेख-प्रपत्रम् <br><span id="loggedInAcharya" style="color: var(--accent-orange); font-size: 1.6rem;"></span></h2>
         
-        <div style="text-align:right; margin-bottom:15px;">
-            <button class="btn-primary" style="background:#0288D1; font-size:1rem; padding:10px 20px; margin:0;" onclick="document.getElementById('addNotifModal').style.display='flex'">📢 सूचनां योजयतु (Add Notification)</button>
+        <div id="acharyaMessageContainer"></div> <!-- Target Acharya Message Box -->
+        
+        <!-- Avalokanam Alert Banner -->
+        <div id="avalokanamAlertBanner" style="display:none; background: linear-gradient(135deg, #E3F2FD, #BBDEFB); border: 1px solid #90CAF9; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align:center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+            <h4 style="color: #1565C0; margin:0 0 10px 0; font-size:1.2rem; font-family:'Yatra One', cursive;">📝 <span id="activePakshaName"></span> - पाक्षिक-अवलोकनम्</h4>
+            <p style="margin:0 0 15px 0; color:#0D47A1; font-weight:bold;">ದಯವಿಟ್ಟು ನಿಮ್ಮ ಈ ಪಕ್ಷದ ಮೌಲ್ಯಮಾಪನವನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ (Please complete the evaluation).</p>
+            <button class="btn-primary" style="margin:0; background:#1565C0; padding:8px 20px; font-size:1rem;" onclick="openAvalokanamModal()">अवलोकनं पूरयतु (Fill Evaluation)</button>
         </div>
 
         <div id="holidayBannerForm" style="display:none;" class="holiday-banner"></div>
@@ -117,111 +114,174 @@
             </div>
 
             <button id="submitBtn" class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="submitLesson()">समर्पयतु (Submit)</button>
-            <button id="holidayBtn" class="btn-primary btn-danger" style="width: 100%; margin-top: 10px; display:none;" onclick="declareHoliday()">अद्य अनध्यायः (Declare Holiday)</button>
-            <button class="btn-primary btn-outline" style="width: 100%; margin-top: 15px;" onclick="goToDashboard()">निर्गच्छतु (Back/Logout)</button>
-            <button class="btn-primary" style="background:#E53935; width: 100%; margin-top: 10px;" onclick="logout()">पूर्ण-निर्गच्छतु (Logout Entirely)</button>
+            <button class="btn-primary btn-outline" style="width: 100%; margin-top: 15px;" onclick="goToDashboard()">निर्गच्छतु (Back)</button>
+            <button class="btn-primary" style="background:#E53935; width: 100%; margin-top: 10px;" onclick="logout()">पूर्ण-निर्गच्छतु (Logout)</button>
         </div>
     </div>
 
-    <!-- 4. ADMIN PANEL (ADVANCED REPORTS) -->
+    <!-- 4. ADMIN PANEL (ADVANCED REPORTS & CMS) -->
     <div id="adminPanelView" class="view-section">
-        <h2 class="section-title">दत्तांश-निर्वहणम् (Advanced Reports Dashboard)</h2>
+        <h2 class="section-title">दत्तांश-निर्वहणम् (Advanced Reports & CMS)</h2>
         
         <div class="form-card" style="max-width: 1100px; padding: 20px;">
             
-            <!-- Report Type Navigation -->
             <div class="report-nav-tabs">
                 <button class="rep-tab active" onclick="switchReportCategory('lesson', this)">📚 Lesson Reports</button>
-                <button class="rep-tab" onclick="switchReportCategory('attendance', this)">👤 Attendance Reports</button>
+                <button class="rep-tab" onclick="switchReportCategory('attendance', this)">👤 Attendance</button>
+                <button class="rep-tab" onclick="switchReportCategory('cms', this)">⚙️ System Settings (CMS)</button>
             </div>
             
-            <div class="report-sub-tabs" id="lessonSubTabs">
-                <label><input type="radio" name="repType" value="acharya_wise" checked onchange="handleReportTypeChange()"> Acharya-wise Report</label>
-                <label><input type="radio" name="repType" value="gana_wise" onchange="handleReportTypeChange()"> Gana-wise Report</label>
-                <label><input type="radio" name="repType" value="gana_class_wise" onchange="handleReportTypeChange()"> Gana + Class Report</label>
-                <label><input type="radio" name="repType" value="dept_all" onchange="handleReportTypeChange()"> Dept-wise (All)</label>
-                <label><input type="radio" name="repType" value="dept_vedanta" onchange="handleReportTypeChange()"> Dept: Vedanta</label>
-                <label><input type="radio" name="repType" value="dept_vyakarana" onchange="handleReportTypeChange()"> Dept: Vyakarana</label>
-                <label><input type="radio" name="repType" value="advanced_combined" onchange="handleReportTypeChange()"> Advanced / Combined Log</label>
-            </div>
-            <div class="report-sub-tabs" id="attendanceSubTabs" style="display:none;">
-                <label><input type="radio" name="repType" value="student_date_wise" onchange="handleReportTypeChange()"> Student Date-wise</label>
-                <label><input type="radio" name="repType" value="student_class_wise" onchange="handleReportTypeChange()"> Student Class-wise</label>
-                <label><input type="radio" name="repType" value="student_overall" checked onchange="handleReportTypeChange()"> Student Overall</label>
-                <label><input type="radio" name="repType" value="student_class_date" onchange="handleReportTypeChange()"> Student + Class + Date</label>
-            </div>
+            <!-- CMS SECTION -->
+            <div id="cmsSection" style="display:none;">
+                <div class="report-sub-tabs" style="background:#E3F2FD; border-color:#90CAF9;">
+                    <label><input type="radio" name="cmsType" value="cms_student" checked onchange="handleCMSChange()"> 🎓 Students</label>
+                    <label><input type="radio" name="cmsType" value="cms_acharya" onchange="handleCMSChange()"> 👨‍🏫 Acharyas</label>
+                    <label><input type="radio" name="cmsType" value="cms_timetable" onchange="handleCMSChange()"> 🗓️ Timetable</label>
+                    <label><input type="radio" name="cmsType" value="cms_holiday" onchange="handleCMSChange()"> 🏖️ Holidays</label>
+                    <label><input type="radio" name="cmsType" value="cms_message" onchange="handleCMSChange()"> ✉️ Messages</label>
+                    <label><input type="radio" name="cmsType" value="cms_avalokanam" onchange="handleCMSChange()"> 📊 Avalokanam</label>
+                </div>
 
-            <!-- Cascading Filters -->
-            <div class="filter-grid" id="advancedFilters">
-                <div class="filter-col">
-                    <label>From Date</label>
-                    <input type="date" id="advFilterFrom" class="form-control">
+                <!-- CMS FORMS -->
+                <!-- Avalokanam Settings (NEW) -->
+                <div id="cms_avalokanam_form" class="cms-section">
+                    <h4 style="margin-top:0; color:#1565C0;">📊 Pakshika Avalokanam Control</h4>
+                    <p style="color:#555; font-size:0.95rem; margin-bottom:15px;">Turn on the Fortnightly Evaluation so Acharyas can submit their grades.</p>
+                    <div class="cms-grid">
+                        <input type="text" id="cmsPakshaName" class="form-control" placeholder="Paksha Name (e.g. श्रावण-शुक्ल-पक्षः)">
+                    </div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap:wrap;">
+                        <button class="btn-primary" style="background:#2E7D32; margin:0;" onclick="setAvalokanamStatus('ON')">▶️ Start Evaluation (ON)</button>
+                        <button class="btn-primary" style="background:#D32F2F; margin:0;" onclick="setAvalokanamStatus('OFF')">⏹️ Close Evaluation (OFF)</button>
+                    </div>
+                    <div style="margin-top:15px; padding:10px; background:#FAFAFA; border:1px solid #E0E0E0; border-radius:5px;">
+                        <span style="font-weight:bold; color:#333;">Current Status: </span><span id="cmsAvalokanamStatusText" style="color:#E65100; font-weight:bold;">OFF</span>
+                    </div>
                 </div>
-                <div class="filter-col">
-                    <label>To Date</label>
-                    <input type="date" id="advFilterTo" class="form-control">
+
+                <!-- Add Student -->
+                <div id="cms_student_form" class="cms-section active">
+                    <h4 style="margin-top:0; color:#1565C0;">➕ Add New Student</h4>
+                    <div class="cms-grid">
+                        <input type="text" id="cmsStuName" class="form-control" placeholder="Student Name (संस्कृतम्)">
+                        <select id="cmsStuVibhaga" class="form-control"><option value="सामान्य">सामान्य</option><option value="वेदान्त">वेदान्त</option><option value="व्याकरण">व्याकरण</option></select>
+                        <input type="text" id="cmsStuGana" class="form-control" placeholder="Gana (e.g. तपः)">
+                        <input type="text" id="cmsStuVeda" class="form-control" placeholder="Vedapatha (e.g. कपिलः)">
+                    </div>
+                    <button class="btn-primary" style="padding: 8px 15px; font-size:0.95rem; margin:0;" onclick="submitCMS('addStudent')">Save Student</button>
                 </div>
-                <div class="filter-col">
-                    <label>Department (विभागः)</label>
-                    <select id="advFilterDept" class="form-control" onchange="populateCascadingFilters('dept')"></select>
+
+                <!-- Add Acharya -->
+                <div id="cms_acharya_form" class="cms-section">
+                    <h4 style="margin-top:0; color:#1565C0;">➕ Add New Acharya</h4>
+                    <div class="cms-grid">
+                        <input type="text" id="cmsAchName" class="form-control" placeholder="Acharya Name">
+                        <input type="text" id="cmsAchPass" class="form-control" placeholder="Password / PIN">
+                        <input type="text" id="cmsAchVeda" class="form-control" placeholder="Veda Mapping (or leave blank)">
+                    </div>
+                    <button class="btn-primary" style="padding: 8px 15px; font-size:0.95rem; margin:0;" onclick="submitCMS('addAcharya')">Save Acharya</button>
                 </div>
-                <div class="filter-col">
-                    <label>Gana (गणः)</label>
-                    <select id="advFilterGana" class="form-control" onchange="populateCascadingFilters('gana')"></select>
+
+                <!-- Add Timetable -->
+                <div id="cms_timetable_form" class="cms-section">
+                    <h4 style="margin-top:0; color:#1565C0;">➕ Add Timetable Entry</h4>
+                    <div class="cms-grid">
+                        <select id="cmsTimeAch" class="form-control"></select>
+                        <input type="text" id="cmsTimeGana" class="form-control" placeholder="Gana (e.g. श्रेयः + भ्राजः)">
+                        <input type="text" id="cmsTimeSlot" class="form-control" placeholder="Time (e.g. 08:30–09:25)">
+                        <input type="text" id="cmsTimeSubj" class="form-control" placeholder="Subject">
+                        <select id="cmsTimeVib" class="form-control"><option value="सामान्य">सामान्य</option><option value="वेदान्त">वेदान्त</option><option value="व्याकरण">व्याकरण</option></select>
+                    </div>
+                    <button class="btn-primary" style="padding: 8px 15px; font-size:0.95rem; margin:0;" onclick="submitCMS('addTimetable')">Save Timetable</button>
                 </div>
-                <div class="filter-col">
-                    <label>Class/Subject (विषयः)</label>
-                    <select id="advFilterSubject" class="form-control" onchange="populateCascadingFilters('subject')"></select>
+
+                <!-- Add Holiday -->
+                <div id="cms_holiday_form" class="cms-section">
+                    <h4 style="margin-top:0; color:#1565C0;">➕ Add Holiday (Blocks Data Entry)</h4>
+                    <div class="cms-grid">
+                        <input type="date" id="cmsHolDate" class="form-control">
+                        <input type="text" id="cmsHolReason" class="form-control" placeholder="Reason (e.g. स्वतन्त्रता-दिनम्)">
+                    </div>
+                    <button class="btn-primary" style="padding: 8px 15px; font-size:0.95rem; margin:0;" onclick="submitCMS('addHoliday')">Save Holiday</button>
                 </div>
-                <div class="filter-col">
-                    <label>Acharya (आचार्यः)</label>
-                    <select id="advFilterAcharya" class="form-control" onchange="populateCascadingFilters('acharya')"></select>
+
+                <!-- Add Message -->
+                <div id="cms_message_form" class="cms-section">
+                    <h4 style="margin-top:0; color:#1565C0;">✉️ Send Direct Message to Acharya</h4>
+                    <div class="cms-grid">
+                        <select id="cmsMsgAch" class="form-control"></select>
+                        <input type="date" id="cmsMsgExpiry" class="form-control" title="Expiry Date">
+                    </div>
+                    <textarea id="cmsMsgText" class="form-control" rows="2" placeholder="Type your message here..." style="margin-bottom:15px;"></textarea>
+                    <button class="btn-primary" style="padding: 8px 15px; font-size:0.95rem; margin:0;" onclick="submitCMS('addMessage')">Send Message</button>
                 </div>
-                <div class="filter-col">
-                    <label>Student (छात्रः)</label>
-                    <select id="advFilterStudent" class="form-control"></select>
+
+                <div style="margin-top:20px; text-align:right;">
+                    <button class="btn-primary" style="background:#424242; padding: 6px 15px; font-size:0.9rem;" onclick="renderCMSTable()">🔄 View/Refresh Existing Records</button>
                 </div>
             </div>
+            
+            <!-- REPORTS SECTION (LESSON & ATTENDANCE) -->
+            <div id="reportsSection">
+                <div class="report-sub-tabs" id="lessonSubTabs">
+                    <label><input type="radio" name="repType" value="acharya_wise" checked onchange="handleReportTypeChange()"> Acharya-wise</label>
+                    <label><input type="radio" name="repType" value="gana_wise" onchange="handleReportTypeChange()"> Gana-wise</label>
+                    <label><input type="radio" name="repType" value="dept_all" onchange="handleReportTypeChange()"> Dept-wise</label>
+                    <label><input type="radio" name="repType" value="advanced_combined" onchange="handleReportTypeChange()"> Combined Log</label>
+                    <label><input type="radio" name="repType" value="avalokanam_report" onchange="handleReportTypeChange()"> 📝 Avalokanam Report</label>
+                </div>
+                <div class="report-sub-tabs" id="attendanceSubTabs" style="display:none;">
+                    <label><input type="radio" name="repType" value="student_date_wise" onchange="handleReportTypeChange()"> Student Date-wise</label>
+                    <label><input type="radio" name="repType" value="student_class_wise" onchange="handleReportTypeChange()"> Student Class-wise</label>
+                    <label><input type="radio" name="repType" value="student_overall" checked onchange="handleReportTypeChange()"> Student Overall</label>
+                </div>
 
-            <!-- Action Buttons & Chips -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 15px;">
-                <div id="activeFilterChips" class="active-chips"></div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-primary btn-outline" style="margin:0; padding: 8px 15px; font-size:1rem;" onclick="resetAdvancedFilters()">Reset Filters ↺</button>
-                    <button class="btn-primary" style="margin:0; padding: 8px 25px; font-size:1rem;" onclick="generateAdvancedReport()">Apply Filters ⚡</button>
+                <div class="filter-grid" id="advancedFilters">
+                    <div class="filter-col"><label>From Date</label><input type="date" id="advFilterFrom" class="form-control"></div>
+                    <div class="filter-col"><label>To Date</label><input type="date" id="advFilterTo" class="form-control"></div>
+                    <div class="filter-col"><label>Department</label><select id="advFilterDept" class="form-control" onchange="populateCascadingFilters()"></select></div>
+                    <div class="filter-col"><label>Gana (गणः)</label><select id="advFilterGana" class="form-control" onchange="populateCascadingFilters()"></select></div>
+                    <div class="filter-col"><label>Subject (विषयः)</label><select id="advFilterSubject" class="form-control" onchange="populateCascadingFilters()"></select></div>
+                    <div class="filter-col"><label>Acharya</label><select id="advFilterAcharya" class="form-control" onchange="populateCascadingFilters()"></select></div>
+                    <div class="filter-col"><label>Student</label><select id="advFilterStudent" class="form-control"></select></div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 15px;">
+                    <div id="activeFilterChips" class="active-chips"></div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-primary btn-outline" style="margin:0; padding: 8px 15px; font-size:1rem;" onclick="resetAdvancedFilters()">Reset Filters ↺</button>
+                        <button class="btn-primary" style="margin:0; padding: 8px 25px; font-size:1rem;" onclick="generateAdvancedReport()">Apply Filters ⚡</button>
+                    </div>
                 </div>
             </div>
             
             <hr style="border: 0; height: 1px; background: #E0E0E0; margin: 25px 0;">
 
-            <!-- Report Summary Cards -->
             <div id="reportSummaryContainer" class="summary-cards-grid" style="display:none;"></div>
 
-            <!-- Report Table & Export Area -->
+            <!-- Report / CMS Table Area -->
             <div id="reportSnapshotArea" style="overflow-x: auto; display:none; margin-top:20px; background: white; padding: 25px; border-radius: 10px; border: 1px solid #E0E0E0;">
                 <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-                    <h2 class="report-header" id="reportHeaderTitle" style="margin:0; border:none; text-align:left;">Report Preview</h2>
-                    <div style="display:flex; align-items:center; gap:10px; background: #F5F5F5; padding: 5px 10px; border-radius: 8px; border: 1px solid #CCC;">
-                        <label style="font-weight:bold; color:#333; margin:0; font-size:0.9rem;">Download Report ▼</label>
+                    <h2 class="report-header" id="reportHeaderTitle" style="margin:0; border:none; text-align:left;">Preview</h2>
+                    <div id="downloadControlsDiv" style="display:flex; align-items:center; gap:10px; background: #F5F5F5; padding: 5px 10px; border-radius: 8px; border: 1px solid #CCC;">
+                        <label style="font-weight:bold; color:#333; margin:0; font-size:0.9rem;">Download ▼</label>
                         <select id="exportFormatSelect" class="form-control" style="width: auto; padding: 5px; margin:0; border-color:#999; font-size:0.9rem;">
-                            <option value="pdf">Download as PDF</option>
-                            <option value="excel">Download as Excel (.xlsx)</option>
-                            <option value="png">Download as PNG</option>
+                            <option value="pdf">As PDF</option>
+                            <option value="excel">As Excel (.xlsx)</option>
+                            <option value="png">As PNG</option>
                         </select>
                         <button class="btn-primary" style="background:#1565C0; margin:0; padding: 6px 12px; font-size:0.9rem;" onclick="executeDownload()">Download 📥</button>
                     </div>
                 </div>
-                <!-- Delete controls will only show in Advanced log -->
-                <div id="deleteControlHeader" style="display:none; text-align:right; font-size:0.8rem; color:#D32F2F; margin-bottom:5px;">* Delete option available in Advanced Log only</div>
+                <div id="deleteControlHeader" style="display:none; text-align:right; font-size:0.8rem; color:#D32F2F; margin-bottom:5px;">* Delete actions are permanent</div>
                 <table class="report-table" id="reportTableBody"></table>
             </div>
 
-            <!-- Admin Nav Tools -->
             <hr style="border: 0; height: 1px; background: #C8E6C9; margin: 30px 0;">
             <div style="text-align: center; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
-                <button class="btn-primary btn-outline" onclick="goToAdminEntry()">पाठं सम्पादयतु (Admin Entry) ✍️</button>
-                <button class="btn-primary" style="background:#8E24AA;" onclick="renderAdminNotifications()">सूचनाः पश्यतु (Notifications) 📢</button>
+                <button class="btn-primary" style="background:#8E24AA;" onclick="document.getElementById('addNotifModal').style.display='flex'">सूचनाः पश्यतु (Public Notifications) 📢</button>
                 <button class="btn-primary" style="background:#424242;" onclick="goToDashboard()">मुख्यपृष्ठम् (Home) 🏠</button>
+                <button class="btn-primary" style="background:#E53935;" onclick="logout()">पूर्ण-निर्गच्छतु (Logout)</button>
             </div>
         </div>
     </div>
@@ -234,10 +294,25 @@
 </div>
 
 <!-- Modals -->
-<div class="modal" id="addNotifModal"><div class="modal-content" style="max-width: 500px;"><h3 style="color: var(--header-bg); font-size: 1.5rem; margin-top: 0;">सूचनां योजयतु</h3><textarea id="notifMessage" class="form-control" rows="3" placeholder="ಸಂದೇಶ..."></textarea><div style="display:flex; gap:10px; margin-bottom:15px;"><div style="flex:1;"><label>प्रारम्भ-दिनम्</label><input type="date" id="notifStartDate" class="form-control"></div><div style="flex:1;"><label>अन्तिम-दिनम्</label><input type="date" id="notifEndDate" class="form-control"></div></div><div style="display:flex; gap:10px; margin-bottom:20px;"><div style="flex:1;"><label>प्रारम्भ-समयः</label><input type="time" id="notifStartTime" class="form-control"></div><div style="flex:1;"><label>अन्तिम-समयः</label><input type="time" id="notifEndTime" class="form-control"></div></div><button id="notifSubmitBtn" class="btn-primary" style="width: 100%; margin: 0 0 10px 0;" onclick="submitNotification()">समर्पयतु</button><button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="document.getElementById('addNotifModal').style.display='none'">निरस्यतु</button></div></div>
+<div class="modal" id="addNotifModal"><div class="modal-content" style="max-width: 500px;"><h3 style="color: var(--header-bg); font-size: 1.5rem; margin-top: 0;">सूचनां योजयतु (Public Banner)</h3><textarea id="notifMessage" class="form-control" rows="3" placeholder="ಸಂದೇಶ..."></textarea><div style="display:flex; gap:10px; margin-bottom:15px;"><div style="flex:1;"><label>प्रारम्भ-दिनम्</label><input type="date" id="notifStartDate" class="form-control"></div><div style="flex:1;"><label>अन्तिम-दिनम्</label><input type="date" id="notifEndDate" class="form-control"></div></div><div style="display:flex; gap:10px; margin-bottom:20px;"><div style="flex:1;"><label>प्रारम्भ-समयः</label><input type="time" id="notifStartTime" class="form-control"></div><div style="flex:1;"><label>अन्तिम-समयः</label><input type="time" id="notifEndTime" class="form-control"></div></div><button id="notifSubmitBtn" class="btn-primary" style="width: 100%; margin: 0 0 10px 0;" onclick="submitNotification()">समर्पयतु</button><button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="document.getElementById('addNotifModal').style.display='none'">निरस्यतु</button></div></div>
 <div class="modal" id="detailsModal"><div class="modal-content"><h3 style="color: var(--header-bg); font-size: 1.5rem; margin-top: 0; border-bottom: 2px solid #C8E6C9; padding-bottom:10px;" id="detailSubject"></h3><p style="font-size: 1.1rem; color: #5D4037; font-weight: bold; text-align:left;">विवरणम् :</p><p id="detailDescription" style="text-align:left; color:#424242; line-height:1.6; white-space: pre-wrap; font-size:1rem;"></p><p style="font-size: 1.1rem; color: #5D4037; font-weight: bold; text-align:left; margin-top:15px;">उपस्थिताः :</p><p id="detailAttendance" style="text-align:left; color:#1B5E20; font-size:0.95rem;"></p><button class="btn-primary" style="width: 100%; margin-top:20px;" onclick="document.getElementById('detailsModal').style.display='none'">पिदधातु</button></div></div>
 <div class="modal" id="loginModal"><div class="modal-content"><h3 style="color: var(--header-bg); font-size: 1.6rem; margin-top: 0;">आचार्य-प्रवेशः</h3><select id="acharyaSelect" class="form-control" style="margin-bottom: 15px;"><option value="">-- आचार्यं चिनोतु --</option></select><input type="password" id="acharyaPin" class="form-control" placeholder="दूरवाणी सङ्ख्या / PIN" style="margin-bottom: 25px; text-align: center;"><button class="btn-primary" style="width: 100%; margin: 0 0 10px 0;" onclick="verifyAcharya()">प्रविशतु</button><button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="closeModals()">निरस्यतु</button></div></div>
 <div class="modal" id="adminModal"><div class="modal-content"><h3 style="color: var(--header-bg); font-size: 1.6rem; margin-top: 0;">प्रबन्धक-व्यवस्था</h3><input type="password" id="adminPin" class="form-control" placeholder="****" style="text-align: center; margin-bottom: 25px;"><button class="btn-primary" style="width: 100%; margin: 0 0 10px 0;" onclick="verifyAdmin()">प्रविशतु</button><button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="closeModals()">निरस्यतु</button></div></div>
+
+<!-- AVALOKANAM MODAL (NEW) -->
+<div class="modal" id="avalokanamModal">
+    <div class="modal-content" style="max-width: 900px; width: 95%;">
+        <h3 style="color: var(--header-bg); font-size: 1.8rem; margin-top: 0; font-family:'Yatra One', cursive;">पाक्षिक-अवलोकनम्</h3>
+        <h4 id="avModalPakshaTitle" style="color:var(--accent-orange); margin-top:0; border-bottom:1px dashed #FFCC80; padding-bottom:10px;"></h4>
+        
+        <select id="avClassSelect" class="form-control" style="margin-bottom:15px; font-weight:bold; border:2px solid var(--primary-green);" onchange="renderAvStudents()"></select>
+        
+        <div id="avStudentsContainer" style="overflow-x:auto; margin-bottom:20px; text-align:left; background:#FAFAFA; border:1px solid #E0E0E0; border-radius:8px; padding:10px; max-height:50vh;"></div>
+        
+        <button id="avSubmitBtn" class="btn-primary" style="width: 100%; margin: 0 0 10px 0; background:#0288D1;" onclick="submitAvalokanam()">समर्पयतु (Submit Evaluation)</button>
+        <button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="document.getElementById('avalokanamModal').style.display='none'">निरस्यतु (Cancel)</button>
+    </div>
+</div>
 
 <script src="data.js"></script>
 <script src="script.js"></script>
