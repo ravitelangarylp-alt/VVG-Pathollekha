@@ -15,26 +15,20 @@ window.onload = function() {
         if(dp) { dp.max = today.toISOString().split('T')[0]; dp.value = yesterdayStr; }
         
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-        
         if(document.getElementById('advFilterFrom')) document.getElementById('advFilterFrom').value = firstDay; 
         if(document.getElementById('advFilterTo')) document.getElementById('advFilterTo').value = today.toISOString().split('T')[0];
         if(document.getElementById('notifStartDate')) document.getElementById('notifStartDate').value = today.toISOString().split('T')[0]; 
         if(document.getElementById('notifEndDate')) document.getElementById('notifEndDate').value = today.toISOString().split('T')[0];
+        
+        const dateInputObj = document.getElementById('dateInput');
+        if(dateInputObj) { dateInputObj.addEventListener('change', function() { checkFormHolidayState(); const dateStr = this.value; if(isAdmin) { populateAdminClassDropdown(dateStr); } else if(currentLoggedIn) { populateClassDropdown(currentLoggedIn, dateStr); } handleClassSelection(); switchEntryTab('classes'); }); }
     } catch(e) { console.error("Startup Setup Error:", e); }
     
     fetchDataFromGoogleSheets(); 
 };
 
-function getSanskritDayAndDate(dateStr) {
-    const d = new Date(dateStr); const days = ["भानुवासरः", "सोमवासरः", "मङ्गलवासरः", "बुधवासरः", "गुरुवासरः", "शुक्रवासरः", "शनिवासरः"];
-    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} - ${days[d.getDay()]}`;
-}
-
-function translateNumbersToDevanagari(num) { 
-    const digits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९']; 
-    return String(num).split('').map(d => digits[d] || d).join(''); 
-}
-
+function getSanskritDayAndDate(dateStr) { const d = new Date(dateStr); const days = ["भानुवासरः", "सोमवासरः", "मङ्गलवासरः", "बुधवासरः", "गुरुवासरः", "शुक्रवासरः", "शनिवासरः"]; return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} - ${days[d.getDay()]}`; }
+function translateNumbersToDevanagari(num) { const digits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९']; return String(num).split('').map(d => digits[d] || d).join(''); }
 function normalizeSheetDate(dStr) {
     if(!dStr) return ""; dStr = String(dStr).trim();
     if(dStr.match(/^\d{4}-\d{2}-\d{2}/)) return dStr.substring(0, 10);
@@ -43,7 +37,6 @@ function normalizeSheetDate(dStr) {
     let d = new Date(dStr); if(!isNaN(d.getTime())) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
     if(dStr.includes('T')) return dStr.split('T')[0]; return dStr;
 }
-
 function normalizeKeyStr(str) { return (str || "").toString().replace(/[\s\-\–\—_]/g, '').toLowerCase(); }
 function makeKey(ach, gana, sub) { return normalizeKeyStr(ach) + '|' + normalizeKeyStr(gana) + '|' + normalizeKeyStr(sub); }
 
@@ -71,7 +64,7 @@ function fetchDataFromGoogleSheets() {
         settingsData = {}; (data.settings || []).forEach(row => { if(row.Category) settingsData[row.Category] = row.Value; });
         
         populateAcharyaDropdowns(); renderYearlyTimetable(); updateTodayView(); changeDashboardDate(); displayActiveNotifications();
-        if(currentLoggedIn && document.getElementById('entryFormSection').classList.contains('active')) { populateClassDropdown(currentLoggedIn, document.getElementById('dateInput').value); renderAcharyaMessages(); checkAvalokanamStatus(); }
+        if(currentLoggedIn && document.getElementById('entryFormSection').classList.contains('active')) { populateClassDropdown(currentLoggedIn, document.getElementById('dateInput').value); renderAcharyaMessages(); checkAvalokanamStatus(); switchEntryTab('classes'); }
         if(isAdmin && document.getElementById('adminPanelView').classList.contains('active')) { populateCMSDropdowns(); updateAdminAvalokanamUI(); }
     }).catch(err => {
         console.error(err); const errBox = document.getElementById('yesterdayDataContainer'); if(errBox) errBox.innerHTML = "<div class='log-desc' style='color:red; text-align:center; padding:20px;'>दत्तांश-प्राप्तौ दोषः जातः। (Network Error)</div>";
@@ -92,23 +85,68 @@ function renderYearlyTimetable() {
 }
 
 function populateAcharyaDropdowns() { const selectModal = document.getElementById('acharyaSelect'); if(!selectModal) return; let htmlStr = '<option value="">-- आचार्यं चिनोतु --</option>'; for(let ach in acharyaPasswords) { htmlStr += `<option value="${ach}">${ach}</option>`; } selectModal.innerHTML = htmlStr; }
+
 function displayActiveNotifications() {
     const now = new Date(); const todayStr = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0]; const currentTime = now.toTimeString().slice(0,5);
     let activeNotifs = fetchedNotifications.filter(n => { if (!n['StartDate'] || !n['EndDate']) return false; let sd = normalizeSheetDate(n['StartDate']); let ed = normalizeSheetDate(n['EndDate']); if (todayStr >= sd && todayStr <= ed) { try { if (n['StartTime'] && n['EndTime'] && String(n['StartTime']).includes(':') && String(n['EndTime']).includes(':')) { let stStr = String(n['StartTime']); let etStr = String(n['EndTime']); let st = stStr.includes('T') ? stStr.split('T')[1].slice(0,5) : stStr.slice(0,5); let et = etStr.includes('T') ? etStr.split('T')[1].slice(0,5) : etStr.slice(0,5); if (todayStr === sd && currentTime < st) return false; if (todayStr === ed && currentTime > et) return false; } } catch(e) {} return true; } return false; });
     const banner = document.getElementById('notificationBanner'); const marquee = document.getElementById('notificationText'); if(!banner || !marquee) return;
     if (activeNotifs.length > 0) { marquee.innerHTML = activeNotifs.map(n => `<span class="notif-item"><span class="notif-author">📢 ${n['Acharya']} :</span> ${n['Message']}</span>`).join(" &nbsp; | &nbsp; "); banner.style.display = "block"; } else { banner.style.display = "none"; }
 }
-function renderAcharyaMessages() { const container = document.getElementById('acharyaMessageContainer'); if(!container) return; container.innerHTML = ""; if(!currentLoggedIn || currentLoggedIn === "Admin") return; const todayStr = new Date().toISOString().split('T')[0]; let relevantMessages = messagesData.filter(m => { if(m.ExpiryDate && normalizeSheetDate(m.ExpiryDate) < todayStr) return false; return (m.Target_Acharya === "All" || m.Target_Acharya === currentLoggedIn); }); if(relevantMessages.length > 0) { let msgHtml = `<div class="message-box"><h4>सन्देशः (Message from Admin)</h4>`; relevantMessages.forEach(m => { msgHtml += `<p style="margin-bottom:8px;">🔸 ${m.Message}</p>`; }); msgHtml += `</div>`; container.innerHTML = msgHtml; } }
+
+// ----------------------------------------------------
+// 📩 MESSAGES SYSTEM (WITH 'READ' FUNCTIONALITY)
+// ----------------------------------------------------
+function renderAcharyaMessages() { 
+    const container = document.getElementById('acharyaMessageContainer'); 
+    if(!container) return; 
+    container.innerHTML = ""; 
+    if(!currentLoggedIn || currentLoggedIn === "Admin") return; 
+    
+    const todayStr = new Date().toISOString().split('T')[0]; 
+    let relevantMessages = messagesData.filter(m => { 
+        if(m.ExpiryDate && normalizeSheetDate(m.ExpiryDate) < todayStr) return false; 
+        if((m.Read_By || m['Read_By'] || "").includes(currentLoggedIn)) return false; 
+        return (m.Target_Acharya === "All" || m.Target_Acharya === currentLoggedIn); 
+    }); 
+    
+    if(relevantMessages.length > 0) { 
+        let msgHtml = `<div class="message-box"><h4>सन्देशः (Message from Admin)</h4>`; 
+        relevantMessages.forEach(m => { 
+            msgHtml += `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.6); padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #BBDEFB;">
+                <p style="margin:0; flex:1; color:#0D47A1; font-weight:600;">🔸 ${m.Message}</p>
+                <button class="btn-primary" style="background:#4CAF50; padding:6px 12px; font-size:0.85rem; margin:0 0 0 10px; min-width:90px;" onclick="markMessageRead(${m.rowIdx})">✅ पठितम् (Read)</button>
+            </div>`; 
+        }); 
+        msgHtml += `</div>`; 
+        container.innerHTML = msgHtml; 
+    } 
+}
+
+function markMessageRead(rowIdx) {
+    let msg = messagesData.find(m => m.rowIdx === rowIdx);
+    if(msg) msg.Read_By = (msg.Read_By || "") + currentLoggedIn + ", ";
+    renderAcharyaMessages(); 
+    
+    const fd = new URLSearchParams(); 
+    fd.append('action', 'markMessageRead'); 
+    fd.append('rowIdx', rowIdx); 
+    fd.append('acharya', currentLoggedIn);
+    fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: fd }).catch(e => console.error(e));
+}
+// ----------------------------------------------------
+
 function checkFormHolidayState() { const dateInput = document.getElementById('dateInput'); if(!dateInput) return; const dateVal = dateInput.value; const isHolDeclared = fetchedLogs.some(log => log.normalizedDate === dateVal && log['विषयः (Subject)'] === "अनध्यायः"); const isCMSHoliday = holidaysData.some(h => h.normalizedDate === dateVal); const banner = document.getElementById('holidayBannerForm'); const submitBtn = document.getElementById('submitBtn'); if(!banner || !submitBtn) return; if((isHolDeclared || isCMSHoliday) && !isAdmin) { banner.style.display = "block"; banner.innerText = "अद्य अनध्यायः / विशेषकार्यक्रमः अस्ति। पाठोल्लेखः न शक्यते। (Holiday Declared)"; submitBtn.disabled = true; } else { banner.style.display = "none"; submitBtn.disabled = false; } }
 
 function switchView(viewId, btnElement) { document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active')); if(btnElement) { document.querySelectorAll('.btn-tab').forEach(el => el.classList.remove('active')); btnElement.classList.add('active'); } const v = document.getElementById(viewId); if(v) v.classList.add('active'); }
 function goToDashboard() { const m = document.getElementById('mainTabs'); if(m) m.style.display = 'flex'; switchView('dashboardView', document.getElementById('tabDashboard')); }
+
 function openLoginModal() { 
     if (currentLoggedIn) { 
         switchView('entryFormSection', null); 
+        switchEntryTab('classes');
         populateClassDropdown(currentLoggedIn, document.getElementById('dateInput').value); 
-        renderAcharyaMessages(); 
-        checkAvalokanamStatus(); 
+        renderAcharyaMessages(); checkAvalokanamStatus(); 
         document.getElementById('attendanceSection').style.display = "none"; 
     } else if (isAdmin) {
         openAdminLogEntry(); 
@@ -117,49 +155,46 @@ function openLoginModal() {
     } 
 }
 
-// ----------------------------------------------------
-// NEW FUNCTION: ADMIN LOG ENTRY (ಪಾಠ ಸೇರಿಸಲು)
-// ----------------------------------------------------
 function openAdminLogEntry() {
     document.getElementById('mainTabs').style.display = 'none';
     switchView('entryFormSection', null);
+    switchEntryTab('classes');
     document.getElementById('loggedInAcharya').innerText = "प्रबन्धकः (Admin Entry)";
-    
     const dateInput = document.getElementById('dateInput');
     dateInput.removeAttribute('readonly'); 
-    
     populateAdminClassDropdown(dateInput.value);
     document.getElementById('attendanceSection').style.display = "none";
-    
-    const msgContainer = document.getElementById('acharyaMessageContainer');
-    if(msgContainer) msgContainer.innerHTML = "";
-    const avBanner = document.getElementById('avalokanamAlertBanner');
-    if(avBanner) avBanner.style.display = "none";
+    const msgContainer = document.getElementById('acharyaMessageContainer'); if(msgContainer) msgContainer.innerHTML = "";
+    const avBanner = document.getElementById('avalokanamAlertBanner'); if(avBanner) avBanner.style.display = "none";
 }
+
 function openAdminModal() { if (isAdmin) { switchView('adminPanelView', null); resetAdvancedFilters(); populateCMSDropdowns(); updateAdminAvalokanamUI();} else { document.getElementById('adminModal').style.display = 'flex'; } }
 function closeModals() { ['adminModal','loginModal','avalokanamModal'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; }); ['adminPin','acharyaPin','acharyaSelect'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; }); }
 function verifyAdmin() { const pin = document.getElementById('adminPin').value; if(pin === '9999') { isAdmin = true; closeModals(); document.getElementById('mainTabs').style.display = 'none'; switchView('adminPanelView', null); resetAdvancedFilters(); populateCMSDropdowns(); updateAdminAvalokanamUI(); } else { alert("असमीचीनः कूटशब्दः!"); } }
 function getVocative(name) { if (name === "विष्णुः") return "विष्णो"; if (name === "सुब्रह्मण्य. आ.") return name; return name.replace(/ः$/, ''); }
-function verifyAcharya() { const name = document.getElementById('acharyaSelect').value; const pin = document.getElementById('acharyaPin').value; if(!name) return alert("कृपया आचार्यं चिनोतु!"); if(acharyaPasswords[name] === pin) { closeModals(); isAdmin = false; currentLoggedIn = name; document.getElementById('mainTabs').style.display = 'none'; switchView('entryFormSection', null); document.getElementById('loggedInAcharya').innerText = "स्वागतम्, " + getVocative(name); document.getElementById('dateInput').value = new Date().toISOString().split('T')[0]; document.getElementById('dateInput').setAttribute('readonly', 'true'); populateClassDropdown(name, document.getElementById('dateInput').value); renderAcharyaMessages(); checkFormHolidayState(); checkAvalokanamStatus(); } else { alert("असमीचीनः कूटशब्दः!"); } }
+function verifyAcharya() { const name = document.getElementById('acharyaSelect').value; const pin = document.getElementById('acharyaPin').value; if(!name) return alert("कृपया आचार्यं चिनोतु!"); if(acharyaPasswords[name] === pin) { closeModals(); isAdmin = false; currentLoggedIn = name; document.getElementById('mainTabs').style.display = 'none'; switchView('entryFormSection', null); document.getElementById('loggedInAcharya').innerText = "स्वागतम्, " + getVocative(name); document.getElementById('dateInput').value = new Date().toISOString().split('T')[0]; document.getElementById('dateInput').setAttribute('readonly', 'true'); switchEntryTab('classes'); populateClassDropdown(name, document.getElementById('dateInput').value); renderAcharyaMessages(); checkFormHolidayState(); checkAvalokanamStatus(); } else { alert("असमीचीनः कूटशब्दः!"); } }
 function logout() { currentLoggedIn = ""; isAdmin = false; document.getElementById('descriptionInput').value = ""; document.getElementById('attendanceSection').style.display="none"; const mbox = document.getElementById('acharyaMessageContainer'); if(mbox) mbox.innerHTML=""; goToDashboard(); }
 
 // ----------------------------------------------------
-// CMS: SYSTEM SETTINGS LOGIC WITH AI TAB
+// CMS: SYSTEM SETTINGS LOGIC WITH AI & DUTIES TAB
 // ----------------------------------------------------
 function switchReportCategory(category, btnElement) {
     document.querySelectorAll('.rep-tab').forEach(el => el.classList.remove('active')); btnElement.classList.add('active');
-    document.getElementById('cmsSection').style.display = 'none'; 
-    document.getElementById('reportsSection').style.display = 'none';
-    const aiSec = document.getElementById('aiChatSection'); if(aiSec) aiSec.style.display = 'none';
-    
+    document.getElementById('cmsSection').style.display = 'none'; document.getElementById('reportsSection').style.display = 'none'; const aiSec = document.getElementById('aiChatSection'); if(aiSec) aiSec.style.display = 'none';
     if(category === 'lesson') { document.getElementById('reportsSection').style.display = 'block'; document.getElementById('lessonSubTabs').style.display = 'flex'; document.getElementById('attendanceSubTabs').style.display = 'none'; document.querySelector('input[name="repType"][value="acharya_wise"]').checked = true; handleReportTypeChange();
     } else if(category === 'attendance') { document.getElementById('reportsSection').style.display = 'block'; document.getElementById('lessonSubTabs').style.display = 'none'; document.getElementById('attendanceSubTabs').style.display = 'flex'; document.querySelector('input[name="repType"][value="student_overall"]').checked = true; handleReportTypeChange();
     } else if(category === 'cms') { document.getElementById('cmsSection').style.display = 'block'; document.getElementById('reportSnapshotArea').style.display = 'none'; document.getElementById('reportSummaryContainer').style.display = 'none'; handleCMSChange(); 
     } else if(category === 'ai_chat') { if(aiSec) aiSec.style.display = 'block'; document.getElementById('reportSnapshotArea').style.display = 'none'; document.getElementById('reportSummaryContainer').style.display = 'none'; }
 }
-
 function handleCMSChange() { document.querySelectorAll('.cms-section').forEach(el => el.classList.remove('active')); const cmsType = document.querySelector('input[name="cmsType"]:checked').value; document.getElementById(cmsType + '_form').classList.add('active'); }
-function populateCMSDropdowns() { const achSel = document.getElementById('cmsTimeAch'); const msgAch = document.getElementById('cmsMsgAch'); if(!achSel || !msgAch) return; let achHtml = ""; let msgHtml = '<option value="All">Everyone (सामूहिक-सन्देशः)</option>'; for(let ach in acharyaPasswords) { achHtml += `<option value="${ach}">${ach}</option>`; msgHtml += `<option value="${ach}">${ach}</option>`; } achSel.innerHTML = achHtml; msgAch.innerHTML = msgHtml; }
+
+function populateCMSDropdowns() { 
+    const achSel = document.getElementById('cmsTimeAch'); const msgAch = document.getElementById('cmsMsgAch'); const dutyAch = document.getElementById('cmsDutyAch');
+    if(!achSel || !msgAch || !dutyAch) return; 
+    let achHtml = ""; let dutyHtml = '<option value="">-- Select Acharya --</option>'; let msgHtml = '<option value="All">Everyone (सामूहिक-सन्देशः)</option>'; 
+    for(let ach in acharyaPasswords) { achHtml += `<option value="${ach}">${ach}</option>`; dutyHtml += `<option value="${ach}">${ach}</option>`; msgHtml += `<option value="${ach}">${ach}</option>`; } 
+    achSel.innerHTML = achHtml; msgAch.innerHTML = msgHtml; dutyAch.innerHTML = dutyHtml;
+}
 
 function submitCMS(action) {
     const formData = new URLSearchParams(); formData.append('action', action);
@@ -172,7 +207,10 @@ function submitCMS(action) {
 }
 
 function renderCMSTable() {
-    const cmsType = document.querySelector('input[name="cmsType"]:checked').value; if(cmsType === 'cms_avalokanam') return alert("Avalokanam doesn't have a direct CMS table. View 'Avalokanam Report' in the Lesson Reports tab.");
+    const cmsType = document.querySelector('input[name="cmsType"]:checked').value; 
+    if(cmsType === 'cms_avalokanam') return alert("Avalokanam doesn't have a direct CMS table. View 'Avalokanam Report' in the Lesson Reports tab.");
+    if(cmsType === 'cms_duties') return alert("Duties do not have a separate table. You can select an Acharya to see/edit their duties in the form above.");
+    
     document.getElementById('reportSnapshotArea').style.display = 'block'; document.getElementById('downloadControlsDiv').style.display = 'none'; document.getElementById('deleteControlHeader').style.display = 'block';
     let thead = "", tbody = ""; currentReportTitleStr = "CMS Records"; currentReportDataset = [];
     if(cmsType === 'cms_student') { document.getElementById('reportHeaderTitle').innerText = "Students List"; thead = `<tr><th>Name</th><th>Vibhaga</th><th>Gana</th><th>Vedapatha</th><th>Action</th></tr>`; studentsData.forEach(s => { tbody += `<tr><td>${s.name}</td><td>${s.vibhaga}</td><td>${s.gana}</td><td>${s.vedapatha}</td><td><button class="btn-primary btn-danger" style="padding:4px 8px;font-size:0.8rem;margin:0;" onclick="deleteRecord('deleteRecord', 'Students', ${s.rowIdx})">Del</button></td></tr>`; });
@@ -189,6 +227,7 @@ function deleteRecord(actionType, sheetNameOrRowIdx, actualRowIdx) {
     fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData }).then(res => res.text()).then(data => { alert("अपाकृतम्! (Deleted Successfully)"); fetchDataFromGoogleSheets(); if(actionType === 'deleteLog') generateAdvancedReport(); }).catch(err => alert("दोषः जातः!"));
 }
 
+// AVALOKANAM LOGIC
 function updateAdminAvalokanamUI() { const pName = document.getElementById('cmsPakshaName'); const sText = document.getElementById('cmsAvalokanamStatusText'); if(!pName || !sText) return; pName.value = settingsData['Avalokanam_Paksha'] || ""; if(settingsData['Avalokanam_Status'] === 'ON') { sText.innerText = "ON (Active)"; sText.style.color = "#2E7D32"; } else { sText.innerText = "OFF (Inactive)"; sText.style.color = "#D32F2F"; } }
 function setAvalokanamStatus(status) { let paksha = document.getElementById('cmsPakshaName').value.trim(); if(status === 'ON' && !paksha) return alert("Please enter the Paksha Name first!"); Promise.all([ fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: new URLSearchParams({action: 'updateSetting', key: 'Avalokanam_Status', value: status}) }), fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: new URLSearchParams({action: 'updateSetting', key: 'Avalokanam_Paksha', value: paksha}) }) ]).then(() => { alert("Evaluation Status Updated!"); fetchDataFromGoogleSheets(); }).catch(err => alert("Error updating status.")); }
 function checkAvalokanamStatus() { const banner = document.getElementById('avalokanamAlertBanner'); if(!banner) return; if(settingsData['Avalokanam_Status'] === 'ON') { document.getElementById('activePakshaName').innerText = settingsData['Avalokanam_Paksha'] || "पाक्षिक-अवलोकनम्"; banner.style.display = "block"; } else { banner.style.display = "none"; } }
@@ -223,28 +262,68 @@ function submitAvalokanam() {
     fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData }).then(res => res.text()).then(data => { alert("सफलम्! (Evaluation Submitted)"); document.getElementById('avalokanamModal').style.display='none'; btn.innerText = "समर्पयतु (Submit Evaluation)"; btn.disabled = false; fetchDataFromGoogleSheets(); }).catch(err => { alert("दोषः जातः!"); btn.innerText = "समर्पयतु (Submit Evaluation)"; btn.disabled = false; });
 }
 
+// ----------------------------------------------------
+// UI ENGINE: SHARED TIMETABLE GRID GENERATOR
+// ----------------------------------------------------
 function getTimetableData(targetDateStr) {
     const yMap = {}; let yAch = new Set();
-    fetchedLogs.forEach(log => { if (log.normalizedDate === targetDateStr && log['विषयः (Subject)'] !== "अनध्यायः") { if(log['गणः (Class/Gana)'] !== "इतरकार्यम्") { const key = makeKey(log['आचार्यः (Acharya)'], log['गणः (Class/Gana)'], log['विषयः (Subject)']); yMap[key] = {desc: log['विवरणम् (Lesson Description)'], att: log['उपस्थिताः (Present)']}; } yAch.add(log['आचार्यः (Acharya)']); } });
+    fetchedLogs.forEach(log => {
+        if (log.normalizedDate === targetDateStr && log['विषयः (Subject)'] !== "अनध्यायः") {
+            if(log['गणः (Class/Gana)'] !== "इतरकार्यम्" && log['गणः (Class/Gana)'] !== "दायित्वम्") {
+               const key = makeKey(log['आचार्यः (Acharya)'], log['गणः (Class/Gana)'], log['विषयः (Subject)']);
+               yMap[key] = {desc: log['विवरणम् (Lesson Description)'], att: log['उपस्थिताः (Present)']};
+            }
+            yAch.add(log['आचार्यः (Acharya)']);
+        }
+    });
+
     const times = ["06:30–07:55", "08:30–09:25", "11:00–11:55", "01:30–02:25", "02:30–03:25", "03:30–04:25", "06:30–07:25"]; const ganas = ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "भ्राजः", "यशः"]; const tableGrid = {}; ganas.forEach(g => tableGrid[g] = {});
-    for (const [ach, classes] of Object.entries(timetableData)) { classes.forEach(cls => { if(!cls.gana || cls.gana === "इतरकार्यम्") return; let clsTime = (cls.time || "").replace('-', '–'); cls.gana.split(' + ').forEach(g => { if(tableGrid[g]) { if(!tableGrid[g][clsTime]) tableGrid[g][clsTime] = []; tableGrid[g][clsTime].push({ach: ach, sub: cls.subject, vib: cls.vibhaga, originalGana: cls.gana, time: cls.time}); } }); }); }
-    let html = `<div class="table-wrapper"><table><thead><tr><th>गणः</th>`; times.forEach(t => html += `<th>${t}</th>`); html += `</tr></thead><tbody>`; let missedList = []; let absentTally = {}; let alreadyCountedMissed = new Set(); let submittedDaily = 0;
+    
+    for (const [ach, classes] of Object.entries(timetableData)) {
+        classes.forEach(cls => {
+            if(!cls.gana || cls.gana === "इतरकार्यम्") return; 
+            let clsTime = (cls.time || "").replace('-', '–');
+            cls.gana.split(' + ').forEach(g => { if(tableGrid[g]) { if(!tableGrid[g][clsTime]) tableGrid[g][clsTime] = []; tableGrid[g][clsTime].push({ach: ach, sub: cls.subject, vib: cls.vibhaga, originalGana: cls.gana, time: cls.time}); } });
+        });
+    }
+
+    let html = `<div class="table-wrapper"><table><thead><tr><th>गणः</th>`; times.forEach(t => html += `<th>${t}</th>`); html += `</tr></thead><tbody>`;
+    let missedList = []; let absentTally = {}; let alreadyCountedMissed = new Set(); let submittedDaily = 0;
+
     ganas.forEach(gana => {
         html += `<tr><th>${gana}</th>`;
         times.forEach(time => {
             const classes = tableGrid[gana][time];
-            if(!classes || classes.length === 0) { html += `<td></td>`; } else if (classes.length === 1) {
-                const cls = classes[0]; const vClass = cls.vib === 'सामान्य' ? 'samanya' : (cls.vib === 'वेदान्त' ? 'vedanta' : 'vyakarana'); const key = makeKey(cls.ach, cls.originalGana, cls.sub);
-                if(yMap[key]) { html += `<td class="cell-submitted ${vClass}" onclick="showDescModal('${cls.sub}', '${escapeQuotes(yMap[key].desc)}', '${escapeQuotes(yMap[key].att)}')"><div class="tooltip-text">${yMap[key].desc}</div>${cls.sub} <span class="acharya-name" style="color:#1B5E20; font-weight:bold;">${cls.ach}</span></td>`; getExpectedStudents(cls.originalGana, cls.sub, cls.vib, cls.ach).forEach(st => { if(st.gana === gana && !(yMap[key].att || "").includes(st.name)) { absentTally[st.name] = (absentTally[st.name] || 0) + 1; } }); submittedDaily++; } else { html += `<td class="cell-unsubmitted ${vClass}">${cls.sub} <span class="acharya-name">${cls.ach}</span></td>`; if(!alreadyCountedMissed.has(key)) { missedList.push(`<b>${cls.ach}</b>: ${cls.originalGana} (${cls.sub})`); alreadyCountedMissed.add(key); } }
-            } else {
-                html += `<td style="padding:0;"><div class="split-cell">`;
+            if(!classes || classes.length === 0) { html += `<td></td>`; }
+            else {
+                html += classes.length === 1 ? `<td>` : `<td style="padding:0;"><div class="split-cell">`;
                 classes.forEach((cls, idx) => {
-                    const vClass = cls.vib === 'सामान्य' ? 'samanya' : (cls.vib === 'वेदान्त' ? 'vedanta' : 'vyakarana'); const btmBorder = idx === 0 ? 'split-top' : ''; const key = makeKey(cls.ach, cls.originalGana, cls.sub);
-                    if(yMap[key]) { html += `<div class="${btmBorder} cell-submitted ${vClass}" style="padding:5px; height:100%;" onclick="showDescModal('${cls.sub}', '${escapeQuotes(yMap[key].desc)}', '${escapeQuotes(yMap[key].att)}')"><div class="tooltip-text">${yMap[key].desc}</div>${cls.sub} <span class="acharya-name" style="color:#1B5E20; font-weight:bold;">${cls.ach}</span></div>`; getExpectedStudents(cls.originalGana, cls.sub, cls.vib, cls.ach).forEach(st => { if(st.gana === gana && !(yMap[key].att || "").includes(st.name)) { absentTally[st.name] = (absentTally[st.name] || 0) + 1; } }); submittedDaily++; } else { html += `<div class="${btmBorder} cell-unsubmitted ${vClass}" style="padding:5px; height:100%;">${cls.sub} <span class="acharya-name">${cls.ach}</span></div>`; if(!alreadyCountedMissed.has(key)) { missedList.push(`<b>${cls.ach}</b>: ${cls.originalGana} (${cls.sub})`); alreadyCountedMissed.add(key); } }
-                }); html += `</div></td>`;
+                    const vClass = cls.vib === 'सामान्य' ? 'samanya' : (cls.vib === 'वेदान्त' ? 'vedanta' : 'vyakarana'); 
+                    const btmBorder = (classes.length > 1 && idx === 0) ? 'split-top' : ''; 
+                    const key = makeKey(cls.ach, cls.originalGana, cls.sub);
+                    
+                    if(yMap[key]) { 
+                        let isCancelled = (yMap[key].att || "").includes('रद्दम्');
+                        let cellStyle = isCancelled ? `background-color:#FFF3E0; border:2px solid #FFB74D; color:#E65100; cursor:pointer; height:100%; padding:5px;` : `padding:5px; height:100%;`;
+                        let txtClass = isCancelled ? `` : vClass;
+                        let achStyle = isCancelled ? `color:#E65100; font-weight:bold;` : `color:#1B5E20; font-weight:bold;`;
+
+                        html += `<div class="${btmBorder} cell-submitted ${txtClass}" style="${cellStyle}" onclick="showDescModal('${cls.sub}', '${escapeQuotes(yMap[key].desc)}', '${escapeQuotes(yMap[key].att)}')"><div class="tooltip-text">${yMap[key].desc}</div>${cls.sub} <span class="acharya-name" style="${achStyle}">${cls.ach}</span></div>`; 
+                        
+                        if(!isCancelled) {
+                            getExpectedStudents(cls.originalGana, cls.sub, cls.vib, cls.ach).forEach(st => { if(st.gana === gana && !(yMap[key].att || "").includes(st.name)) { absentTally[st.name] = (absentTally[st.name] || 0) + 1; } });
+                        }
+                        submittedDaily++;
+                    } else { 
+                        html += `<div class="${btmBorder} cell-unsubmitted ${vClass}" style="padding:5px; height:100%;">${cls.sub} <span class="acharya-name">${cls.ach}</span></div>`; 
+                        if(!alreadyCountedMissed.has(key)) { missedList.push(`<b>${cls.ach}</b>: ${cls.originalGana} (${cls.sub})`); alreadyCountedMissed.add(key); }
+                    }
+                }); 
+                html += classes.length === 1 ? `</td>` : `</div></td>`;
             }
         }); html += `</tr>`;
     }); html += `</tbody></table></div>`; 
+    
     let totDaily = 0; Object.values(timetableData).forEach(arr => { arr.forEach(c => { if(c.gana && c.gana !== 'इतरकार्यम्') { totDaily += c.gana.split(' + ').length; } }); });
     return { html, missedList, absentTally, submittedDaily, totDaily, yAch };
 }
@@ -253,22 +332,60 @@ function updateTodayView() { const todayDataContainer = document.getElementById(
 function escapeQuotes(str) { return str ? str.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n') : ''; }
 function showDescModal(sub, desc, att) { document.getElementById('detailSubject').innerText = sub; document.getElementById('detailDescription').innerText = desc; document.getElementById('detailAttendance').innerText = att || "ಮಾಹಿತिः नास्ति"; document.getElementById('detailsModal').style.display = 'flex'; }
 
+// 👇 ವೇದಾಂತಸಾರ ಸಮಸ್ಯೆಯನ್ನು ಸರಿಪಡಿಸಿದ ಹೊಸ ಲಾಜಿಕ್ ಇಲ್ಲಿದೆ 👇
 function getExpectedStudents(ganaStr, subject, vibhaga, acharya) {
-    if(!ganaStr || ganaStr === "इतरकार्यम्") return []; const ganas = ganaStr.split(' + '); let isVedaClass = false; let mappedVeda = vedaAcharyaMapping[acharya];
-    if (subject.includes('वेद')) { isVedaClass = true; } else if (mappedVeda && subject.includes(mappedVeda)) { isVedaClass = true; } else if (["याज्ञवल्क्यः", "कपिलः", "जमदग्निः", "विश्वामित्रः", "कश्यपः", "अत्रिः", "भरद्वाजः", "वसिष्ठः"].some(v => subject.includes(v))) { isVedaClass = true; }
-    if (isVedaClass && mappedVeda) { return studentsData.filter(s => s.vedapatha === mappedVeda); } else { return studentsData.filter(s => { if(!ganas.includes(s.gana)) return false; if(vibhaga === 'सामान्य') return true; return s.vibhaga === vibhaga; }); }
+    if(!ganaStr || ganaStr === "इतरकार्यम्" || ganaStr === "दायित्वम्") return []; 
+    const ganas = ganaStr.split(' + '); 
+    let isVedaClass = false; 
+    let mappedVeda = vedaAcharyaMapping[acharya];
+    
+    if (subject.includes('वेद') && !subject.includes('वेदान्त') && !subject.includes('आयुर्वेद')) { 
+        isVedaClass = true; 
+    } else if (mappedVeda && subject.includes(mappedVeda)) { 
+        isVedaClass = true; 
+    } else if (["याज्ञवल्क्यः", "कपिलः", "जमदग्निः", "विश्वामित्रः", "कश्यपः", "अत्रिः", "भरद्वाजः", "वसिष्ठः"].some(v => subject.includes(v))) { 
+        isVedaClass = true; 
+    }
+
+    if (isVedaClass && mappedVeda) { 
+        return studentsData.filter(s => s.vedapatha === mappedVeda); 
+    } else { 
+        return studentsData.filter(s => { 
+            if(!ganas.includes(s.gana)) return false; 
+            if(vibhaga === 'सामान्य') return true; 
+            return s.vibhaga === vibhaga; 
+        }); 
+    }
 }
 
 function renderTimetableForDate(targetDateStr) {
     const dashHeading = document.getElementById('dashboardDateHeading'); const yesterdayDataContainer = document.getElementById('yesterdayDataContainer'); if(!dashHeading || !yesterdayDataContainer) return;
     const formattedHeading = getSanskritDayAndDate(targetDateStr); dashHeading.innerText = `समयसारिणी (दिनाङ्कः: ${formattedHeading})`;
     const bannerDash = document.getElementById('holidayBannerDashboard'); const missedUL = document.getElementById('missedLogsList'); const absentUL = document.getElementById('absentStudentsList'); const otherTasksContainer = document.getElementById('otherTasksContainer');
+    
     let isHolidayOnTarget = fetchedLogs.some(log => log.normalizedDate === targetDateStr && log['विषयः (Subject)'] === "अनध्यायः") || holidaysData.some(h => h.normalizedDate === targetDateStr);
     if(isHolidayOnTarget) { bannerDash.style.display = "block"; bannerDash.innerText = "अस्मिन् दिने अनध्यायः / विशेषकार्यक्रमः आसीत्। (Holiday)"; yesterdayDataContainer.innerHTML = ""; otherTasksContainer.innerHTML = ""; missedUL.innerHTML = "<li>अनध्यायः (Holiday)</li>"; absentUL.innerHTML = "<li>अनध्यायः (Holiday)</li>"; document.getElementById('statSubmitted').innerText = "-"; document.getElementById('statPresent').innerText = "-"; document.getElementById('statCompleted').innerText = "-"; return; }
-    bannerDash.style.display = "none"; const tbData = getTimetableData(targetDateStr); yesterdayDataContainer.innerHTML = tbData.html;
-    let otherTasksHtml = `<button onclick="const kt = document.getElementById('kalahTasksDiv'); kt.style.display = kt.style.display === 'none' ? 'flex' : 'none';" style="width:100%; background:#E8F5E9; border:1px solid #81C784; color:#2E7D32; font-family:'Laila', sans-serif; font-size:1.1rem; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px; transition:0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">➕ इतरकार्याणि पश्यतु (View Other Tasks / Kalah)</button><div id="kalahTasksDiv" style="display:none; flex-wrap:wrap; gap:15px; margin-top:15px;">`;
+    bannerDash.style.display = "none"; 
+    
+    const tbData = getTimetableData(targetDateStr); yesterdayDataContainer.innerHTML = tbData.html;
+    
+    let otherTasksHtml = `<button onclick="const kt = document.getElementById('kalahTasksDiv'); kt.style.display = kt.style.display === 'none' ? 'flex' : 'none';" style="width:100%; background:#E8F5E9; border:1px solid #81C784; color:#2E7D32; font-family:'Laila', sans-serif; font-size:1.1rem; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px; transition:0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">➕ इतरकार्याणि तथा दायित्वानि पश्यतु (Other Tasks & Duties)</button><div id="kalahTasksDiv" style="display:none; flex-wrap:wrap; gap:15px; margin-top:15px;">`;
     let hasOtherTasks = false;
+    
+    // 1. Regular Other Tasks (इतरकार्यम्)
     for (const [ach, classes] of Object.entries(timetableData)) { classes.forEach(cls => { if(cls.gana === "इतरकार्यम्") { hasOtherTasks = true; let submittedLog = fetchedLogs.find(l => l.normalizedDate === targetDateStr && l['आचार्यः (Acharya)'] === ach && l['गणः (Class/Gana)'] === 'इतरकार्यम्' && l['विषयः (Subject)'] === cls.subject); if(submittedLog) { otherTasksHtml += `<div class="data-card" style="flex:1; min-width:220px; border-left-color:#4CAF50; padding:15px; margin-bottom:0; background:#FAFAFA;"><div style="font-weight:bold; color:#1B5E20; margin-bottom:5px; font-size:1.1rem;">${ach} <span style="color:#555; font-size:0.9rem;">(${cls.subject})</span></div><div style="font-size:0.95rem; color:#424242; border-top:1px dashed #C8E6C9; padding-top:5px; margin-top:5px;">✅ ${escapeQuotes(submittedLog['विवरणम् (Lesson Description)'])}</div></div>`; } else { otherTasksHtml += `<div class="data-card" style="flex:1; min-width:220px; border-left-color:#D32F2F; padding:15px; margin-bottom:0; background:#FFF5F5;"><div style="font-weight:bold; color:#D32F2F; margin-bottom:5px; font-size:1.1rem;">${ach} <span style="color:#555; font-size:0.9rem;">(${cls.subject})</span></div><div style="font-size:0.95rem; color:#D32F2F; border-top:1px dashed #FFCDD2; padding-top:5px; margin-top:5px;">❌ न उल्लिखितम् (Not Filled / Taken)</div></div>`; } } }); }
+    
+    // 2. Extra Duties (दायित्वम्)
+    fetchedLogs.forEach(l => {
+        if(l.normalizedDate === targetDateStr && l['गणः (Class/Gana)'] === 'दायित्वम्') {
+            hasOtherTasks = true;
+            otherTasksHtml += `<div class="data-card" style="flex:1; min-width:220px; border-left-color:#1565C0; padding:15px; margin-bottom:0; background:#E3F2FD;">
+                <div style="font-weight:bold; color:#0D47A1; margin-bottom:5px; font-size:1.1rem;">${l['आचार्यः (Acharya)']} <span style="color:#555; font-size:0.9rem;">(दायित्वम्: ${l['विषयः (Subject)']})</span></div>
+                <div style="font-size:0.95rem; color:#424242; border-top:1px dashed #90CAF9; padding-top:5px; margin-top:5px;">✅ ${escapeQuotes(l['विवरणम् (Lesson Description)'])}</div>
+            </div>`;
+        }
+    });
+
     otherTasksHtml += `</div>`; otherTasksContainer.innerHTML = hasOtherTasks ? otherTasksHtml : "";
     if(tbData.missedList.length === 0) { missedUL.innerHTML = "<li style='color:green; font-weight:bold;'>सर्वे पाठाः सम्पन्नाः (All logs submitted)</li>"; } else { missedUL.innerHTML = tbData.missedList.map(item => `<li>${item}</li>`).join(""); }
     let absentKeys = Object.keys(tbData.absentTally); if(absentKeys.length === 0) { absentUL.innerHTML = "<li style='color:green; font-weight:bold;'>सर्वे छात्राः उपस्थिताः (All students present)</li>"; } else { absentKeys.sort((a,b) => tbData.absentTally[b] - tbData.absentTally[a]); absentUL.innerHTML = absentKeys.map(name => `<li><b>${name}</b> : ${translateNumbersToDevanagari(tbData.absentTally[name])} वर्गेषु अनुपस्थितः</li>`).join(""); }
@@ -279,10 +396,24 @@ function renderTimetableForDate(targetDateStr) {
 }
 
 function changeDashboardDate() { const d = document.getElementById('dashboardDatePicker'); if(d && d.value) renderTimetableForDate(d.value); }
-const dateInputObj = document.getElementById('dateInput');
-if(dateInputObj) { dateInputObj.addEventListener('change', function() { checkFormHolidayState(); const dateStr = this.value; if(isAdmin) { populateAdminClassDropdown(dateStr); } else if(currentLoggedIn) { populateClassDropdown(currentLoggedIn, dateStr); } renderAttendanceChecklist(); }); }
 function declareHoliday() { const dateVal = document.getElementById('dateInput').value; if(confirm(dateVal + " दिनाङ्के 'अनध्यायः' (Holiday) घोषणीयम् वा?")) { sendDataToSheet(dateVal, "ADMIN", "सर्वे", "-", "अनध्यायः", "विशेषकार्यक्रमः / अनध्यायः", "-"); } }
 function toggleCheck(id) { const cb = document.getElementById(id); if(cb) cb.checked = !cb.checked; }
+
+// --- FORM HANDLING (WITH LEAVE & EDIT LOGIC) ---
+function switchEntryTab(tab) {
+    if(tab === 'classes') {
+        document.getElementById('tabEntryClasses').classList.add('active');
+        document.getElementById('tabEntryDuties').classList.remove('active');
+        document.getElementById('entryClassesDiv').style.display = 'block';
+        document.getElementById('entryDutiesDiv').style.display = 'none';
+    } else {
+        document.getElementById('tabEntryDuties').classList.add('active');
+        document.getElementById('tabEntryClasses').classList.remove('active');
+        document.getElementById('entryClassesDiv').style.display = 'none';
+        document.getElementById('entryDutiesDiv').style.display = 'block';
+        renderDutiesForm();
+    }
+}
 
 function populateClassDropdown(acharyaName, dateStr) {
     const select = document.getElementById('classSelect'); if(!select) return; let htmlStr = '<option value="">-- कक्षां चिनोतु --</option>'; let submittedKeys = new Set();
@@ -298,17 +429,128 @@ function populateClassDropdown(acharyaName, dateStr) {
 }
 
 function populateAdminClassDropdown(dateStr) {
-    const select = document.getElementById('classSelect'); if(!select) return; let htmlStr = '<option value="">-- सर्वाः कक्षाः --</option>'; let submittedKeys = new Set();
-    fetchedLogs.forEach(log => { if (log.normalizedDate === dateStr && log['विषयः (Subject)'] !== "अनध्यायः") { submittedKeys.add(makeKey(log['आचार्यः (Acharya)'], log['गणः (Class/Gana)'], log['विषयः (Subject)'])); } });
-    for (const [achName, classes] of Object.entries(timetableData)) { classes.forEach(cls => { const key = makeKey(achName, cls.gana, cls.subject); const valStr = encodeURIComponent(JSON.stringify({acharya: achName, gana: cls.gana, time: cls.time, subject: cls.subject, vibhaga: cls.vibhaga}));
-        if(submittedKeys.has(key)) { htmlStr += `<option value="${valStr}" disabled style="color: #9E9E9E; background: #EEEEEE;">✅ ${achName} - ${cls.gana} (${cls.subject})</option>`; } else { htmlStr += `<option value="${valStr}">${achName} | ${cls.gana} | ${cls.time} | ${cls.subject}</option>`; }
+    const select = document.getElementById('classSelect'); if(!select) return; let htmlStr = '<option value="">-- सर्वाः कक्षाः --</option>'; let submittedMap = new Map();
+    fetchedLogs.forEach(log => { if (log.normalizedDate === dateStr && log['विषयः (Subject)'] !== "अनध्यायः" && log['गणः (Class/Gana)'] !== "दायित्वम्") { submittedMap.set(makeKey(log['आचार्यः (Acharya)'], log['गणः (Class/Gana)'], log['विषयः (Subject)']), log.rowIdx); } });
+    for (const [achName, classes] of Object.entries(timetableData)) { classes.forEach(cls => { 
+        const key = makeKey(achName, cls.gana, cls.subject); 
+        if(submittedMap.has(key)) { 
+            const valStr = encodeURIComponent(JSON.stringify({acharya: achName, gana: cls.gana, time: cls.time, subject: cls.subject, vibhaga: cls.vibhaga, rowIdx: submittedMap.get(key)}));
+            htmlStr += `<option value="${valStr}" style="color: #1B5E20; background: #E8F5E9;">✅ [EDIT] ${achName} - ${cls.gana} (${cls.subject})</option>`; 
+        } else { 
+            const valStr = encodeURIComponent(JSON.stringify({acharya: achName, gana: cls.gana, time: cls.time, subject: cls.subject, vibhaga: cls.vibhaga}));
+            htmlStr += `<option value="${valStr}">${achName} | ${cls.gana} | ${cls.time} | ${cls.subject}</option>`; 
+        }
     }); }
     select.innerHTML = htmlStr; document.getElementById('submissionStatus').innerHTML = ""; 
 }
 
-function renderAttendanceChecklist() { const clsVal = document.getElementById('classSelect').value; const attSection = document.getElementById('attendanceSection'); const attContainer = document.getElementById('attendanceContainer'); if(!clsVal) { attSection.style.display = "none"; return; } const clsData = JSON.parse(decodeURIComponent(clsVal)); if(clsData.gana === "इतरकार्यम्") { attSection.style.display = "none"; return; } attSection.style.display = "block"; let filteredStudents = getExpectedStudents(clsData.gana, clsData.subject, clsData.vibhaga, clsData.acharya); if(filteredStudents.length === 0) { attContainer.innerHTML = "<span style='color:red;'>अस्मिन् वर्गे छात्राः न सन्ति।</span>"; return; } let html = `<div class="attendance-grid">`; filteredStudents.forEach(student => { html += `<div class="student-checkbox" onclick="toggleCheck('chk_${student.name}')"><input type="checkbox" id="chk_${student.name}" value="${student.name}" class="att-checkbox" onclick="event.stopPropagation()"><label for="chk_${student.name}" onclick="event.stopPropagation()">${student.name}</label></div>`; }); html += `</div>`; attContainer.innerHTML = html; }
-function submitLesson() { const clsVal = document.getElementById('classSelect').value; const desc = document.getElementById('descriptionInput').value; const dateVal = document.getElementById('dateInput').value; if(!clsVal) return alert("कृपया कक्षां चिनोतु!"); if(!desc.trim()) return alert("कृपया पाठस्य विवरणं लिखतु!"); const clsData = JSON.parse(decodeURIComponent(clsVal)); let presentStudents = []; if(clsData.gana !== "इतरकार्यम्") { document.querySelectorAll('.att-checkbox').forEach(cb => { if(cb.checked) presentStudents.push(cb.value); }); } const attendanceStr = presentStudents.join(", "); sendDataToSheet(dateVal, clsData.acharya, clsData.gana, clsData.time, clsData.subject, desc, attendanceStr); }
-function sendDataToSheet(date, acharya, gana, time, subject, description, attendance) { const formData = new URLSearchParams(); formData.append('action', 'addLog'); formData.append('date', date); formData.append('acharya', acharya); formData.append('gana', gana); formData.append('time', time); formData.append('subject', subject); formData.append('description', description); formData.append('attendance', attendance || "-"); const btn = document.getElementById('submitBtn'); const origText = btn.innerText; btn.innerText = "समर्प्यते..."; btn.disabled = true; fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData }).then(res => res.text()).then(data => { alert("सफलम्! (Success)"); document.getElementById('descriptionInput').value = ""; document.getElementById('attendanceSection').style.display="none"; btn.innerText = origText; btn.disabled = false; fetchDataFromGoogleSheets(); goToDashboard(); }).catch(err => { alert("दोषः जातः!"); btn.innerText = origText; btn.disabled = false; }); }
+function handleClassSelection() { 
+    const clsVal = document.getElementById('classSelect').value; const attSection = document.getElementById('attendanceSection'); const attContainer = document.getElementById('attendanceContainer'); const leaveGroup = document.getElementById('leaveGroup'); const applyAllDiv = document.getElementById('applyAllDiv');
+    if(document.getElementById('leaveCheckbox')) document.getElementById('leaveCheckbox').checked = false; if(document.getElementById('applyAllCheckbox')) document.getElementById('applyAllCheckbox').checked = false;
+    toggleLeaveMode(); document.getElementById('descriptionInput').value = "";
+    if(!clsVal) { attSection.style.display = "none"; if(leaveGroup) leaveGroup.style.display = "none"; return; } 
+    const clsData = JSON.parse(decodeURIComponent(clsVal)); 
+    
+    if(clsData.rowIdx) {
+        if(leaveGroup) leaveGroup.style.display = "none"; document.getElementById('submitBtn').innerText = "पारीष्करोतु (Update Log)";
+        let logEntry = fetchedLogs.find(l => l.rowIdx === clsData.rowIdx); if(logEntry) document.getElementById('descriptionInput').value = logEntry['विवरणम् (Lesson Description)'];
+    } else {
+        if(leaveGroup) leaveGroup.style.display = "block"; document.getElementById('submitBtn').innerText = "समर्पयतु (Submit)";
+        if(!isAdmin && applyAllDiv) {
+            let pendingCount = 0; const dateStr = document.getElementById('dateInput').value;
+            (timetableData[currentLoggedIn] || []).forEach(c => { if(c.gana !== "इतरकार्यम्") { let isSub = fetchedLogs.some(l => l.normalizedDate === dateStr && l['आचार्यः (Acharya)'] === currentLoggedIn && makeKey(currentLoggedIn, l['गणः (Class/Gana)'], l['विषयः (Subject)']) === makeKey(currentLoggedIn, c.gana, c.subject)); if(!isSub) pendingCount++; } });
+            applyAllDiv.style.display = pendingCount > 1 ? "block" : "none";
+        } else if(applyAllDiv) { applyAllDiv.style.display = "none"; }
+    }
+    if(clsData.gana === "इतरकार्यम्") { attSection.style.display = "none"; return; } 
+    attSection.style.display = "block"; let filteredStudents = getExpectedStudents(clsData.gana, clsData.subject, clsData.vibhaga, clsData.acharya); 
+    if(filteredStudents.length === 0) { attContainer.innerHTML = "<span style='color:red;'>अस्मिन् वर्गे छात्राः न सन्ति।</span>"; return; } 
+    
+    let existingAtt = ""; if(clsData.rowIdx) { let logEntry = fetchedLogs.find(l => l.rowIdx === clsData.rowIdx); if(logEntry) existingAtt = logEntry['उपस्थिताः (Present)'] || ""; }
+    let html = `<div class="attendance-grid">`; 
+    filteredStudents.forEach(student => { let isChecked = clsData.rowIdx ? existingAtt.includes(student.name) : false; let checkedStr = isChecked ? "checked" : ""; html += `<div class="student-checkbox" onclick="toggleCheck('chk_${student.name}')"><input type="checkbox" id="chk_${student.name}" value="${student.name}" class="att-checkbox" onclick="event.stopPropagation()" ${checkedStr}><label for="chk_${student.name}" onclick="event.stopPropagation()">${student.name}</label></div>`; }); 
+    html += `</div>`; attContainer.innerHTML = html; 
+}
+
+function toggleLeaveMode() {
+    const leaveCb = document.getElementById('leaveCheckbox'); const isLeave = leaveCb ? leaveCb.checked : false; const attSection = document.getElementById('attendanceSection'); const descLabel = document.getElementById('descLabel'); const applyAllDiv = document.getElementById('applyAllDiv');
+    if(isLeave) { if(attSection) attSection.style.display = "none"; if(descLabel) descLabel.innerText = "किं कारणम्? (Reason for Leave/Cancellation)"; if(applyAllDiv) applyAllDiv.style.opacity = "1"; } else { const clsVal = document.getElementById('classSelect').value; if(clsVal && attSection) { const clsData = JSON.parse(decodeURIComponent(clsVal)); if(clsData.gana !== "इतरकार्यम्") attSection.style.display = "block"; } if(descLabel) descLabel.innerText = "पाठस्य विवरणम् (Lesson Description)"; if(applyAllDiv) applyAllDiv.style.opacity = "0.4"; if(document.getElementById('applyAllCheckbox')) document.getElementById('applyAllCheckbox').checked = false; }
+}
+
+async function submitLesson() { 
+    const clsVal = document.getElementById('classSelect').value; const desc = document.getElementById('descriptionInput').value; const dateVal = document.getElementById('dateInput').value; const isLeave = document.getElementById('leaveCheckbox') ? document.getElementById('leaveCheckbox').checked : false; const applyAll = document.getElementById('applyAllCheckbox') ? document.getElementById('applyAllCheckbox').checked : false;
+    if(!clsVal) return alert("कृपया कक्षां चिनोतु!"); if(!desc.trim()) return alert(isLeave ? "कृपया कारणं लिखतु! (Please enter reason)" : "कृपया पाठस्य विवरणं लिखतु!"); 
+    const clsData = JSON.parse(decodeURIComponent(clsVal)); let presentStudents = []; 
+    if(!isLeave && clsData.gana !== "इतरकार्यम्") { document.querySelectorAll('.att-checkbox').forEach(cb => { if(cb.checked) presentStudents.push(cb.value); }); } 
+    const attendanceStr = isLeave ? "रद्दम् (Cancelled)" : presentStudents.join(", "); 
+    const btn = document.getElementById('submitBtn'); const origText = btn.innerText; btn.innerText = "समर्प्यते..."; btn.disabled = true; 
+
+    if(clsData.rowIdx) {
+        const formData = new URLSearchParams(); formData.append('action', 'updateLog'); formData.append('rowIdx', clsData.rowIdx); formData.append('description', desc); formData.append('attendance', attendanceStr); 
+        try { await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData }); alert("सफलम्! (Update Success)"); finishSubmit(btn, origText); } catch(e) { alert("दोषः जातः!"); btn.innerText = origText; btn.disabled = false; }
+    } else if(isLeave && applyAll) {
+        let pendingClasses = [];
+        (timetableData[currentLoggedIn] || []).forEach(c => { if(c.gana !== "इतरकार्यम्") { let isSub = fetchedLogs.some(l => l.normalizedDate === dateVal && l['आचार्यः (Acharya)'] === currentLoggedIn && makeKey(currentLoggedIn, l['गणः (Class/Gana)'], l['विषयः (Subject)']) === makeKey(currentLoggedIn, c.gana, c.subject)); if(!isSub) pendingClasses.push(c); } });
+        let promises = pendingClasses.map(c => { const fd = new URLSearchParams(); fd.append('action', 'addLog'); fd.append('date', dateVal); fd.append('acharya', currentLoggedIn); fd.append('gana', c.gana); fd.append('time', c.time); fd.append('subject', c.subject); fd.append('description', "[रद्दम्] " + desc); fd.append('attendance', attendanceStr); return fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: fd }); });
+        try { await Promise.all(promises); alert("सफलम्! सर्वाभ्यः कक्षाभ्यः कारणं योजितम्। (Applied to all classes)"); finishSubmit(btn, origText); } catch(e) { alert("दोषः जातः!"); btn.innerText = origText; btn.disabled = false; }
+    } else {
+        const descFinal = isLeave ? "[रद्दम्] " + desc : desc; const fd = new URLSearchParams(); fd.append('action', 'addLog'); fd.append('date', dateVal); fd.append('acharya', clsData.acharya); fd.append('gana', clsData.gana); fd.append('time', clsData.time); fd.append('subject', clsData.subject); fd.append('description', descFinal); fd.append('attendance', attendanceStr);
+        try { await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: fd }); alert("सफलम्! (Success)"); finishSubmit(btn, origText); } catch(e) { alert("दोषः जातः!"); btn.innerText = origText; btn.disabled = false; }
+    }
+}
+function finishSubmit(btn, origText) { document.getElementById('descriptionInput').value = ""; document.getElementById('attendanceSection').style.display="none"; if(document.getElementById('leaveGroup')) document.getElementById('leaveGroup').style.display="none"; btn.innerText = origText; btn.disabled = false; fetchDataFromGoogleSheets(); goToDashboard(); }
+
+// --- EXTRA DUTIES LOGIC (NEW) ---
+function renderDutiesForm() {
+    const container = document.getElementById('dutiesListContainer');
+    if(isAdmin) { container.innerHTML = "<p style='color:#D32F2F; font-weight:bold;'>Admin cannot submit duties directly. Login as an Acharya.</p>"; document.getElementById('submitDutiesBtn').style.display='none'; return; }
+    
+    let dutyStr = settingsData['Duty_' + currentLoggedIn] || "";
+    let duties = dutyStr.split(',').map(s => s.trim()).filter(s => s);
+    
+    if(duties.length === 0) { container.innerHTML = "<p style='color:#555;'>तदानीं किमपि विशेषदायित्वं नास्ति। (No duties assigned)</p>"; document.getElementById('submitDutiesBtn').style.display='none'; return; }
+    
+    document.getElementById('submitDutiesBtn').style.display='inline-block';
+    const dateStr = document.getElementById('dateInput').value;
+    let submittedDuties = new Set();
+    fetchedLogs.forEach(l => { if(l.normalizedDate === dateStr && l['आचार्यः (Acharya)'] === currentLoggedIn && l['गणः (Class/Gana)'] === 'दायित्वम्') { submittedDuties.add(l['विषयः (Subject)']); } });
+
+    let html = "";
+    duties.forEach((d, i) => {
+        let isDone = submittedDuties.has(d);
+        if(isDone) {
+            html += `<div class="data-card" style="border-left-color: #9E9E9E; background:#F5F5F5; padding:15px; margin-bottom:10px;"><h4 style="margin:0 0 5px 0; color:#757575;">${d}</h4><p style="margin:0; color:#2E7D32; font-weight:bold;">✅ सम्पन्नम् (Submitted)</p></div>`;
+        } else {
+            html += `<div class="data-card" style="border-left-color: #1565C0; padding:15px; margin-bottom:10px;">
+                <h4 style="margin:0 0 10px 0; color:#0D47A1;">${d}</h4>
+                <label style="display:flex; align-items:center; gap:8px; font-weight:bold; cursor:pointer; color:#1B5E20; margin-bottom:10px;">
+                    <input type="checkbox" id="chk_duty_${i}" value="${d}" style="width:18px; height:18px;" onchange="document.getElementById('desc_duty_${i}').style.display = this.checked ? 'block' : 'none';">
+                    अवलोकितम् / सम्पन्नम् (Observed / Done)
+                </label>
+                <div id="desc_duty_${i}" style="display:none;"><textarea id="txt_duty_${i}" class="form-control" rows="2" placeholder="किम् अवलोकितम्? (ಏನು ಗಮನಿಸಿದ್ದೀರಿ?)..."></textarea></div>
+            </div>`;
+        }
+    });
+    container.innerHTML = html;
+}
+
+async function submitDuties() {
+    const dateVal = document.getElementById('dateInput').value;
+    let dutyStr = settingsData['Duty_' + currentLoggedIn] || ""; let duties = dutyStr.split(',').map(s => s.trim()).filter(s => s);
+    let toSubmit = []; let hasError = false;
+
+    duties.forEach((d, i) => {
+        let chk = document.getElementById('chk_duty_' + i);
+        if(chk && chk.checked) { let txt = document.getElementById('txt_duty_' + i).value.trim(); if(!txt) hasError = true; toSubmit.push({ subject: d, desc: txt }); }
+    });
+
+    if(toSubmit.length === 0) return alert("कृपया किमपि दायित्वं चिनोतु! (Select at least one duty)");
+    if(hasError) return alert("कृपया सर्वेषां दायित्वानां विवरणं लिखतु! (Provide description for all checked duties)");
+
+    const btn = document.getElementById('submitDutiesBtn'); const origText = btn.innerText; btn.innerText = "समर्प्यते..."; btn.disabled = true;
+    let promises = toSubmit.map(d => { const fd = new URLSearchParams(); fd.append('action', 'addLog'); fd.append('date', dateVal); fd.append('acharya', currentLoggedIn); fd.append('gana', 'दायित्वम्'); fd.append('time', '-'); fd.append('subject', d.subject); fd.append('description', d.desc); fd.append('attendance', 'अवलोकितम्'); return fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: fd }); });
+    try { await Promise.all(promises); alert("सफलम्! (Duties Submitted)"); btn.innerText = origText; btn.disabled = false; fetchDataFromGoogleSheets(); goToDashboard(); } catch(e) { alert("दोषः जातः!"); btn.innerText = origText; btn.disabled = false; }
+}
 
 // ----------------------------------------------------
 // ADVANCED REPORTS LOGIC
@@ -396,45 +638,64 @@ function downloadAsPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF
 // 🤖 GEMINI AI INTEGRATION (CHAT BOT)
 // ----------------------------------------------------
 function askGeminiAI() {
-    const inputEl = document.getElementById('aiPromptInput');
-    const prompt = inputEl.value.trim();
-    if(!prompt) return;
-    
-    const chatBox = document.getElementById('aiChatHistory');
-    const sendBtn = document.getElementById('aiSendBtn');
-    
-    // Add User Message
-    chatBox.innerHTML += `<div class="user-msg">👤 ${escapeQuotes(prompt)}</div>`;
-    inputEl.value = "";
-    
-    // Add Loading Message
-    const loadingId = "load_" + Date.now();
-    chatBox.innerHTML += `<div class="ai-msg loading-msg" id="${loadingId}">🤖 चिन्तयन् अस्ति... (Thinking...)</div>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
-    
+    const inputEl = document.getElementById('aiPromptInput'); const prompt = inputEl.value.trim(); if(!prompt) return;
+    const chatBox = document.getElementById('aiChatHistory'); const sendBtn = document.getElementById('aiSendBtn');
+    chatBox.innerHTML += `<div class="user-msg">👤 ${escapeQuotes(prompt)}</div>`; inputEl.value = "";
+    const loadingId = "load_" + Date.now(); chatBox.innerHTML += `<div class="ai-msg loading-msg" id="${loadingId}">🤖 चिन्तयन् अस्ति... (Thinking...)</div>`; chatBox.scrollTop = chatBox.scrollHeight;
     sendBtn.disabled = true; inputEl.disabled = true;
-
-    const formData = new URLSearchParams();
-    formData.append('action', 'askGemini');
-    formData.append('prompt', prompt);
-
+    const formData = new URLSearchParams(); formData.append('action', 'askGemini'); formData.append('prompt', prompt);
     fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData })
     .then(res => res.json())
     .then(data => {
         document.getElementById(loadingId).remove();
-        if(data.status === "success") {
-            let ans = data.answer.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/\n/g, '<br>');
-            chatBox.innerHTML += `<div class="ai-msg">🤖 ${ans}</div>`;
-        } else {
-            chatBox.innerHTML += `<div class="ai-msg" style="background:#FFEBEE; color:#C62828;">❌ Error: ${data.message}</div>`;
-        }
-        chatBox.scrollTop = chatBox.scrollHeight;
-        sendBtn.disabled = false; inputEl.disabled = false; inputEl.focus();
-    })
-    .catch(err => {
-        document.getElementById(loadingId).remove();
-        chatBox.innerHTML += `<div class="ai-msg" style="background:#FFEBEE; color:#C62828;">❌ Network Error: Could not connect to AI.</div>`;
-        chatBox.scrollTop = chatBox.scrollHeight;
-        sendBtn.disabled = false; inputEl.disabled = false;
+        if(data.status === "success") { let ans = data.answer.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/\n/g, '<br>'); chatBox.innerHTML += `<div class="ai-msg">🤖 ${ans}</div>`; } else { chatBox.innerHTML += `<div class="ai-msg" style="background:#FFEBEE; color:#C62828;">❌ Error: ${data.message}</div>`; }
+        chatBox.scrollTop = chatBox.scrollHeight; sendBtn.disabled = false; inputEl.disabled = false; inputEl.focus();
+    }).catch(err => {
+        document.getElementById(loadingId).remove(); chatBox.innerHTML += `<div class="ai-msg" style="background:#FFEBEE; color:#C62828;">❌ Network Error: Could not connect to AI.</div>`; chatBox.scrollTop = chatBox.scrollHeight; sendBtn.disabled = false; inputEl.disabled = false;
     });
+}
+
+function loadCMSDuties() { const ach = document.getElementById('cmsDutyAch').value; const txt = document.getElementById('cmsDutyText'); if(!ach) { txt.value = ""; return; } txt.value = settingsData['Duty_' + ach] || ""; }
+function saveCMSDuties() { const ach = document.getElementById('cmsDutyAch').value; const duties = document.getElementById('cmsDutyText').value; if(!ach) return alert("Select Acharya!"); const btn = event.target; const orig = btn.innerText; btn.innerText = "Saving..."; btn.disabled = true; fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: new URLSearchParams({action: 'updateSetting', key: 'Duty_' + ach, value: duties}) }).then(res => res.text()).then(() => { alert("Saved!"); fetchDataFromGoogleSheets(); btn.innerText = orig; btn.disabled = false; }).catch(e => { alert("Error!"); btn.innerText = orig; btn.disabled = false; }); }
+
+// ----------------------------------------------------
+// 📩 MESSAGES SYSTEM (WITH 'READ' FUNCTIONALITY)
+// ----------------------------------------------------
+function renderAcharyaMessages() { 
+    const container = document.getElementById('acharyaMessageContainer'); 
+    if(!container) return; 
+    container.innerHTML = ""; 
+    if(!currentLoggedIn || currentLoggedIn === "Admin") return; 
+    
+    const todayStr = new Date().toISOString().split('T')[0]; 
+    let relevantMessages = messagesData.filter(m => { 
+        if(m.ExpiryDate && normalizeSheetDate(m.ExpiryDate) < todayStr) return false; 
+        if((m.Read_By || m['Read_By'] || "").includes(currentLoggedIn)) return false; 
+        return (m.Target_Acharya === "All" || m.Target_Acharya === currentLoggedIn); 
+    }); 
+    
+    if(relevantMessages.length > 0) { 
+        let msgHtml = `<div class="message-box"><h4>सन्देशः (Message from Admin)</h4>`; 
+        relevantMessages.forEach(m => { 
+            msgHtml += `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.6); padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #BBDEFB;">
+                <p style="margin:0; flex:1; color:#0D47A1; font-weight:600;">🔸 ${m.Message}</p>
+                <button class="btn-primary" style="background:#4CAF50; padding:6px 12px; font-size:0.85rem; margin:0 0 0 10px; min-width:90px;" onclick="markMessageRead(${m.rowIdx})">✅ पठितम् (Read)</button>
+            </div>`; 
+        }); 
+        msgHtml += `</div>`; 
+        container.innerHTML = msgHtml; 
+    } 
+}
+
+function markMessageRead(rowIdx) {
+    let msg = messagesData.find(m => m.rowIdx === rowIdx);
+    if(msg) msg.Read_By = (msg.Read_By || "") + currentLoggedIn + ", ";
+    renderAcharyaMessages(); 
+    
+    const fd = new URLSearchParams(); 
+    fd.append('action', 'markMessageRead'); 
+    fd.append('rowIdx', rowIdx); 
+    fd.append('acharya', currentLoggedIn);
+    fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: fd }).catch(e => console.error(e));
 }

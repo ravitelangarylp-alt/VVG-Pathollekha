@@ -62,25 +62,40 @@
     <!-- 3. DATA ENTRY FORM VIEW -->
     <div id="entryFormSection" class="view-section">
         <h2 class="section-title">पाठोल्लेख-प्रपत्रम् <br><span id="loggedInAcharya" style="color: var(--accent-orange); font-size: 1.6rem;"></span></h2>
-        
         <div id="acharyaMessageContainer"></div> 
-        
-        <div id="avalokanamAlertBanner" style="display:none; background: linear-gradient(135deg, #E3F2FD, #BBDEFB); border: 1px solid #90CAF9; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align:center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
-            <h4 style="color: #1565C0; margin:0 0 10px 0; font-size:1.2rem; font-family:'Yatra One', cursive;">📝 <span id="activePakshaName"></span> - पाक्षिक-अवलोकनम्</h4>
-            <p style="margin:0 0 15px 0; color:#0D47A1; font-weight:bold;">ದಯವಿಟ್ಟು ನಿಮ್ಮ ಈ ಪಕ್ಷದ ಮೌಲ್ಯಮಾಪನವನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ (Please complete the evaluation).</p>
-            <button class="btn-primary" style="margin:0; background:#1565C0; padding:8px 20px; font-size:1rem;" onclick="openAvalokanamModal()">अवलोकनं पूरयतु (Fill Evaluation)</button>
-        </div>
-
+        <div id="avalokanamAlertBanner" style="display:none; background: linear-gradient(135deg, #E3F2FD, #BBDEFB); border: 1px solid #90CAF9; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align:center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);"><h4 style="color: #1565C0; margin:0 0 10px 0; font-size:1.2rem; font-family:'Yatra One', cursive;">📝 <span id="activePakshaName"></span> - पाक्षिक-अवलोकनम्</h4><p style="margin:0 0 15px 0; color:#0D47A1; font-weight:bold;">ದಯವಿಟ್ಟು ನಿಮ್ಮ ಈ ಪಕ್ಷದ ಮೌಲ್ಯಮಾಪನವನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ (Please complete the evaluation).</p><button class="btn-primary" style="margin:0; background:#1565C0; padding:8px 20px; font-size:1rem;" onclick="openAvalokanamModal()">अवलोकनं पूरयतु (Fill Evaluation)</button></div>
         <div id="holidayBannerForm" style="display:none;" class="holiday-banner"></div>
 
         <div class="form-card" id="mainFormCard">
-            <div class="form-group"><label>दिनाङ्कः (Date)</label><input type="date" id="dateInput" class="form-control" readonly></div>
-            <div class="form-group"><label>कक्षा (Class / Gana)</label><select id="classSelect" class="form-control" onchange="renderAttendanceChecklist()"></select><div id="submissionStatus" style="font-size:1rem; margin-top:10px; font-weight:bold; background:#FAFAFA; padding:8px; border-radius:5px; border:1px dashed #A5D6A7; text-align:center;"></div></div>
-            <div class="form-group"><label>पाठस्य विवरणम् (Lesson Description)</label><textarea id="descriptionInput" class="form-control" rows="5"></textarea></div>
-            <div class="form-group" id="attendanceSection" style="display:none;"><label>उपस्थिताः छात्राः (Attendance) - <span style="font-size:0.9rem; color:#D35400;">*ಬಂದವರ ಹೆಸರಿಗೆ ಟಿಕ್ ಮಾಡಿ</span></label><div class="attendance-container" id="attendanceContainer"></div></div>
+            
+            <!-- TABS FOR CLASSES vs DUTIES -->
+            <div class="report-nav-tabs" style="justify-content:center; margin-bottom:20px; border-bottom:2px solid #C8E6C9;">
+                <button class="rep-tab active" id="tabEntryClasses" onclick="switchEntryTab('classes')">📚 पाठाः (Classes)</button>
+                <button class="rep-tab" id="tabEntryDuties" onclick="switchEntryTab('duties')">🛡️ दायित्वानि (Duties)</button>
+            </div>
 
-            <button id="submitBtn" class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="submitLesson()">समर्पयतु (Submit)</button>
-            <button class="btn-primary btn-outline" style="width: 100%; margin: 15px 0;" onclick="goToDashboard()">निर्गच्छतु (Back)</button>
+            <!-- CLASSES SECTION -->
+            <div id="entryClassesDiv">
+                <div class="form-group"><label>दिनाङ्कः (Date)</label><input type="date" id="dateInput" class="form-control" readonly></div>
+                <div class="form-group"><label>कक्षा (Class / Gana)</label><select id="classSelect" class="form-control" onchange="handleClassSelection()"></select><div id="submissionStatus" style="font-size:1rem; margin-top:10px; font-weight:bold; background:#FAFAFA; padding:8px; border-radius:5px; border:1px dashed #A5D6A7; text-align:center;"></div></div>
+                <div class="form-group" id="leaveGroup" style="display:none; background:#FFF3E0; padding:15px; border-radius:8px; border:1px solid #FFCC80; margin-bottom:20px;">
+                    <label style="display:flex; align-items:center; gap:8px; color:#D32F2F; font-weight:bold; cursor:pointer; margin:0; font-size:1.05rem;"><input type="checkbox" id="leaveCheckbox" style="width:18px; height:18px; accent-color:#D32F2F;" onchange="toggleLeaveMode()">🚫 अद्य एतां कक्षां न पाठयामि (Not taking this class)</label>
+                    <div id="applyAllDiv" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed #FFB74D;"><label style="display:flex; align-items:center; gap:8px; color:#E65100; font-weight:bold; cursor:pointer; margin:0; font-size:0.95rem;"><input type="checkbox" id="applyAllCheckbox" style="width:16px; height:16px; accent-color:#E65100;">सर्वाभ्यः कक्षाभ्यः इदमेव कारणम् (Apply to ALL my pending classes today)</label></div>
+                </div>
+                <div class="form-group"><label id="descLabel">पाठस्य विवरणम् (Lesson Description)</label><textarea id="descriptionInput" class="form-control" rows="5"></textarea></div>
+                <div class="form-group" id="attendanceSection" style="display:none;"><label>उपस्थिताः छात्राः (Attendance) - <span style="font-size:0.9rem; color:#D35400;">*ಬಂದವರ ಹೆಸರಿಗೆ ಟಿಕ್ ಮಾಡಿ</span></label><div class="attendance-container" id="attendanceContainer"></div></div>
+                <button id="submitBtn" class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="submitLesson()">समर्पयतु (Submit Class)</button>
+            </div>
+
+            <!-- DUTIES SECTION -->
+            <div id="entryDutiesDiv" style="display:none;">
+                <h4 style="color:#1B5E20; margin-top:0; border-bottom:1px solid #C8E6C9; padding-bottom:10px;">अद्यतनीय-दायित्वानि (Today's Special Duties)</h4>
+                <div id="dutiesListContainer"></div>
+                <button id="submitDutiesBtn" class="btn-primary" style="width: 100%; margin-top: 15px; background:#1565C0;" onclick="submitDuties()">समर्पयतु (Submit Duties)</button>
+            </div>
+            
+            <hr style="border:0; border-top:1px solid #E0E0E0; margin:25px 0;">
+            <button class="btn-primary btn-outline" style="width: 100%; margin: 0 0 10px 0;" onclick="goToDashboard()">निर्गच्छतु (Back)</button>
             <button class="btn-primary" style="background:#E53935; width: 100%; margin: 0;" onclick="logout()">पूर्ण-निर्गच्छतु (Logout)</button>
         </div>
     </div>
@@ -88,39 +103,40 @@
     <!-- 4. ADMIN PANEL (ADVANCED REPORTS & CMS) -->
     <div id="adminPanelView" class="view-section">
         <h2 class="section-title">दत्तांश-निर्वहणम् (Advanced Reports & CMS)</h2>
-        
         <div class="form-card" style="max-width: 1100px; padding: 20px;">
-            
             <div class="report-nav-tabs">
                 <button class="rep-tab active" onclick="switchReportCategory('lesson', this)">📚 Lesson Reports</button>
                 <button class="rep-tab" onclick="switchReportCategory('attendance', this)">👤 Attendance</button>
                 <button class="rep-tab" onclick="switchReportCategory('cms', this)">⚙️ System Settings</button>
                 <button class="rep-tab" onclick="switchReportCategory('ai_chat', this)">🤖 Ask AI</button>
-                <!-- ಅಡ್ಮಿನ್‌ಗೆ ಪಾಠ ಸೇರಿಸಲು ಹೊಸ ಬಟನ್ 👇 -->
                 <button class="rep-tab" style="color:#D35400; font-weight:bold;" onclick="openAdminLogEntry()">✍️ Add Missing Log</button>
             </div>
             
-            <!-- 🤖 AI CHAT SECTION (NEW) -->
+            <!-- AI CHAT SECTION -->
             <div id="aiChatSection" style="display:none;">
                 <div style="background: linear-gradient(135deg, #F3E5F5, #E1BEE7); border: 1px solid #CE93D8; border-radius: 12px; padding: 25px;">
                     <h3 style="margin-top:0; color:#4A148C; font-family:'Yatra One', cursive; font-size:1.5rem;">🤖 AI Data Analyst (Gemini)</h3>
                     <p style="color:#6A1B9A; font-size:1rem; margin-bottom:20px; font-weight:600;">गुरुकुलस्य दत्तांशस्य विषये किमपि प्रच्छतु (Ask any complex question about your Gurukulam data in Kannada or English).</p>
-                    
                     <div id="aiChatHistory" style="background:white; border-radius:10px; padding:20px; height:350px; overflow-y:auto; margin-bottom:20px; border:2px solid #E1BEE7; display:flex; flex-direction:column; gap:15px;">
                         <div class="ai-msg">🙏 नमस्कारः! भवान् किं ज्ञातुम् इच्छति?<br>ನಾನು ನಿಮ್ಮ AI ಡೇಟಾ ಅನಲಿಸ್ಟ್. ಗುರುಕುಲದ ಯಾವುದೇ ಡೇಟಾವನ್ನು ಕೇಳಿ!</div>
                     </div>
-                    
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" id="aiPromptInput" class="form-control" placeholder="ಉದಾ: ಶ್ರಾವಣ ಶುಕ್ಲ ಪಕ್ಷದಲ್ಲಿ ಯಾರೆಲ್ಲಾ ಗೈರಾಗಿದ್ದರು?..." style="border:2px solid #CE93D8;" onkeypress="if(event.key === 'Enter') askGeminiAI()">
-                        <button class="btn-primary" style="margin:0; background:#8E24AA; padding:12px 25px; font-size:1.1rem;" id="aiSendBtn" onclick="askGeminiAI()">Ask 🚀</button>
-                    </div>
+                    <div style="display:flex; gap:10px;"><input type="text" id="aiPromptInput" class="form-control" placeholder="ಉದಾ: ಶ್ರಾವಣ ಶುಕ್ಲ ಪಕ್ಷದಲ್ಲಿ ಯಾರೆಲ್ಲಾ ಗೈರಾಗಿದ್ದರು?..." style="border:2px solid #CE93D8;" onkeypress="if(event.key === 'Enter') askGeminiAI()"><button class="btn-primary" style="margin:0; background:#8E24AA; padding:12px 25px; font-size:1.1rem;" id="aiSendBtn" onclick="askGeminiAI()">Ask 🚀</button></div>
                 </div>
             </div>
 
             <!-- CMS SECTION -->
             <div id="cmsSection" style="display:none;">
-                <div class="report-sub-tabs" style="background:#E3F2FD; border-color:#90CAF9;"><label><input type="radio" name="cmsType" value="cms_student" checked onchange="handleCMSChange()"> 🎓 Students</label><label><input type="radio" name="cmsType" value="cms_acharya" onchange="handleCMSChange()"> 👨‍🏫 Acharyas</label><label><input type="radio" name="cmsType" value="cms_timetable" onchange="handleCMSChange()"> 🗓️ Timetable</label><label><input type="radio" name="cmsType" value="cms_holiday" onchange="handleCMSChange()"> 🏖️ Holidays</label><label><input type="radio" name="cmsType" value="cms_message" onchange="handleCMSChange()"> ✉️ Messages</label><label><input type="radio" name="cmsType" value="cms_avalokanam" onchange="handleCMSChange()"> 📊 Avalokanam</label></div>
-                <div id="cms_avalokanam_form" class="cms-section"><h4 style="margin-top:0; color:#1565C0;">📊 Pakshika Avalokanam Control</h4><p style="color:#555; font-size:0.95rem; margin-bottom:15px;">Turn on the Fortnightly Evaluation so Acharyas can submit their grades.</p><div class="cms-grid"><input type="text" id="cmsPakshaName" class="form-control" placeholder="Paksha Name (e.g. श्रावण-शुक्ल-पक्षः)"></div><div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap:wrap;"><button class="btn-primary" style="background:#2E7D32; margin:0;" onclick="setAvalokanamStatus('ON')">▶️ Start Evaluation (ON)</button><button class="btn-primary" style="background:#D32F2F; margin:0;" onclick="setAvalokanamStatus('OFF')">⏹️ Close Evaluation (OFF)</button></div><div style="margin-top:15px; padding:10px; background:#FAFAFA; border:1px solid #E0E0E0; border-radius:5px;"><span style="font-weight:bold; color:#333;">Current Status: </span><span id="cmsAvalokanamStatusText" style="color:#E65100; font-weight:bold;">OFF</span></div></div>
+                <div class="report-sub-tabs" style="background:#E3F2FD; border-color:#90CAF9;"><label><input type="radio" name="cmsType" value="cms_student" checked onchange="handleCMSChange()"> 🎓 Students</label><label><input type="radio" name="cmsType" value="cms_acharya" onchange="handleCMSChange()"> 👨‍🏫 Acharyas</label><label><input type="radio" name="cmsType" value="cms_timetable" onchange="handleCMSChange()"> 🗓️ Timetable</label><label><input type="radio" name="cmsType" value="cms_holiday" onchange="handleCMSChange()"> 🏖️ Holidays</label><label><input type="radio" name="cmsType" value="cms_message" onchange="handleCMSChange()"> ✉️ Messages</label><label><input type="radio" name="cmsType" value="cms_avalokanam" onchange="handleCMSChange()"> 📊 Avalokanam</label><label><input type="radio" name="cmsType" value="cms_duties" onchange="handleCMSChange()"> 🛡️ Duties</label></div>
+                
+                <div id="cms_duties_form" class="cms-section">
+                    <h4 style="margin-top:0; color:#1565C0;">🛡️ Assign Extra Responsibilities</h4>
+                    <p style="color:#555; font-size:0.9rem; margin-bottom:15px;">Assign special duties (e.g. ಗೋಶಾಲೆ, ಭೋಜನ) to Acharyas. They can log their observations daily.</p>
+                    <div class="cms-grid"><select id="cmsDutyAch" class="form-control" onchange="loadCMSDuties()"></select></div>
+                    <textarea id="cmsDutyText" class="form-control" rows="3" placeholder="Comma separated duties (e.g. गौशाला, भोजन-व्यवस्था)" style="margin-bottom:15px;"></textarea>
+                    <button class="btn-primary" style="padding: 8px 15px; font-size:0.95rem; margin:0;" onclick="saveCMSDuties()">Save Duties</button>
+                </div>
+                
+                <div id="cms_avalokanam_form" class="cms-section"><h4 style="margin-top:0; color:#1565C0;">📊 Pakshika Avalokanam Control</h4><div class="cms-grid"><input type="text" id="cmsPakshaName" class="form-control" placeholder="Paksha Name (e.g. श्रावण-शुक्ल-पक्षः)"></div><div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap:wrap;"><button class="btn-primary" style="background:#2E7D32; margin:0;" onclick="setAvalokanamStatus('ON')">▶️ Start Evaluation (ON)</button><button class="btn-primary" style="background:#D32F2F; margin:0;" onclick="setAvalokanamStatus('OFF')">⏹️ Close Evaluation (OFF)</button></div><div style="margin-top:15px; padding:10px; background:#FAFAFA; border:1px solid #E0E0E0; border-radius:5px;"><span style="font-weight:bold; color:#333;">Current Status: </span><span id="cmsAvalokanamStatusText" style="color:#E65100; font-weight:bold;">OFF</span></div></div>
                 <div id="cms_student_form" class="cms-section active"><h4 style="margin-top:0; color:#1565C0;">➕ Add New Student</h4><div class="cms-grid"><input type="text" id="cmsStuName" class="form-control" placeholder="Student Name (संस्कृतम्)"><select id="cmsStuVibhaga" class="form-control"><option value="सामान्य">सामान्य</option><option value="वेदान्त">वेदान्त</option><option value="व्याकरण">व्याकरण</option></select><input type="text" id="cmsStuGana" class="form-control" placeholder="Gana (e.g. तपः)"><input type="text" id="cmsStuVeda" class="form-control" placeholder="Vedapatha (e.g. कपिलः)"></div><button class="btn-primary" style="padding: 8px 15px; font-size:0.95rem; margin:0;" onclick="submitCMS('addStudent')">Save Student</button></div>
                 <div id="cms_acharya_form" class="cms-section"><h4 style="margin-top:0; color:#1565C0;">➕ Add New Acharya</h4><div class="cms-grid"><input type="text" id="cmsAchName" class="form-control" placeholder="Acharya Name"><input type="text" id="cmsAchPass" class="form-control" placeholder="Password / PIN"><input type="text" id="cmsAchVeda" class="form-control" placeholder="Veda Mapping (or leave blank)"></div><button class="btn-primary" style="padding: 8px 15px; font-size:0.95rem; margin:0;" onclick="submitCMS('addAcharya')">Save Acharya</button></div>
                 <div id="cms_timetable_form" class="cms-section"><h4 style="margin-top:0; color:#1565C0;">➕ Add Timetable Entry</h4><div class="cms-grid"><select id="cmsTimeAch" class="form-control"></select><input type="text" id="cmsTimeGana" class="form-control" placeholder="Gana (e.g. श्रेयः + भ्राजः)"><input type="text" id="cmsTimeSlot" class="form-control" placeholder="Time (e.g. 08:30–09:25)"><input type="text" id="cmsTimeSubj" class="form-control" placeholder="Subject"><select id="cmsTimeVib" class="form-control"><option value="सामान्य">सामान्य</option><option value="वेदान्त">वेदान्त</option><option value="व्याकरण">व्याकरण</option></select></div><button class="btn-primary" style="padding: 8px 15px; font-size:0.95rem; margin:0;" onclick="submitCMS('addTimetable')">Save Timetable</button></div>
