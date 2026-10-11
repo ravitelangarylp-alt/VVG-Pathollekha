@@ -17,7 +17,7 @@
 </head>
 <body>
 
-<header onclick="goToDashboard()" title="मुख्यपृष्ठम् प्रति गच्छतु (Go to Home)">
+<header onclick="showSection('dashboard')" title="मुख्यपृष्ठम् प्रति गच्छतु (Go to Home)">
     <h1>पाठोल्लेखः</h1>
     <div style="font-size: 1.2rem; margin-top: 5px; font-weight: 600; font-family: 'Laila', sans-serif; opacity: 0.9;">वेदविज्ञानगुरुकुलम्</div>
     <div id="headerTodayDate" style="font-size: 0.95rem; margin-top: 8px; font-weight: 700; color: #E8F5E9; background: rgba(0,0,0,0.1); display: inline-block; padding: 4px 15px; border-radius: 20px; font-family: 'Laila', sans-serif;">अद्यतन-दिनाङ्कः: ...</div>
@@ -28,42 +28,49 @@
 <div class="container">
     <div class="reminder-banner" id="reminderBanner"><div class="reminder-text">⏰ किं भवान् पाठोल्लेखं विस्मरति? ಪ್ರತಿದಿನ ರಾತ್ರಿ 8:00 ಗಂಟೆಗೆ ನೆನಪಿಸಲು ಅಲಾರಂ ಸೆಟ್ ಮಾಡಿಕೊಳ್ಳಿ!</div><button class="btn-primary" style="margin:0; background:#FF9800; padding:10px 20px; font-size:1rem;" onclick="setupDailyReminder()">🔔 प्रतिदिन-स्मरणम्</button></div>
     
+    <!-- ಮುಖ್ಯ ಮೆನು ಬಟನ್‌ಗಳು -->
     <div id="mainTabs" class="tab-buttons">
-        <button id="tabDashboard" class="btn-tab active" onclick="switchView('dashboardView', this)">समयसारिणी (Dashboard)</button>
-        <button id="tabToday" class="btn-tab" onclick="switchView('todayView', this)">अद्यतन-पाठोल्लेखः</button>
-        <button id="tabYearly" class="btn-tab" onclick="switchView('yearlyView', this)">वार्षिक-समयसारिणी</button>
+        <button id="btn-dashboard" class="btn-tab active" onclick="showSection('dashboard')">📝 अद्यतन-पाठोल्लेखः (Dashboard)</button>
+        <button id="btn-pradarshini" class="btn-tab" onclick="showSection('pradarshini')">📊 पाठोल्लेख-प्रदर्शिनी (Board)</button>
     </div>
 
-    <!-- 1. DASHBOARD VIEW -->
-    <div id="dashboardView" class="view-section active">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; gap:15px;">
-            <h2 class="section-title" id="dashboardDateHeading" style="margin: 0; color:#2E7D32; font-family:'Yatra One', cursive; font-size: 1.4rem;">ह्यस्तन-समयसारिणी</h2>
-            <div style="display: flex; align-items: center; gap: 10px; background: #FAFAFA; padding: 8px 15px; border-radius: 8px; border:1px solid #E0E0E0;"><label style="font-weight: bold; color: #1B5E20; font-size:0.9rem; margin:0;">📅 अन्य-दिनाङ्कं पश्यतु (Go to Date):</label><input type="date" id="dashboardDatePicker" class="form-control" style="width: auto; padding: 5px; margin:0;" onchange="changeDashboardDate()"></div>
-        </div>
-
-        <div id="holidayBannerDashboard" style="display:none;" class="holiday-banner"></div>
-        <div id="yesterdayDataContainer"><div class="loading-spinner">दत्तांशः आगच्छन् अस्ति...</div></div>
-        <div id="otherTasksContainer" style="margin-top: 25px;"></div>
-        
-        <div class="dashboard-grid" style="margin-top: 40px; grid-template-columns: 1fr 1fr;"><div class="data-card" style="border-left-color: #D32F2F;"><h3 style="color:#D32F2F; margin-top:0; border-bottom:1px solid #FFCDD2; padding-bottom:10px; font-family:'Laila', sans-serif;">अकृताः पाठाः (Missed / Not Taken)</h3><ul id="missedLogsList" style="padding-left:20px; color:#424242; font-size:1rem; line-height:1.6;"></ul></div><div class="data-card" style="border-left-color: #F57C00;"><h3 style="color:#F57C00; margin-top:0; border-bottom:1px solid #FFE0B2; padding-bottom:10px; font-family:'Laila', sans-serif;">अनुपस्थिताः छात्राः (Absent Students)</h3><ul id="absentStudentsList" style="padding-left:20px; color:#424242; font-size:1rem; line-height:1.6;"></ul></div></div>
-
-        <div class="dashboard-grid" style="margin-top: 30px;"><div class="stat-card"><h3>पाठ-पूरकाः आचार्याः</h3><div class="circle-progress" id="circleSubmitted"><span id="statSubmitted">०%</span></div></div><div class="stat-card"><h3>उपस्थिताः आचार्याः</h3><div class="circle-progress" id="circlePresent"><span id="statPresent">०%</span></div></div><div class="stat-card"><h3>सम्पन्नाः पाठाः</h3><div class="circle-progress" id="circleCompleted"><span id="statCompleted">०%</span></div></div></div>
-
-        <div style="text-align: center; margin-top: 30px;"><a class="admin-link" onclick="openAdminModal()" style="cursor:pointer; color:#D35400; font-weight:bold; text-decoration:underline;">प्रबन्धक-प्रवेशः (Admin Login)</a></div>
-    </div>
-
-    <!-- 2. TODAY'S VIEW -->
-    <div id="todayView" class="view-section">
+    <!-- 1. DASHBOARD VIEW (ಅದ್ಯತನ ಪಾಠೋಲ್ಲೇಖ ಮತ್ತು ಲಾಗಿನ್) -->
+    <div id="dashboard" class="view-section active">
         <h2 class="section-title">अद्यतन-प्रविष्टाः पाठाः (Today's Logs)</h2>
         <div class="data-card" id="todayDataContainer"><div class="loading-spinner">दत्तांशः आगच्छन् अस्ति...</div></div>
-        <div style="text-align: center;"><button class="btn-primary" onclick="openLoginModal()" style="background: var(--accent-orange); font-size: 1.3rem;">अद्यतन-पाठोल्लेखं कुरु 📝</button></div>
+        
+        <!-- ಪಾಠೋಲ್ಲೇಖ ಎಂಟ್ರಿ ಮಾಡಲು ಬಟನ್ -->
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn-primary" onclick="openLoginModal()" style="background: var(--accent-orange); font-size: 1.3rem; padding: 15px 30px;">अद्यतन-पाठोल्लेखं कुरु 📝</button>
+        </div>
+        
+        <!-- ಅಡ್ಮಿನ್ ಲಾಗಿನ್ -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a class="admin-link" onclick="openAdminModal()" style="cursor:pointer; color:#D35400; font-weight:bold; text-decoration:underline;">प्रबन्धक-प्रवेशः (Admin Login)</a>
+        </div>
     </div>
 
-    <!-- 3. DATA ENTRY FORM VIEW -->
-    <div id="entryFormSection" class="view-section">
+    <!-- 2. PRADARSHINI BOARD VIEW (ಪಾಠೋಲ್ಲೇಖ ಪ್ರದರ್ಶಿನಿ) -->
+    <div id="pradarshini" class="view-section" style="display: none;">
+        <div style="background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h2 style="color: #1B5E20; text-align: center; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">📊 पाठोल्लेख-प्रदर्शिनी</h2>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <label for="boardDate" style="font-weight: bold; font-size: 1.1rem; color: #333;">📅 दिनाङ्कं चिनोतु (Go to Date): </label>
+                <input type="date" id="boardDate" class="form-control" style="width: auto; display: inline-block; padding: 10px; font-size: 1rem; border: 2px solid #4CAF50; border-radius: 5px;" onchange="generatePradarshiniBoard()">
+            </div>
+
+            <div id="pradarshiniBoardContainer" style="overflow-x: auto;">
+                <!-- ಇಲ್ಲಿ ಜಾವಾಸ್ಕ್ರಿಪ್ಟ್ ಮೂಲಕ ಆಚಾರ್ಯರ ದೊಡ್ಡ ಬೋರ್ಡ್ ತಾನಾಗಿಯೇ ಸೃಷ್ಟಿಯಾಗುತ್ತದೆ -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. DATA ENTRY FORM VIEW (ಪಾಠೋಲ್ಲೇಖ ಫಾರ್ಮ್) -->
+    <div id="entryFormSection" class="view-section" style="display:none;">
         <h2 class="section-title">पाठोल्लेख-प्रपत्रम् <br><span id="loggedInAcharya" style="color: var(--accent-orange); font-size: 1.6rem;"></span></h2>
         <div id="acharyaMessageContainer"></div> 
-        <div id="avalokanamAlertBanner" style="display:none; background: linear-gradient(135deg, #E3F2FD, #BBDEFB); border: 1px solid #90CAF9; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align:center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);"><h4 style="color: #1565C0; margin:0 0 10px 0; font-size:1.2rem; font-family:'Yatra One', cursive;">📝 <span id="activePakshaName"></span> - पाक्षिक-अवलोकनम्</h4><p style="margin:0 0 15px 0; color:#0D47A1; font-weight:bold;">ದಯವಿಟ್ಟು ನಿಮ್ಮ ಈ ಪಕ್ಷದ ಮೌಲ್ಯಮಾಪನವನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ (Please complete the evaluation).</p><button class="btn-primary" style="margin:0; background:#1565C0; padding:8px 20px; font-size:1rem;" onclick="openAvalokanamModal()">अवलोकनं पूरयतु (Fill Evaluation)</button></div>
+        <div id="avalokanamAlertBanner" style="display:none; background: linear-gradient(135deg, #E3F2FD, #BBDEFB); border: 1px solid #90CAF9; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align:center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);"><h4 style="color: #1565C0; margin:0 0 10px 0; font-size:1.2rem; font-family:'Yatra One', cursive;">📝 <span id="activePakshaName"></span>पाक्षिक-अवलोकनम्</h4><p style="margin:0 0 15px 0; color:#0D47A1; font-weight:bold;">ದಯವಿಟ್ಟು ನಿಮ್ಮ ಈ ಪಕ್ಷದ ಮೌಲ್ಯಮಾಪನವನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ (Please complete the evaluation).</p><button class="btn-primary" style="margin:0; background:#1565C0; padding:8px 20px; font-size:1rem;" onclick="openAvalokanamModal()">अवलोकनं पूरयतु (Fill Evaluation)</button></div>
         <div id="holidayBannerForm" style="display:none;" class="holiday-banner"></div>
 
         <div class="form-card" id="mainFormCard">
@@ -95,13 +102,13 @@
             </div>
             
             <hr style="border:0; border-top:1px solid #E0E0E0; margin:25px 0;">
-            <button class="btn-primary btn-outline" style="width: 100%; margin: 0 0 10px 0;" onclick="goToDashboard()">निर्गच्छतु (Back)</button>
+            <button class="btn-primary btn-outline" style="width: 100%; margin: 0 0 10px 0;" onclick="showSection('dashboard')">निर्गच्छतु (Back)</button>
             <button class="btn-primary" style="background:#E53935; width: 100%; margin: 0;" onclick="logout()">पूर्ण-निर्गच्छतु (Logout)</button>
         </div>
     </div>
 
     <!-- 4. ADMIN PANEL (ADVANCED REPORTS & CMS) -->
-    <div id="adminPanelView" class="view-section">
+    <div id="adminPanelView" class="view-section" style="display:none;">
         <h2 class="section-title">दत्तांश-निर्वहणम् (Advanced Reports & CMS)</h2>
         <div class="form-card" style="max-width: 1100px; padding: 20px;">
             <div class="report-nav-tabs">
@@ -155,18 +162,13 @@
             
             <hr style="border: 0; height: 1px; background: #E0E0E0; margin: 25px 0;">
             <div id="reportSummaryContainer" class="summary-cards-grid" style="display:none;"></div>
-            <div id="reportSnapshotArea" style="overflow-x: auto; display:none; margin-top:20px; background: white; padding: 25px; border-radius: 10px; border: 1px solid #E0E0E0;"><div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:15px; flex-wrap:wrap; gap:10px;"><h2 class="report-header" id="reportHeaderTitle" style="margin:0; border:none; text-align:left;">Preview</h2><div id="downloadControlsDiv" style="display:flex; align-items:center; gap:10px; background: #F5F5F5; padding: 5px 10px; border-radius: 8px; border: 1px solid #CCC;"><label style="font-weight:bold; color:#333; margin:0; font-size:0.9rem;">Download ▼</label><select id="exportFormatSelect" class="form-control" style="width: auto; padding: 5px; margin:0; border-color:#999; font-size:0.9rem;"><option value="pdf">As PDF</option><option value="excel">As Excel (.xlsx)</option><option value="png">As PNG</option></select><button class="btn-primary" style="background:#1565C0; margin:0; padding: 6px 12px; font-size:0.9rem;" onclick="executeDownload()">Download 📥</button></div></div><div id="deleteControlHeader" style="display:none; text-align:right; font-size:0.8rem; color:#D32F2F; margin-bottom:5px;">* Delete actions are permanent</div><table class="report-table" id="reportTableBody"></table></div>
+            <div id="reportSnapshotArea" style="overflow-x: auto; display:none; margin-top:20px; background: white; padding: 25px; border-radius: 10px; border: 1px solid #E0E0E0;"><div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:15px; flex-wrap:wrap; gap:10px;"><h2 class="report-header" id="reportHeaderTitle" style="margin:0; border:none; text-align:left;">Preview</h2><div id="downloadControlsDiv" style="display:flex; align-items:center; gap:10px; background: #F5F5F5; padding: 5px 10px; border-radius: 8px; border: 1px solid #CCC;"><label style="font-weight:bold; color:#333; margin:0; font-size:0.9rem;">Download ▼</label><select id="exportFormatSelect" class="form-control" style="width: auto; padding: 5px; margin:0; border-color:#999; font-size:0.9rem;"><option value="pdf">As PDF</option><option value="excel">As Excel (.xlsx)</option><option value="png">As PNG</option></select><button class="btn-primary" style="background:#1565C0; margin:0; padding: 6px 12px; font-size:0.9rem;" onclick="executeDownload()">Download 📥</button></div></div><div id="deleteControlHeader" style="display:none; text-align:right; font-size:0.8rem; color:#D32F2F; margin-bottom:5px;">Delete actions are permanent</div><table class="report-table" id="reportTableBody"></table></div>
 
             <hr style="border: 0; height: 1px; background: #C8E6C9; margin: 30px 0;">
-            <div style="text-align: center; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;"><button class="btn-primary" style="background:#8E24AA;" onclick="document.getElementById('addNotifModal').style.display='flex'">सूचनाः पश्यतु (Public Notifications) 📢</button><button class="btn-primary" style="background:#424242;" onclick="goToDashboard()">मुख्यपृष्ठम् (Home) 🏠</button><button class="btn-primary" style="background:#E53935;" onclick="logout()">पूर्ण-निर्गच्छतु (Logout)</button></div>
+            <div style="text-align: center; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;"><button class="btn-primary" style="background:#8E24AA;" onclick="document.getElementById('addNotifModal').style.display='flex'">सूचनाः पश्यतु (Public Notifications) 📢</button><button class="btn-primary" style="background:#424242;" onclick="showSection('dashboard')">मुख्यपृष्ठम् (Home) 🏠</button><button class="btn-primary" style="background:#E53935;" onclick="logout()">पूर्ण-निर्गच्छतु (Logout)</button></div>
         </div>
     </div>
 
-    <!-- 5. YEARLY VIEW -->
-    <div id="yearlyView" class="view-section">
-        <h2 class="section-title">वार्षिक-समयसारिणी (२०२६-२७)</h2>
-        <div class="table-wrapper" id="yearlyTableContainer"></div>
-    </div>
 </div>
 
 <!-- Modals -->
