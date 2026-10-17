@@ -598,16 +598,29 @@ function deleteRecord(actionType, sheetNameOrRowIdx, actualRowIdx) {
 function updateAdminAvalokanamUI() { const pName = document.getElementById('cmsPakshaName'); const sText = document.getElementById('cmsAvalokanamStatusText'); if(!pName || !sText) return; pName.value = settingsData['Avalokanam_Paksha'] || ""; if(settingsData['Avalokanam_Status'] === 'ON') { sText.innerText = "ON (Active)"; sText.style.color = "#2E7D32"; } else { sText.innerText = "OFF (Inactive)"; sText.style.color = "#D32F2F"; } }
 function setAvalokanamStatus(status) { let paksha = document.getElementById('cmsPakshaName').value.trim(); if(status === 'ON' && !paksha) return alert("Please enter the Paksha Name first!"); Promise.all([ fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: new URLSearchParams({action: 'updateSetting', key: 'Avalokanam_Status', value: status}) }), fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: new URLSearchParams({action: 'updateSetting', key: 'Avalokanam_Paksha', value: paksha}) }) ]).then(() => { alert("Evaluation Status Updated!"); fetchDataFromGoogleSheets(); }).catch(err => alert("Error updating status.")); }
 function checkAndShowAvalokanamBanner() {
-    let statusRow = allSettingsArray.find(r => r.category === 'avalokanam_status' || r.Category === 'avalokanam_status' || r[0] === 'avalokanam_status');
-    let pakshaRow = allSettingsArray.find(r => r.category === 'avalokanam_paksha' || r.Category === 'avalokanam_paksha' || r[0] === 'avalokanam_paksha');
+    let settingsData = allSettingsArray;
+    console.log("🔍 Checking Avalokanam Banner Status...");
+    console.log("📦 settingsData array:", settingsData);
     
-    // Fallback if object keys are different
-    if(!statusRow) statusRow = allSettingsArray.find(r => Object.values(r).includes('avalokanam_status'));
-    if(!pakshaRow) pakshaRow = allSettingsArray.find(r => Object.values(r).includes('avalokanam_paksha'));
+    let avStatus = 'OFF';
+    let avPaksha = '';
 
-    let avStatus = statusRow ? (statusRow.value || statusRow.Value || statusRow[1]) : 'OFF';
-    let avPaksha = pakshaRow ? (pakshaRow.value || pakshaRow.Value || pakshaRow[1]) : '';
-    
+    if (settingsData && settingsData.length > 0) {
+        settingsData.forEach(row => {
+            // Convert all values in the row to string and lowercase for safe checking
+            let rowValues = Object.values(row).map(v => String(v).trim().toLowerCase());
+            
+            if (rowValues.includes('avalokanam_status')) {
+                avStatus = String(row.Value || row.value || Object.values(row)[2] || Object.values(row)[1] || 'OFF').trim().toUpperCase();
+            }
+            if (rowValues.includes('avalokanam_paksha')) {
+                avPaksha = String(row.Value || row.value || Object.values(row)[2] || Object.values(row)[1] || '').trim();
+            }
+        });
+    }
+
+    console.log("⚙️ Extracted Status:", avStatus, "| Paksha:", avPaksha);
+
     let banner = document.getElementById('avalokanamAlertBanner');
     if (banner) {
         if (avStatus === 'ON') {
@@ -616,9 +629,13 @@ function checkAndShowAvalokanamBanner() {
             if(pakshaSpan) pakshaSpan.innerText = avPaksha + " ";
             let modalTitle = document.getElementById('avModalPakshaTitle');
             if(modalTitle) modalTitle.innerText = avPaksha;
+            console.log("✅ Banner set to visible (block)");
         } else {
             banner.style.display = 'none';
+            console.log("❌ Banner hidden (Status is OFF or not matched)");
         }
+    } else {
+        console.error("🚨 Banner element not found in DOM!");
     }
 }
 
