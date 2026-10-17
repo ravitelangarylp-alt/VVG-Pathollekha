@@ -1,4 +1,4 @@
-let currentLoggedIn = ""; let isAdmin = false; 
+let currentLoggedIn = ""; let isAdmin = false; let allSettingsArray = [];
 // Unified Data Variables
 let currentReportDataset = []; let currentReportColumns = []; let currentReportTitleStr = ""; let currentActiveFiltersArr = [];
 let charitryaData = [];
@@ -66,16 +66,18 @@ function fetchDataFromGoogleSheets() {
         (data.timetable || []).forEach(t => { if(!t.Acharya) return; if(!timetableData[t.Acharya]) timetableData[t.Acharya] = []; timetableData[t.Acharya].push({gana: t.Gana || "", time: t.Time || "", subject: t.Subject || "", vibhaga: t.Vibhaga || "", rowIdx: t.rowIdx}); });
         holidaysData = data.holidays || []; holidaysData.forEach(h => { h.normalizedDate = normalizeSheetDate(h.Date); });
         messagesData = data.messages || []; avalokanamData = data.avalokanam || []; charitryaData = data.charitrya || [];
+        allSettingsArray = data.settings || [];
         settingsData = {}; (data.settings || []).forEach(row => { if(row.Category) settingsData[row.Category] = row.Value; });
         
         populateAcharyaDropdowns(); 
         updateTodayView(); 
         displayActiveNotifications();
+        checkAndShowAvalokanamBanner();
         
         if(currentLoggedIn && document.getElementById('entryFormSection').style.display === 'block') { 
             populateClassDropdown(currentLoggedIn, document.getElementById('dateInput').value); 
             renderAcharyaMessages(); 
-            checkAvalokanamStatus(); 
+            checkAndShowAvalokanamBanner();
             switchEntryTab('classes'); 
         }
         if(isAdmin && document.getElementById('adminPanelView').style.display === 'block') { 
@@ -172,11 +174,11 @@ function openAdminModal() {
 
 function closeModals() { ['adminModal','loginModal','avalokanamModal'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; }); ['adminPin','acharyaPin','acharyaSelect'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; }); }
 
-function verifyAdmin() { const pin = document.getElementById('adminPin').value; if(pin === '9999') { isAdmin = true; closeModals(); document.getElementById('mainTabs').style.display = 'none'; showSection('adminPanelView'); resetAdvancedFilters(); populateCMSDropdowns(); updateAdminAvalokanamUI(); } else { alert("असमीचीनः कूटशब्दः!"); } }
+function verifyAdmin() { const pin = document.getElementById('adminPin').value; if(pin === '9999') { isAdmin = true; closeModals(); document.getElementById('mainTabs').style.display = 'flex'; showSection('adminPanelView'); resetAdvancedFilters(); populateCMSDropdowns(); updateAdminAvalokanamUI(); } else { alert("असमीचीनः कूटशब्दः!"); } }
 
 function getVocative(name) { if (name === "विष्णुः") return "विष्णो"; if (name === "सुब्रह्मण्य. आ.") return name; return name.replace(/ः$/, ''); }
 
-function verifyAcharya() { const name = document.getElementById('acharyaSelect').value; const pin = document.getElementById('acharyaPin').value; if(!name) return alert("कृपया आचार्यं चिनोतु!"); if(acharyaPasswords[name] === pin) { closeModals(); isAdmin = false; currentLoggedIn = name; document.getElementById('mainTabs').style.display = 'none'; showSection('entryFormSection'); document.getElementById('loggedInAcharya').innerText = "स्वागतम्, " + getVocative(name); document.getElementById('dateInput').value = new Date().toISOString().split('T')[0]; document.getElementById('dateInput').setAttribute('readonly', 'true'); switchEntryTab('classes'); populateClassDropdown(name, document.getElementById('dateInput').value); renderAcharyaMessages(); checkFormHolidayState(); checkAvalokanamStatus(); } else { alert("असमीचीनः कूटशब्दः!"); } }
+function verifyAcharya() { const name = document.getElementById('acharyaSelect').value; const pin = document.getElementById('acharyaPin').value; if(!name) return alert("कृपया आचार्यं चिनोतु!"); if(acharyaPasswords[name] === pin) { closeModals(); isAdmin = false; currentLoggedIn = name; document.getElementById('mainTabs').style.display = 'none'; showSection('entryFormSection'); document.getElementById('loggedInAcharya').innerText = "स्वागतम्, " + getVocative(name); document.getElementById('dateInput').value = new Date().toISOString().split('T')[0]; document.getElementById('dateInput').setAttribute('readonly', 'true'); switchEntryTab('classes'); populateClassDropdown(name, document.getElementById('dateInput').value); renderAcharyaMessages(); checkFormHolidayState(); checkAndShowAvalokanamBanner(); } else { alert("असमीचीनः कूटशब्दः!"); } }
 
 function logout() { currentLoggedIn = ""; isAdmin = false; document.getElementById('descriptionInput').value = ""; document.getElementById('attendanceSection').style.display="none"; const mbox = document.getElementById('acharyaMessageContainer'); if(mbox) mbox.innerHTML=""; goToDashboard(); }
 
@@ -595,7 +597,30 @@ function deleteRecord(actionType, sheetNameOrRowIdx, actualRowIdx) {
 // AVALOKANAM LOGIC
 function updateAdminAvalokanamUI() { const pName = document.getElementById('cmsPakshaName'); const sText = document.getElementById('cmsAvalokanamStatusText'); if(!pName || !sText) return; pName.value = settingsData['Avalokanam_Paksha'] || ""; if(settingsData['Avalokanam_Status'] === 'ON') { sText.innerText = "ON (Active)"; sText.style.color = "#2E7D32"; } else { sText.innerText = "OFF (Inactive)"; sText.style.color = "#D32F2F"; } }
 function setAvalokanamStatus(status) { let paksha = document.getElementById('cmsPakshaName').value.trim(); if(status === 'ON' && !paksha) return alert("Please enter the Paksha Name first!"); Promise.all([ fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: new URLSearchParams({action: 'updateSetting', key: 'Avalokanam_Status', value: status}) }), fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: new URLSearchParams({action: 'updateSetting', key: 'Avalokanam_Paksha', value: paksha}) }) ]).then(() => { alert("Evaluation Status Updated!"); fetchDataFromGoogleSheets(); }).catch(err => alert("Error updating status.")); }
-function checkAvalokanamStatus() { const banner = document.getElementById('avalokanamAlertBanner'); if(!banner) return; if(settingsData['Avalokanam_Status'] === 'ON') { document.getElementById('activePakshaName').innerText = settingsData['Avalokanam_Paksha'] || "पाक्षिक-अवलोकनम्"; banner.style.display = "block"; } else { banner.style.display = "none"; } }
+function checkAndShowAvalokanamBanner() {
+    let statusRow = allSettingsArray.find(r => r.category === 'avalokanam_status' || r.Category === 'avalokanam_status' || r[0] === 'avalokanam_status');
+    let pakshaRow = allSettingsArray.find(r => r.category === 'avalokanam_paksha' || r.Category === 'avalokanam_paksha' || r[0] === 'avalokanam_paksha');
+    
+    // Fallback if object keys are different
+    if(!statusRow) statusRow = allSettingsArray.find(r => Object.values(r).includes('avalokanam_status'));
+    if(!pakshaRow) pakshaRow = allSettingsArray.find(r => Object.values(r).includes('avalokanam_paksha'));
+
+    let avStatus = statusRow ? (statusRow.value || statusRow.Value || statusRow[1]) : 'OFF';
+    let avPaksha = pakshaRow ? (pakshaRow.value || pakshaRow.Value || pakshaRow[1]) : '';
+    
+    let banner = document.getElementById('avalokanamAlertBanner');
+    if (banner) {
+        if (avStatus === 'ON') {
+            banner.style.display = 'block';
+            let pakshaSpan = document.getElementById('activePakshaName');
+            if(pakshaSpan) pakshaSpan.innerText = avPaksha + " ";
+            let modalTitle = document.getElementById('avModalPakshaTitle');
+            if(modalTitle) modalTitle.innerText = avPaksha;
+        } else {
+            banner.style.display = 'none';
+        }
+    }
+}
 
 function openAvalokanamModal() {
     document.getElementById('avModalPakshaTitle').innerText = settingsData['Avalokanam_Paksha'] || ""; const sel = document.getElementById('avClassSelect'); 
