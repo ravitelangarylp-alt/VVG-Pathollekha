@@ -839,69 +839,105 @@ function renderAdminSatraStudents() {
 }
 
 function downloadStudentPDF(studentName, gana) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // PAGE 1: Academic (Shaikshanika)
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(27, 94, 32);
-    doc.text("वेदविज्ञानगुरुकुलम्", 105, 20, null, null, "center");
-    doc.setFontSize(12);
-    doc.setTextColor(66, 66, 66);
-    doc.text("पराभव-नाम संवत्सरस्य आकलनपत्रम् - 2025-26", 105, 28, null, null, "center");
-    
-    doc.setFontSize(11);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`छात्रः : ${studentName}`, 14, 45);
-    doc.text(`गणः : ${gana}`, 150, 45);
-    
-    let academicRows = [];
-    let subjMap = {};
+    let btn = event.target;
+    btn.innerText = "⏳ Generating PDF...";
+    btn.disabled = true;
+
+    const reportDiv = document.createElement('div');
+    reportDiv.style.width = '794px';
+    reportDiv.style.padding = '30px';
+    reportDiv.style.background = 'white';
+    reportDiv.style.color = 'black';
+    reportDiv.style.position = 'absolute';
+    reportDiv.style.top = '-9999px';
+    reportDiv.style.fontFamily = "'Laila', sans-serif";
+
+    // PAGE 1 HTML
+    let page1Html = `
+        <div id="pdfPage1" style="min-height: 1122px; background: white;">
+            <div style="text-align:center; margin-bottom:20px;">
+                <h1 style="color:#1B5E20; margin:0; font-size: 32px;">वेदविज्ञानगुरुकुलम्</h1>
+                <h3 style="color:#424242; margin:5px 0; font-size: 20px;">पराभव-नाम संवत्सरस्य आकलनपत्रम् - 2025-26</h3>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-weight:bold; font-size:18px;">
+                <span>छात्रः : ${studentName}</span>
+                <span>गणः : ${gana}</span>
+            </div>
+            <table border="1" style="width:100%; border-collapse:collapse; text-align:left; font-size:15px;">
+                <tr style="background:#2E7D32; color:white;">
+                    <th style="padding:12px;">विषयः (Subject)</th>
+                    <th style="padding:12px;">स्वाध्यायपूरणम् (Notes)</th>
+                    <th style="padding:12px;">विषयावधारणम् (Trans.)</th>
+                    <th style="padding:12px;">भागग्रहणम् (Part.)</th>
+                    <th style="padding:12px;">अभिप्रायः (Remarks)</th>
+                </tr>
+    `;
+    let academicRows = "";
     avalokanamData.filter(a => a.Student === studentName).forEach(av => {
-        subjMap[av.Subject] = [av.Subject + "\n(" + av.Acharya + ")", av.Lekhanam, av.Anuvadah, av.Sahabhagita, av.Tippani];
+        academicRows += `<tr>
+            <td style="padding:12px;"><b>${av.Subject}</b><br><small>(${av.Acharya})</small></td>
+            <td style="padding:12px;">${av.Lekhanam}</td>
+            <td style="padding:12px;">${av.Anuvadah}</td>
+            <td style="padding:12px;">${av.Sahabhagita}</td>
+            <td style="padding:12px;">${av.Tippani}</td>
+        </tr>`;
     });
-    for(let key in subjMap) { academicRows.push(subjMap[key]); }
-    
-    doc.autoTable({
-        startY: 55,
-        head: [["विषयः (Subject)", "स्वाध्यायपूरणम् (Notes)", "विषयावधारणम् (Trans.)", "भागग्रहणम् (Part.)", "अभिप्रायः (Remarks)"]],
-        body: academicRows.length > 0 ? academicRows : [["Data Not Found", "-", "-", "-", "-"]],
-        theme: 'grid',
-        headStyles: { fillColor: [46, 125, 50] },
-        styles: { font: 'helvetica', fontSize: 10 }
-    });
-    
-    // PAGE 2: Charitrya (Personal)
-    doc.addPage();
-    doc.setFontSize(14);
-    doc.setTextColor(21, 101, 192);
-    doc.text("वैयक्तिक-चारित्र्य-अवलोकनम्", 105, 20, null, null, "center");
-    
+    if(!academicRows) academicRows = `<tr><td colspan="5" style="padding:12px; text-align:center;">Data Not Found</td></tr>`;
+    page1Html += academicRows + `</table></div>`;
+
+    // PAGE 2 HTML
+    let page2Html = `
+        <div id="pdfPage2" style="min-height: 1122px; background: white; margin-top: 20px;">
+            <div style="text-align:center; margin-bottom:20px;">
+                <h2 style="color:#1565C0; font-size: 26px;">वैयक्तिक-चारित्र्य-अवलोकनम्</h2>
+            </div>
+            <table border="1" style="width:100%; border-collapse:collapse; text-align:left; font-size:15px;">
+                <tr style="background:#1565C0; color:white;">
+                    <th style="padding:12px; width:65%;">चारित्र्य-बिन्दवः (Character Points)</th>
+                    <th style="padding:12px; width:35%;">गणाचार्यस्य अभिप्रायः (Remarks)</th>
+                </tr>
+    `;
     let charData = charitryaData.find(c => c.Student === studentName);
-    let charRows = [];
     charitryaPoints.forEach((point, index) => {
         let qKey = 'Q' + (index + 1);
         let ans = charData ? (charData[qKey] || charData[qKey.toLowerCase()] || "No Remark") : "No Remark";
-        charRows.push([point, ans]);
+        page2Html += `<tr><td style="padding:10px;">${point}</td><td style="padding:10px;">${ans}</td></tr>`;
     });
-    
-    doc.autoTable({
-        startY: 30,
-        head: [["चारित्र्य-बिन्दवः (Character Points)", "गणाचार्यस्य अभिप्रायः (Ganacharya Remarks)"]],
-        body: charRows,
-        theme: 'grid',
-        headStyles: { fillColor: [21, 101, 192] },
-        columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 80 } },
-        styles: { font: 'helvetica', fontSize: 10 }
+    page2Html += `</table>
+        <div style="display:flex; justify-content:space-between; margin-top:80px; font-weight:bold; font-size:18px;">
+            <span>गणाचार्यः (Ganacharya)</span>
+            <span>प्रधानाचार्यः (Principal)</span>
+        </div></div>
+    `;
+
+    reportDiv.innerHTML = page1Html + page2Html;
+    document.body.appendChild(reportDiv);
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'pt', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+
+    Promise.all([
+        html2canvas(document.getElementById('pdfPage1'), { scale: 2, useCORS: true }),
+        html2canvas(document.getElementById('pdfPage2'), { scale: 2, useCORS: true })
+    ]).then(canvases => {
+        const imgData1 = canvases[0].toDataURL('image/jpeg', 1.0);
+        pdf.addImage(imgData1, 'JPEG', 0, 0, pdfWidth, (canvases[0].height * pdfWidth) / canvases[0].width);
+        
+        pdf.addPage();
+        const imgData2 = canvases[1].toDataURL('image/jpeg', 1.0);
+        pdf.addImage(imgData2, 'JPEG', 0, 0, pdfWidth, (canvases[1].height * pdfWidth) / canvases[1].width);
+        
+        pdf.save(`ReportCard_${studentName}.pdf`);
+        document.body.removeChild(reportDiv);
+        btn.innerText = "📥 Download 2-Page PDF";
+        btn.disabled = false;
+    }).catch(err => {
+        alert("Error generating PDF");
+        document.body.removeChild(reportDiv);
+        btn.innerText = "📥 Download 2-Page PDF";
+        btn.disabled = false;
     });
-    
-    doc.setFontSize(11);
-    doc.setTextColor(0, 0, 0);
-    doc.text("गणाचार्यः (Ganacharya)", 14, 280);
-    doc.text("प्रधानाचार्यः (Principal)", 150, 280);
-    
-    doc.save(`ReportCard_${studentName}.pdf`);
 }
 // ----------------------------------------------------
 // 🧘‍♂️ CHARITRYA EVALUATION FORM & AUTO-SAVE LOGIC
