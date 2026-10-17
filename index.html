@@ -32,6 +32,7 @@
     <div id="mainTabs" class="tab-buttons">
         <button id="btn-dashboard" class="btn-tab active" onclick="showSection('dashboard')">📝 अद्यतन-पाठोल्लेखः (Dashboard)</button>
         <button id="btn-pradarshini" class="btn-tab" onclick="showSection('pradarshini')">📊 पाठोल्लेख-प्रदर्शिनी (Board)</button>
+        <button id="btn-satra" class="btn-tab" onclick="showSection('satraView')">📑 सत्रावलोकनम्</button>
     </div>
 
     <!-- 1. DASHBOARD VIEW (ಅದ್ಯತನ ಪಾಠೋಲ್ಲೇಖ ಮತ್ತು ಲಾಗಿನ್) -->
@@ -62,6 +63,29 @@
 
             <div id="pradarshiniBoardContainer" style="overflow-x: auto;">
                 <!-- ಇಲ್ಲಿ ಜಾವಾಸ್ಕ್ರಿಪ್ಟ್ ಮೂಲಕ ಆಚಾರ್ಯರ ದೊಡ್ಡ ಬೋರ್ಡ್ ತಾನಾಗಿಯೇ ಸೃಷ್ಟಿಯಾಗುತ್ತದೆ -->
+            </div>
+        </div>
+    </div>
+
+    <div id="satraView" class="view-section" style="display: none;">
+        <div style="background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h2 style="color: #1B5E20; text-align: center; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">📑 सत्रावलोकनम् (Semester Evaluation)</h2>
+            
+            <div id="satraAcharyaView" style="display:none; margin-top:20px;">
+                <h3 style="color:#D35400;">गणाचार्य-वैयक्तिक-अवलोकनम्</h3>
+                <p style="color:#555; font-weight:bold;">Select your Gana to evaluate students' character (16 points):</p>
+                <select id="satraGanaSelect" class="form-control" onchange="renderGanacharyaStudents()"></select>
+                <div id="ganacharyaStudentsContainer" style="margin-top:20px;"></div>
+            </div>
+            
+            <div id="satraAdminView" style="display:none; margin-top:20px;">
+                <h3 style="color:#1565C0;">प्रशासकः - छात्र-अहवालः (Admin Report Cards)</h3>
+                <p style="color:#555; font-weight:bold;">Select a Gana to download 2-Page PDF Report Cards:</p>
+                <select id="satraAdminGanaSelect" class="form-control" onchange="renderAdminSatraStudents()">
+                    <option value="">-- गणं चिनोतु (Select Gana) --</option>
+                    <option value="तपः">तपः</option><option value="तेजः">तेजः</option><option value="ओजः">ओजः</option><option value="वर्चः">वर्चः</option><option value="प्रेयः">प्रेयः</option><option value="श्रेयः">श्रेयः</option><option value="भ्राजः">भ्राजः</option><option value="यशः">यशः</option>
+                </select>
+                <div id="adminSatraStudentsContainer" style="margin-top:20px;"></div>
             </div>
         </div>
     </div>
@@ -177,6 +201,24 @@
 <div class="modal" id="loginModal"><div class="modal-content"><h3 style="color: var(--header-bg); font-size: 1.6rem; margin-top: 0;">आचार्य-प्रवेशः</h3><select id="acharyaSelect" class="form-control" style="margin-bottom: 15px;"><option value="">-- आचार्यं चिनोतु --</option></select><input type="password" id="acharyaPin" class="form-control" placeholder="दूरवाणी सङ्ख्या / PIN" style="margin-bottom: 25px; text-align: center;"><button class="btn-primary" style="width: 100%; margin: 0 0 10px 0;" onclick="verifyAcharya()">प्रविशतु</button><button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="closeModals()">निरस्यतु</button></div></div>
 <div class="modal" id="adminModal"><div class="modal-content"><h3 style="color: var(--header-bg); font-size: 1.6rem; margin-top: 0;">प्रबन्धक-व्यवस्था</h3><input type="password" id="adminPin" class="form-control" placeholder="****" style="text-align: center; margin-bottom: 25px;"><button class="btn-primary" style="width: 100%; margin: 0 0 10px 0;" onclick="verifyAdmin()">प्रविशतु</button><button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="closeModals()">निरस्यतु</button></div></div>
 <div class="modal" id="avalokanamModal"><div class="modal-content" style="max-width: 900px; width: 95%;"><h3 style="color: var(--header-bg); font-size: 1.8rem; margin-top: 0; font-family:'Yatra One', cursive;">पाक्षिक-अवलोकनम्</h3><h4 id="avModalPakshaTitle" style="color:var(--accent-orange); margin-top:0; border-bottom:1px dashed #FFCC80; padding-bottom:10px;"></h4><select id="avClassSelect" class="form-control" style="margin-bottom:15px; font-weight:bold; border:2px solid var(--primary-green);" onchange="renderAvStudents()"></select><div id="avStudentsContainer" style="overflow-x:auto; margin-bottom:20px; text-align:left; background:#FAFAFA; border:1px solid #E0E0E0; border-radius:8px; padding:10px; max-height:50vh;"></div><button id="avSubmitBtn" class="btn-primary" style="width: 100%; margin: 0 0 10px 0; background:#0288D1;" onclick="submitAvalokanam()">समर्पयतु (Submit Evaluation)</button><button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="document.getElementById('avalokanamModal').style.display='none'">निरस्यतु (Cancel)</button></div></div>
+
+<!-- Charitrya Form Modal -->
+<div class="modal" id="charitryaModal">
+    <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
+        <h3 style="color: var(--header-bg); font-size: 1.6rem; margin-top: 0; font-family:'Yatra One', cursive; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">
+            वैयक्तिक-चारित्र्य-अवलोकनम्
+        </h3>
+        <div style="background: #E8F5E9; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; color: #1B5E20; display: flex; justify-content: space-between; align-items: center;">
+            <span id="charitryaStudentName" style="font-size: 1.2rem;"></span>
+            <span id="draftStatus" style="font-size: 0.85rem; color: #E65100;"></span>
+        </div>
+        <input type="hidden" id="charitryaGana">
+        <input type="hidden" id="charitryaSatra" value="प्रथम-सत्रम्">
+        <div id="charitryaQuestionsContainer"></div>
+        <button id="charitryaSubmitBtn" class="btn-primary" style="width: 100%; margin: 20px 0 10px 0; background: #0288D1;" onclick="submitCharitrya()">समर्पयतु (Submit Evaluation)</button>
+        <button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="closeCharitryaModal()">निरस्यतु (Close)</button>
+    </div>
+</div>
 
 <script src="data.js"></script>
 <script src="script.js"></script>

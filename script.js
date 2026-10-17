@@ -1,6 +1,7 @@
 let currentLoggedIn = ""; let isAdmin = false; 
 // Unified Data Variables
 let currentReportDataset = []; let currentReportColumns = []; let currentReportTitleStr = ""; let currentActiveFiltersArr = [];
+let charitryaData = [];
 
 window.onload = function() {
     try {
@@ -64,7 +65,7 @@ function fetchDataFromGoogleSheets() {
         timetableData = {};
         (data.timetable || []).forEach(t => { if(!t.Acharya) return; if(!timetableData[t.Acharya]) timetableData[t.Acharya] = []; timetableData[t.Acharya].push({gana: t.Gana || "", time: t.Time || "", subject: t.Subject || "", vibhaga: t.Vibhaga || "", rowIdx: t.rowIdx}); });
         holidaysData = data.holidays || []; holidaysData.forEach(h => { h.normalizedDate = normalizeSheetDate(h.Date); });
-        messagesData = data.messages || []; avalokanamData = data.avalokanam || [];
+        messagesData = data.messages || []; avalokanamData = data.avalokanam || []; charitryaData = data.charitrya || [];
         settingsData = {}; (data.settings || []).forEach(row => { if(row.Category) settingsData[row.Category] = row.Value; });
         
         populateAcharyaDropdowns(); 
@@ -114,6 +115,16 @@ function showSection(sectionId) {
         const pBtn = document.getElementById('btn-pradarshini');
         if(pBtn) pBtn.classList.add('active');
         generatePradarshiniBoard();
+    } else if (sectionId === 'satraView') {
+        document.getElementById('btn-satra').classList.add('active');
+        if(isAdmin) {
+            document.getElementById('satraAdminView').style.display = 'block';
+            document.getElementById('satraAcharyaView').style.display = 'none';
+        } else {
+            document.getElementById('satraAcharyaView').style.display = 'block';
+            document.getElementById('satraAdminView').style.display = 'none';
+            populateGanacharyaDropdown();
+        }
     }
 }
 
@@ -687,7 +698,7 @@ function renderReportData(repType, logs, filters) {
         logs.forEach(l => { let isExpected = false; let expectedList = getExpectedStudents(l['गणः (Class/Gana)'], l['विषयः (Subject)'], "Unknown", l['आचार्यः (Acharya)']); expectedList.forEach(s => { if(s.name === studentName) isExpected = true; }); if(isExpected) { totalExpected++; let isPresent = (l['उपस्थिताः (Present)'] || "").includes(studentName); if(isPresent) totalAttended++; expectedClasses.push({ date: l.normalizedDate, subj: l['विषयः (Subject)'], ach: l['आचार्यः (Acharya)'], status: isPresent ? "Present" : "Absent" }); } });
         let percent = totalExpected > 0 ? ((totalAttended / totalExpected) * 100).toFixed(2) : 0;
         summaryBox.innerHTML = `<div class="summary-card"><h4>Expected Classes</h4><p class="val">${translateNumbersToDevanagari(totalExpected)}</p></div><div class="summary-card"><h4>Attended (Present)</h4><p class="val" style="color:#2E7D32;">${translateNumbersToDevanagari(totalAttended)}</p></div><div class="summary-card"><h4>Missed (Absent)</h4><p class="val" style="color:#D32F2F;">${translateNumbersToDevanagari(totalExpected - totalAttended)}</p></div><div class="summary-card"><h4>Attendance %</h4><p class="val" style="color:#1565C0;">${translateNumbersToDevanagari(percent)}%</p></div>`;
-        if(repType === "student_overall") { currentReportTitleStr = `Overall Attendance Summary: ${studentName}`; currentReportColumns = ["Status", "Count"]; currentReportDataset.push({"Status": "Present", "Count": totalAttended}); currentReportDataset.push({"Status": "Absent", "Count": (totalExpected - totalAttended)}); thead = `<tr><th>Status</th><th>Count</th></tr>`; tbody = `<tr><td>Present ✅</td><td style="color:#2E7D32; font-weight:bold;">${totalAttended}</td></tr><tr><td>Absent ❌</td><td style="color:#D32F2F; font-weight:bold;">${totalExpected - totalAttended}</td></tr>`; } else if (repType === "student_class_wise") { currentReportTitleStr = `Class-wise Attendance: ${studentName}`; currentReportColumns = ["Class / Subject", "Present", "Absent", "Total", "Percentage"]; let subjMap = {}; expectedClasses.forEach(c => { let sKey = c.subj; if(!subjMap[sKey]) subjMap[sKey] = {tot:0, pres:0}; subjMap[sKey].tot++; if(c.status === "Present") subjMap[sKey].pres++; }); thead = `<tr><th>Class / Subject</th><th>Present</th><th>Absent</th><th>Total</th><th>%</th></tr>`; for(let s in subjMap) { let obj = subjMap[s]; let p = ((obj.pres / obj.tot)*100).toFixed(2); currentReportDataset.push({"Class / Subject": s, "Present": obj.pres, "Absent": (obj.tot - obj.pres), "Total": obj.tot, "Percentage": p + "%"}); tbody += `<tr><td style="font-weight:bold; color:#1B5E20;">${s}</td><td style="color:#2E7D32;">${obj.pres}</td><td style="color:#D32F2F;">${obj.tot - obj.pres}</td><td>${obj.tot}</td><td style="font-weight:bold;">${p}%</td></tr>`; } } else if (repType === "student_date_wise") { currentReportTitleStr = `Date-wise Attendance Log: ${studentName}`; currentReportColumns = ["Date", "Subject", "Acharya", "Status"]; expectedClasses.sort((a,b) => b.date.localeCompare(a.date)); thead = `<tr><th>Date</th><th>Subject</th><th>Acharya</th><th>Status</th></tr>`; expectedClasses.forEach(c => { currentReportDataset.push({"Date": c.date, "Subject": c.subj, "Acharya": c.ach, "Status": c.status}); let statusCol = c.status === "Present" ? `<span style="color:#2E7D32; font-weight:bold;">Present ✅</span>` : `<span style="color:#D32F2F; font-weight:bold;">Absent ❌</span>`; tbody += `<tr><td>${c.date}</td><td style="color:#1B5E20;">${c.subj}</td><td>${c.ach}</td><td>${statusCol}</td></tr>`; }); }
+        if(repType === "student_overall") { currentReportTitleStr = `Overall Attendance Summary: ${studentName}`; currentReportColumns = ["Status", "Count"]; currentReportDataset.push({"Status": "Present", "Count": totalAttended}); currentReportDataset.push({"Status": "Absent", "Count": (totalExpected - totalAttended)}); thead = `<tr><th>Status</th><th>Count</th></tr>`; tbody = `<tr><td>Present ✅</td><td style="color:#2E7D32; font-weight:bold;">${totalAttended}</td></tr><tr><td>Absent ❌</td><td style="color:#D32F2F; font-weight:bold;">${totalExpected - totalAttended}</td></tr>`; } else if (repType === "student_class_wise") { currentReportTitleStr = `Class-wise Attendance: ${studentName}`; currentReportColumns = ["Class / Subject", "Present", "Absent", "Total", "Percentage"]; let subjMap = {}; expectedClasses.forEach(c => { let sKey = c.subj; if(!subjMap[sKey]) subjMap[sKey] = {tot:0, pres:0}; subjMap[sKey].tot++; if(c.status === "Present") subjMap[sKey].pres++; }); thead = `<tr><th>Class / Subject</th><th>Present</th><th>Absent</th><th>Total</th><th>%</th></tr>`; for(let s in subjMap) { let obj = subjMap[s]; let p = ((obj.pres / obj.tot)*100).toFixed(2); currentReportDataset.push({"Class / Subject": s, "Present": obj.pres, "Absent": (obj.tot - obj.pres), "Total": obj.tot, "Percentage": p + "%"}); tbody += `<tr><td style="font-weight:bold; color:#1B5E20;">${s}</td><td style="color:#2E7D32;">${obj.pres}</td><td style="color:#D32F2F;">${obj.tot - obj.pres}</td><td>${obj.tot}</td><td style="font-weight:bold;">${p}%</td></tr>`; } } else if (repType === "student_date_wise") { currentReportTitleStr = `Date-wise Attendance Log: ${studentName}`; currentReportColumns = ["Date", "Subject", "Acharya", "Status"]; expectedClasses.sort((a,b) => b.date.localeCompare(a.date)); thead = `<tr><th>Date</th><th>Subject</th><th>Acharya</th><th>Status</th></tr>`; expectedClasses.forEach(c => { currentReportDataset.push({"Date": c.date, "Subject": c.subj, "Acharya": c.ach, "Status": c.status}); tbody += `<tr><td>${c.date}</td><td>${c.subj}</td><td>${c.ach}</td><td style="font-weight:bold; color:${c.status==='Present'?'#2E7D32':'#D32F2F'}">${c.status}</td></tr>`; }); }
     }
     if(tbody === "") { tbody = `<tr><td colspan="9" style="text-align:center; padding:20px; color:#D32F2F; font-weight:bold;">No records found matching these criteria.</td></tr>`; currentReportDataset = []; document.getElementById('downloadControlsDiv').style.display = 'none'; }
     document.getElementById('reportHeaderTitle').innerText = currentReportTitleStr; document.getElementById('reportTableBody').innerHTML = `<thead>${thead}</thead><tbody>${tbody}</tbody>`; summaryBox.style.display = 'grid'; document.getElementById('reportSnapshotArea').style.display = 'block';
@@ -721,3 +732,195 @@ function askGeminiAI() {
 
 function loadCMSDuties() { const ach = document.getElementById('cmsDutyAch').value; const txt = document.getElementById('cmsDutyText'); if(!ach) { txt.value = ""; return; } txt.value = settingsData['Duty_' + ach] || ""; }
 function saveCMSDuties() { const ach = document.getElementById('cmsDutyAch').value; const duties = document.getElementById('cmsDutyText').value; if(!ach) return alert("Select Acharya!"); const btn = event.target; const orig = btn.innerText; btn.innerText = "Saving..."; btn.disabled = true; fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: new URLSearchParams({action: 'updateSetting', key: 'Duty_' + ach, value: duties}) }).then(res => res.text()).then(() => { alert("Saved!"); fetchDataFromGoogleSheets(); btn.innerText = orig; btn.disabled = false; }).catch(e => { alert("Error!"); btn.innerText = orig; btn.disabled = false; }); }
+
+// ----------------------------------------------------
+// 📑 SATRA AVALOKANAM & PDF GENERATION LOGIC
+// ----------------------------------------------------
+const charitryaPoints = ["सत्यनिष्ठा", "विनयः", "समयपालनम्", "अध्ययनशीलता", "शिष्टाचारः", "परोपकारः", "स्वच्छता", "नेतृत्वम्", "सहयोगः", "संयमः", "जिज्ञासा", "धैर्यम्", "श्रद्धा", "विवेकः", "कर्तव्यनिष्ठा", "संस्कृति-प्रीतिः"];
+
+function populateGanacharyaDropdown() {
+    let html = '<option value="">-- स्वस्य गणं चिनोतु (Select your Gana) --</option>';
+    ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "भ्राजः", "यशः"].forEach(g => { html += `<option value="${g}">${g}</option>`; });
+    document.getElementById('satraGanaSelect').innerHTML = html;
+}
+
+function renderGanacharyaStudents() {
+    let gana = document.getElementById('satraGanaSelect').value;
+    let container = document.getElementById('ganacharyaStudentsContainer');
+    if(!gana) { container.innerHTML = ""; return; }
+    
+    let filteredStudents = studentsData.filter(s => s.gana === gana);
+    let html = `<table class="report-table" style="width:100%;"><thead><tr><th>छात्रः (Student)</th><th>Action</th></tr></thead><tbody>`;
+    
+    filteredStudents.forEach(st => {
+        let isDone = charitryaData.some(c => c.Student === st.name);
+        let btnStr = isDone ? `<button class="btn-primary" style="background:#4CAF50; margin:0; padding:6px 12px; font-size:0.9rem;" onclick="openCharitryaForm('${st.name}', '${gana}')">✅ सम्पादियतु (Edit)</button>` : `<button class="btn-primary" style="background:#F57C00; margin:0; padding:6px 12px; font-size:0.9rem;" onclick="openCharitryaForm('${st.name}', '${gana}')">📝 चारित्र्य-अवलोकनम्</button>`;
+        html += `<tr><td style="font-weight:bold; font-size:1.1rem; color:#1B5E20;">${st.name}</td><td>${btnStr}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function renderAdminSatraStudents() {
+    let gana = document.getElementById('satraAdminGanaSelect').value;
+    let container = document.getElementById('adminSatraStudentsContainer');
+    if(!gana) { container.innerHTML = ""; return; }
+    
+    let filteredStudents = studentsData.filter(s => s.gana === gana);
+    let html = `<table class="report-table" style="width:100%;"><thead><tr><th>छात्रः (Student)</th><th>Report Card</th></tr></thead><tbody>`;
+    
+    filteredStudents.forEach(st => {
+        html += `<tr>
+            <td style="font-weight:bold; font-size:1.1rem; color:#0D47A1;">${st.name}</td>
+            <td><button class="btn-primary" style="background:#E53935; margin:0; padding:8px 15px;" onclick="downloadStudentPDF('${st.name}', '${gana}')">📥 Download 2-Page PDF</button></td>
+        </tr>`;
+    });
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function downloadStudentPDF(studentName, gana) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // PAGE 1: Academic (Shaikshanika)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(27, 94, 32);
+    doc.text("वेदविज्ञानगुरुकुलम्", 105, 20, null, null, "center");
+    doc.setFontSize(12);
+    doc.setTextColor(66, 66, 66);
+    doc.text("पराभव-नाम संवत्सरस्य आकलनपत्रम् - 2025-26", 105, 28, null, null, "center");
+    
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`छात्रः : ${studentName}`, 14, 45);
+    doc.text(`गणः : ${gana}`, 150, 45);
+    
+    let academicRows = [];
+    let subjMap = {};
+    avalokanamData.filter(a => a.Student === studentName).forEach(av => {
+        subjMap[av.Subject] = [av.Subject + "\n(" + av.Acharya + ")", av.Lekhanam, av.Anuvadah, av.Sahabhagita, av.Tippani];
+    });
+    for(let key in subjMap) { academicRows.push(subjMap[key]); }
+    
+    doc.autoTable({
+        startY: 55,
+        head: [["विषयः (Subject)", "स्वाध्यायपूरणम् (Notes)", "विषयावधारणम् (Trans.)", "भागग्रहणम् (Part.)", "अभिप्रायः (Remarks)"]],
+        body: academicRows.length > 0 ? academicRows : [["Data Not Found", "-", "-", "-", "-"]],
+        theme: 'grid',
+        headStyles: { fillColor: [46, 125, 50] },
+        styles: { font: 'helvetica', fontSize: 10 }
+    });
+    
+    // PAGE 2: Charitrya (Personal)
+    doc.addPage();
+    doc.setFontSize(14);
+    doc.setTextColor(21, 101, 192);
+    doc.text("वैयक्तिक-चारित्र्य-अवलोकनम्", 105, 20, null, null, "center");
+    
+    let charData = charitryaData.find(c => c.Student === studentName);
+    let charRows = [];
+    charitryaPoints.forEach((point, index) => {
+        let qKey = 'Q' + (index + 1);
+        let ans = charData ? (charData[qKey] || charData[qKey.toLowerCase()] || "No Remark") : "No Remark";
+        charRows.push([point, ans]);
+    });
+    
+    doc.autoTable({
+        startY: 30,
+        head: [["चारित्र्य-बिन्दवः (Character Points)", "गणाचार्यस्य अभिप्रायः (Ganacharya Remarks)"]],
+        body: charRows,
+        theme: 'grid',
+        headStyles: { fillColor: [21, 101, 192] },
+        columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 80 } },
+        styles: { font: 'helvetica', fontSize: 10 }
+    });
+    
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+    doc.text("गणाचार्यः (Ganacharya)", 14, 280);
+    doc.text("प्रधानाचार्यः (Principal)", 150, 280);
+    
+    doc.save(`ReportCard_${studentName}.pdf`);
+}
+// ----------------------------------------------------
+// 🧘‍♂️ CHARITRYA EVALUATION FORM & AUTO-SAVE LOGIC
+// ----------------------------------------------------
+const charitryaPoints = [
+    "१. श्रद्धा – ज्येष्ठानां वचसि प्रामाण्यम्, अनुष्ठानादिषु प्रवृत्तिः ।",
+    "२. नीतिमत्ता – सत्यवचनम्, लोभादिदुर्गुणराहित्यम् ।",
+    "३. निर्वहणकौशलम् – कर्तृत्वम्, नेतृत्वम् (श्रमसेवादिषु) ।",
+    "४. स्वास्थ्यम् - शारीरिकम् ।",
+    "५. मानवीयसम्बन्धः – अन्यैः सह हितमितसम्बन्धः ।",
+    "६. सेवामनोभावः/प्राणिदया – ज्येष्ठानाम्, अतिथीनाम्, रुग्णानाम्/ गवाम्, ओषधिवनस्पतीनां च ।",
+    "७. सक्रियता – शारीरिकः मानसिकः जाड्याभावः ।",
+    "८. इन्द्रियसंयमः – ज्ञानेन्द्रियाणां कर्मेन्द्रियाणां सद्विनियोगः ।",
+    "९. स्वच्छता, सरलता, सुभगता – शरीरम्, वस्त्रम्, स्थानम्, परिसरः, पुस्तकादि ।",
+    "१०. राष्ट्रियप्रज्ञा – स्वदेशीभावः, राष्ट्रप्रेम, सामाजिकस्पन्दः ।",
+    "११. योगः/क्रीडा – आसनम्, प्राणायामः, क्रीडायां भागग्रहणम् ।",
+    "१२. मनस्सन्तुलनम् - अन्तःकरणभावनाः (सङ्कल्पः, विकल्पः)",
+    "१३. एकाग्रता – अध्ययने, जपे, पाठे ।",
+    "१४. कलाकौशलम्, प्रतिभा – सङ्गीतम्, चित्रकला इत्यादि ।",
+    "१५. जिज्ञासा – पठ्येतरविषयेषु प्रवृत्तिः, विद्वद्भिः सह संवादः ।",
+    "१६. सद्विनियोगः – संस्थावस्तूनाम्, परवस्तूनां च ।"
+];
+
+function openCharitryaForm(studentName, ganaName) {
+    document.getElementById('charitryaStudentName').innerText = "छात्रः: " + studentName + " (" + ganaName + ")";
+    document.getElementById('charitryaGana').value = ganaName;
+    let html = "";
+    charitryaPoints.forEach((point, index) => {
+        let qNum = index + 1;
+        html += `<div style="background: #FAFAFA; border: 1px solid #E0E0E0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <p style="margin: 0 0 10px 0; font-weight: bold; color: #424242;">${point}</p>
+            <textarea id="char_q${qNum}" class="form-control" rows="2" placeholder="आचार्यस्य अभिप्रायः (Remarks)..." oninput="saveCharitryaDraft('${studentName}')"></textarea>
+        </div>`;
+    });
+    document.getElementById('charitryaQuestionsContainer').innerHTML = html;
+    document.getElementById('charitryaModal').style.display = 'flex';
+    loadCharitryaDraft(studentName);
+}
+
+function closeCharitryaModal() { document.getElementById('charitryaModal').style.display = 'none'; }
+
+let draftTimeout;
+function saveCharitryaDraft(studentName) {
+    clearTimeout(draftTimeout);
+    draftTimeout = setTimeout(() => {
+        let draftObj = {};
+        for(let i=1; i<=16; i++) { draftObj['q'+i] = document.getElementById('char_q'+i).value; }
+        localStorage.setItem('charitrya_draft_' + studentName, JSON.stringify(draftObj));
+        let statusEl = document.getElementById('draftStatus');
+        statusEl.innerText = "💾 Saving..."; statusEl.style.color = "#2E7D32";
+        setTimeout(() => statusEl.innerText = "", 2000);
+    }, 1000);
+}
+
+function loadCharitryaDraft(studentName) {
+    let draftStr = localStorage.getItem('charitrya_draft_' + studentName);
+    if(draftStr) {
+        let draftObj = JSON.parse(draftStr);
+        for(let i=1; i<=16; i++) { if(draftObj['q'+i]) document.getElementById('char_q'+i).value = draftObj['q'+i]; }
+        document.getElementById('draftStatus').innerText = "📝 Draft Loaded"; document.getElementById('draftStatus').style.color = "#D35400";
+    }
+}
+
+function submitCharitrya() {
+    let studentName = document.getElementById('charitryaStudentName').innerText.replace("छात्रः: ", "").split(" (")[0];
+    let ganaName = document.getElementById('charitryaGana').value;
+    let satraName = document.getElementById('charitryaSatra').value;
+    let formData = new URLSearchParams();
+    formData.append('action', 'addCharitrya'); formData.append('satra', satraName); formData.append('gana', ganaName); formData.append('ganacharya', currentLoggedIn); formData.append('student', studentName);
+    for(let i=1; i<=16; i++) { formData.append('q'+i, document.getElementById('char_q'+i).value); }
+    let btn = document.getElementById('charitryaSubmitBtn');
+    btn.innerText = "समर्प्यते... (Submitting)"; btn.disabled = true;
+    fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData }).then(res => res.text()).then(data => {
+        alert("सफलम्! चारीत्र्य-अवलोकनम् रक्षितम्। (Submitted Successfully)");
+        localStorage.removeItem('charitrya_draft_' + studentName);
+        closeCharitryaModal(); btn.innerText = "समर्पयतु (Submit Evaluation)"; btn.disabled = false;
+        renderGanacharyaStudents(); // ಬಟನ್ ಹಸಿರು ಬಣ್ಣಕ್ಕೆ (✅ सम्पादियतु) ಬದಲಾಗಲು
+    }).catch(err => {
+        alert("दोषः जातः! (Error submitting)"); btn.innerText = "समर्पयतु (Submit Evaluation)"; btn.disabled = false;
+    });
+}
