@@ -824,40 +824,35 @@ function renderAdminSatraStudents() {
     let gana = document.getElementById('satraAdminGanaSelect').value;
     let container = document.getElementById('adminSatraStudentsContainer');
     if(!gana) { container.innerHTML = ""; return; }
-    
+
     let filteredStudents = studentsData.filter(s => s.gana === gana);
-    let html = `<table class="report-table" style="width:100%;"><thead><tr><th>छात्रः (Student)</th><th>Report Card</th></tr></thead><tbody>`;
-    
+    let html = `<table class="report-table" style="width:100%;"><thead><tr><th>छात्रः (Student)</th><th>Action</th></tr></thead><tbody>`;
+
     filteredStudents.forEach(st => {
         html += `<tr>
             <td style="font-weight:bold; font-size:1.1rem; color:#0D47A1;">${st.name}</td>
-            <td><button class="btn-primary" style="background:#E53935; margin:0; padding:8px 15px;" onclick="downloadStudentPDF('${st.name}', '${gana}')">📥 Download 2-Page PDF</button></td>
+            <td>
+                <button class="btn-primary" style="background:#0288D1; margin:0; margin-right:10px; padding:8px 15px;" onclick="viewStudentReport('${st.name}', '${gana}')">👁️ View</button>
+                <button class="btn-primary" style="background:#E53935; margin:0; padding:8px 15px;" onclick="downloadStudentPDF('${st.name}', '${gana}')">📥 Download PDF</button>
+            </td>
         </tr>`;
     });
     html += `</tbody></table>`;
     container.innerHTML = html;
 }
 
-function downloadStudentPDF(studentName, gana) {
-    let btn = event.target;
-    btn.innerText = "⏳ Generating PDF...";
-    btn.disabled = true;
+function generateReportHTML(studentName, gana) {
+    let wrapperStyle = "width: 794px; height: 1122px; padding: 45px; box-sizing: border-box; background: white; color: black; font-family: 'Laila', sans-serif; position: relative;";
 
-    const reportDiv = document.createElement('div');
-    reportDiv.style.width = '794px';
-    reportDiv.style.padding = '30px';
-    reportDiv.style.background = 'white';
-    reportDiv.style.color = 'black';
-    reportDiv.style.position = 'absolute';
-    reportDiv.style.top = '-9999px';
-    reportDiv.style.fontFamily = "'Laila', sans-serif";
-
-    // PAGE 1 HTML
+    // PAGE 1 HTML with Logo and Signatures
     let page1Html = `
-        <div id="pdfPage1" style="min-height: 1122px; background: white;">
-            <div style="text-align:center; margin-bottom:20px;">
-                <h1 style="color:#1B5E20; margin:0; font-size: 32px;">वेदविज्ञानगुरुकुलम्</h1>
-                <h3 style="color:#424242; margin:5px 0; font-size: 20px;">पराभव-नाम संवत्सरस्य आकलनपत्रम् - 2025-26</h3>
+        <div id="pdfPage1" style="${wrapperStyle}">
+            <div style="display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+                <img src="logo.png" style="height:90px; margin-right:20px;" alt="Logo" onerror="this.style.display='none'">
+                <div style="text-align:center;">
+                    <h1 style="color:#1B5E20; margin:0; font-size: 36px;">वेदविज्ञानगुरुकुलम्</h1>
+                    <h3 style="color:#424242; margin:5px 0; font-size: 22px;">पराभव-नाम संवत्सरस्य आकलनपत्रम् - 2025-26</h3>
+                </div>
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-weight:bold; font-size:18px;">
                 <span>छात्रः : ${studentName}</span>
@@ -883,13 +878,19 @@ function downloadStudentPDF(studentName, gana) {
         </tr>`;
     });
     if(!academicRows) academicRows = `<tr><td colspan="5" style="padding:12px; text-align:center;">Data Not Found</td></tr>`;
-    page1Html += academicRows + `</table></div>`;
+    page1Html += academicRows + `</table>
+            <div style="display:flex; justify-content:space-between; position:absolute; bottom:50px; left:45px; right:45px; font-weight:bold; font-size:18px;">
+                <span>आचार्यः (Acharya)</span>
+                <span>गणाचार्यः (Ganacharya)</span>
+            </div>
+        </div>
+    `;
 
-    // PAGE 2 HTML
+    // PAGE 2 HTML with bottom Signatures
     let page2Html = `
-        <div id="pdfPage2" style="min-height: 1122px; background: white; margin-top: 20px;">
+        <div id="pdfPage2" style="${wrapperStyle} margin-top: 20px;">
             <div style="text-align:center; margin-bottom:20px;">
-                <h2 style="color:#1565C0; font-size: 26px;">वैयक्तिक-चारित्र्य-अवलोकनम्</h2>
+                <h2 style="color:#1565C0; font-size: 28px;">वैयक्तिक-चारित्र्य-अवलोकनम्</h2>
             </div>
             <table border="1" style="width:100%; border-collapse:collapse; text-align:left; font-size:15px;">
                 <tr style="background:#1565C0; color:white;">
@@ -901,41 +902,75 @@ function downloadStudentPDF(studentName, gana) {
     charitryaPoints.forEach((point, index) => {
         let qKey = 'Q' + (index + 1);
         let ans = charData ? (charData[qKey] || charData[qKey.toLowerCase()] || "No Remark") : "No Remark";
-        page2Html += `<tr><td style="padding:10px;">${point}</td><td style="padding:10px;">${ans}</td></tr>`;
+        page2Html += `<tr><td style="padding:9px 12px;">${point}</td><td style="padding:9px 12px;">${ans}</td></tr>`;
     });
     page2Html += `</table>
-        <div style="display:flex; justify-content:space-between; margin-top:80px; font-weight:bold; font-size:18px;">
-            <span>गणाचार्यः (Ganacharya)</span>
-            <span>प्रधानाचार्यः (Principal)</span>
-        </div></div>
+            <div style="display:flex; justify-content:space-between; position:absolute; bottom:50px; left:45px; right:45px; font-weight:bold; font-size:18px;">
+                <span>गणाचार्यः (Ganacharya)</span>
+                <span>प्रधानाचार्यः (Principal)</span>
+            </div>
+        </div>
     `;
 
-    reportDiv.innerHTML = page1Html + page2Html;
+    return page1Html + page2Html;
+}
+
+function viewStudentReport(studentName, gana) {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Report Card - ${studentName}</title>
+            <link href="https://fonts.googleapis.com/css2?family=Laila:wght@400;600;700&display=swap" rel="stylesheet">
+            <style>
+                body { background: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+                .page-container { box-shadow: 0 0 10px rgba(0,0,0,0.5); margin-bottom: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class="page-container">${generateReportHTML(studentName, gana)}</div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+function downloadStudentPDF(studentName, gana) {
+    let btn = event.target;
+    btn.innerText = "⏳ Generating...";
+    btn.disabled = true;
+
+    const reportDiv = document.createElement('div');
+    reportDiv.style.position = 'absolute';
+    reportDiv.style.top = '-9999px';
+    reportDiv.style.left = '-9999px';
+    reportDiv.innerHTML = generateReportHTML(studentName, gana);
     document.body.appendChild(reportDiv);
 
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
 
     Promise.all([
         html2canvas(document.getElementById('pdfPage1'), { scale: 2, useCORS: true }),
         html2canvas(document.getElementById('pdfPage2'), { scale: 2, useCORS: true })
     ]).then(canvases => {
         const imgData1 = canvases[0].toDataURL('image/jpeg', 1.0);
-        pdf.addImage(imgData1, 'JPEG', 0, 0, pdfWidth, (canvases[0].height * pdfWidth) / canvases[0].width);
+        pdf.addImage(imgData1, 'JPEG', 0, 0, pdfWidth, pdfHeight);
         
         pdf.addPage();
         const imgData2 = canvases[1].toDataURL('image/jpeg', 1.0);
-        pdf.addImage(imgData2, 'JPEG', 0, 0, pdfWidth, (canvases[1].height * pdfWidth) / canvases[1].width);
+        pdf.addImage(imgData2, 'JPEG', 0, 0, pdfWidth, pdfHeight);
         
         pdf.save(`ReportCard_${studentName}.pdf`);
         document.body.removeChild(reportDiv);
-        btn.innerText = "📥 Download 2-Page PDF";
+        btn.innerText = "📥 Download PDF";
         btn.disabled = false;
     }).catch(err => {
         alert("Error generating PDF");
         document.body.removeChild(reportDiv);
-        btn.innerText = "📥 Download 2-Page PDF";
+        btn.innerText = "📥 Download PDF";
         btn.disabled = false;
     });
 }
