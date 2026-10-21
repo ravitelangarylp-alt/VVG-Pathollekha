@@ -71,6 +71,7 @@ function fetchDataFromGoogleSheets() {
         settingsData = {}; (data.settings || []).forEach(row => { if(row.Category) settingsData[row.Category] = row.Value; });
         
         populateAcharyaDropdowns(); 
+        setupPareeksheDropdown();
         updateTodayView(); 
         displayActiveNotifications();
         checkAndShowAvalokanamBanner();
@@ -1061,9 +1062,11 @@ const pareeksheSubjectsList = [
 ];
 
 function setupPareeksheDropdown() {
+    if (!studentsData || studentsData.length === 0) return;
     let uniqueVedapatha = [...new Set(studentsData.map(s => s.vedapatha).filter(Boolean))];
     let html = '<option value="">-- वेदपाठं चिनोतु (Select Vedapatha) --</option>';
     uniqueVedapatha.forEach(v => { html += `<option value="${v}">${v}</option>`; });
+    
     let acharyaSelect = document.getElementById('pareeksheGanaSelect');
     let adminSelect = document.getElementById('pareeksheAdminGanaSelect');
     if(acharyaSelect) acharyaSelect.innerHTML = html;
@@ -1240,28 +1243,37 @@ function renderAdminPareekshe() {
 
 function generatePareeksheGroupHTML(vedapatha, examinerNum) {
     let filteredStudents = studentsData.filter(s => s.vedapatha === vedapatha);
+    
+    // Dynamically find the examiner's name from the submitted data for this group
+    let examinerName = "अनिर्दिष्टः (Pending)";
+    if(typeof pareeksheData !== 'undefined') {
+        let groupEvals = pareeksheData.filter(p => (p.Vedapatha || p.vedapatha) === vedapatha);
+        let uniqueExaminers = [...new Set(groupEvals.map(p => p.Examiner || p.examiner).filter(Boolean))].sort();
+        if(uniqueExaminers.length >= examinerNum) {
+            examinerName = uniqueExaminers[examinerNum - 1];
+        }
+    }
+
     let html = `<div style="width: 794px; padding: 40px; background: white; color: black; font-family: 'Laila', sans-serif;">
-        <div style="text-align:center; margin-bottom:30px; border-bottom: 2px solid #2E7D32; padding-bottom: 15px;">
-            <h1 style="color:#1B5E20; font-size:32px; margin:0;">वेदविज्ञानगुरुकुलम्</h1>
-            <h2 style="color:#1565C0; font-size:24px; margin:10px 0;">वेद-परीक्षा - ${vedapatha}</h2>
-            <h3 style="color:#424242; font-size:18px; margin:0;">परीक्षकः ${examinerNum} अहवालः</h3>
+        <div style="display:flex; align-items:center; justify-content:center; margin-bottom:20px; border-bottom: 2px solid #2E7D32; padding-bottom: 15px;">
+            <img src="logo.png" style="height:90px; margin-right:20px;" alt="Logo" onerror="this.style.display='none'">
+            <div style="text-align:center;">
+                <h1 style="color:#1B5E20; font-size:32px; margin:0;">वेदविज्ञानगुरुकुलम्</h1>
+                <h2 style="color:#1565C0; font-size:24px; margin:10px 0;">वेद-परीक्षा - ${vedapatha}</h2>
+                <h3 style="color:#424242; font-size:20px; margin:0;">परीक्षकः : ${examinerName}</h3>
+            </div>
         </div>`;
 
     filteredStudents.forEach((st) => {
-        // Find evaluations for this student
-        let studentEvals = [];
-        if(typeof pareeksheData !== 'undefined') {
-            studentEvals = pareeksheData.filter(p => (p.Student || p.student) === st.name);
-            // Sort alphabetically by Examiner name to consistently separate Examiner 1 and 2
-            studentEvals.sort((a, b) => String(a.Examiner || a.examiner).localeCompare(String(b.Examiner || b.examiner)));
+        // Find evaluation specifically by this examiner
+        let evalData = null;
+        if(typeof pareeksheData !== 'undefined' && examinerName !== "अनिर्दिष्टः (Pending)") {
+            evalData = pareeksheData.find(p => (p.Student || p.student) === st.name && (p.Examiner || p.examiner) === examinerName);
         }
         
-        let evalData = studentEvals[examinerNum - 1]; // 0 for Ex 1, 1 for Ex 2
-
         html += `<div style="border: 2px solid #A5D6A7; border-radius: 8px; padding: 15px; margin-bottom: 25px; page-break-inside: avoid;">
             <div style="display:flex; justify-content:space-between; border-bottom: 1px dashed #CCC; padding-bottom:10px; margin-bottom:10px;">
                 <span style="font-size:20px; font-weight:bold; color:#D32F2F;">छात्रः : ${st.name}</span>
-                <span style="font-weight:bold; color:#424242; font-size:16px;">परीक्षकः : ${evalData ? (evalData.Examiner || evalData.examiner) : 'Pending'}</span>
             </div>`;
 
         if(evalData) {
@@ -1284,7 +1296,7 @@ function generatePareeksheGroupHTML(vedapatha, examinerNum) {
             </tr></table>
             <p style="margin-top:12px; font-size:15px; color:#333;"><b>अभिप्रायः (Remarks):</b> ${evalData.Remarks || evalData.remarks || 'No remarks'}</p>`;
         } else {
-            html += `<p style="color:#757575; font-style:italic; font-size:15px;">अस्य छात्रस्य अङ्काः न प्रविष्टाः (Marks not entered by Examiner ${examinerNum} yet).</p>`;
+            html += `<p style="color:#757575; font-style:italic; font-size:15px;">अस्य छात्रस्य अङ्काः न प्रविष्टाः (Marks not entered yet).</p>`;
         }
         html += `</div>`;
     });
