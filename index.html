@@ -95,12 +95,18 @@
         <div style="background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
             <h2 style="color: #1B5E20; text-align: center; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">📜 वेद-परीक्षा (Veda Exam)</h2>
             
-            <div id="pareeksheAcharyaView" style="display:none; margin-top:20px;">
-                <h3 style="color:#D35400;">परीक्षक-विभागः (Examiner View)</h3>
-                <p style="color:#555; font-weight:bold;">Select Vedapatha to evaluate students:</p>
-                <select id="pareeksheGanaSelect" class="form-control" onchange="renderPareeksheStudents()"></select>
-                <div id="pareeksheStudentsContainer" style="margin-top:20px;"></div>
-            </div>
+<div id="pareeksheAcharyaView" style="display:none; margin-top:20px;">
+    <h3 style="color:#D35400;">परीक्षक-विभागः (Examiner View)</h3>
+    <div id="pareeksheExaminerSelectBlock" style="background:#FFF3E0; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #FFB74D;">
+        <label style="font-weight:bold; color:#E65100;">1. भवतः नाम चिनोतु (Select Examiner):</label>
+        <select id="pareeksheExaminerSelect" class="form-control" onchange="setExaminerAndShowGana()"></select>
+    </div>
+    <div id="pareeksheGanaSelectBlock" style="display:none;">
+        <label style="font-weight:bold; color:#2E7D32;">2. वेदपाठं चिनोतु (Select Vedapatha):</label>
+        <select id="pareeksheGanaSelect" class="form-control" onchange="renderPareeksheStudents()"></select>
+        <div id="pareeksheStudentsContainer" style="margin-top:20px;"></div>
+    </div>
+</div>
             
             <div id="pareeksheAdminView" style="display:none; margin-top:20px;">
                 <h3 style="color:#1565C0;">प्रशासकः - परीक्षा-अहवालः (Admin Report)</h3>

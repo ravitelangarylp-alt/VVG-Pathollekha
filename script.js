@@ -1052,6 +1052,7 @@ function submitCharitrya() {
 // ----------------------------------------------------
 // 📜 VEDA PAREEKSHE (Veda Exam) LOGIC
 // ----------------------------------------------------
+let currentExaminer = "";
 const pareeksheSubjectsList = [
     { id: "p1", name: "वल्लीत्रयम्", max: 30 }, { id: "p2", name: "अरुण-प्रश्नः", max: 25 },
     { id: "p3", name: "सह वै प्रश्नः", max: 15 }, { id: "p4", name: "चित्तिः", max: 20 },
@@ -1063,6 +1064,16 @@ const pareeksheSubjectsList = [
 
 function setupPareeksheDropdown() {
     if (!studentsData || studentsData.length === 0) return;
+
+    let exHtml = '<option value="">-- परीक्षकं चिनोतु (Select Examiner) --</option>';
+    if(typeof acharyasData !== 'undefined') {
+        acharyasData.forEach(ach => {
+            exHtml += `<option value="${ach.name}">${ach.name}</option>`;
+        });
+    }
+    let exSelect = document.getElementById('pareeksheExaminerSelect');
+    if(exSelect) exSelect.innerHTML = exHtml;
+
     let uniqueVedapatha = [...new Set(studentsData.map(s => s.vedapatha).filter(Boolean))];
     let html = '<option value="">-- वेदपाठं चिनोतु (Select Vedapatha) --</option>';
     uniqueVedapatha.forEach(v => { html += `<option value="${v}">${v}</option>`; });
@@ -1071,6 +1082,17 @@ function setupPareeksheDropdown() {
     let adminSelect = document.getElementById('pareeksheAdminGanaSelect');
     if(acharyaSelect) acharyaSelect.innerHTML = html;
     if(adminSelect) adminSelect.innerHTML = html;
+}
+
+function setExaminerAndShowGana() {
+    currentExaminer = document.getElementById('pareeksheExaminerSelect').value;
+    if(currentExaminer) {
+        document.getElementById('pareeksheGanaSelectBlock').style.display = 'block';
+        renderPareeksheStudents();
+    } else {
+        document.getElementById('pareeksheGanaSelectBlock').style.display = 'none';
+        document.getElementById('pareeksheStudentsContainer').innerHTML = "";
+    }
 }
 
 function renderPareeksheStudents() {
@@ -1083,8 +1105,8 @@ function renderPareeksheStudents() {
     filtered.forEach(st => {
         let btnText = "📝 परीक्षा-अङ्काः";
         let btnColor = "#F57C00";
-        // Update logic indicator if already evaluated by current logged-in Acharya
-        let existing = typeof pareeksheData !== 'undefined' ? pareeksheData.find(p => p.Student === st.name && p.Examiner === currentLoggedIn) : null;
+        // Update logic indicator if already evaluated by current selected Examiner
+        let existing = typeof pareeksheData !== 'undefined' ? pareeksheData.find(p => (p.Student || p.student) === st.name && (p.Examiner || p.examiner) === currentExaminer) : null;
         if(existing) { btnText = "✅ सम्पादियतु (Edit/Update)"; btnColor = "#4CAF50"; }
         
         html += `<tr><td style="font-weight:bold; font-size:1.1rem; color:#1B5E20;">${st.name}</td>
@@ -1188,7 +1210,7 @@ function submitPareekshe() {
     formData.append('action', 'addVedaPareekshe');
     formData.append('student', studentName);
     formData.append('vedapatha', vedapatha);
-    formData.append('examiner', currentLoggedIn);
+    formData.append('examiner', currentExaminer);
     formData.append('abhivyakti', abhivyakti);
     formData.append('uchcharane', uchcharane);
     formData.append('remarks', remarks);
