@@ -1051,7 +1051,6 @@ function submitCharitrya() {
 // ----------------------------------------------------
 // 📜 VEDA PAREEKSHE (Veda Exam) LOGIC
 // ----------------------------------------------------
-let pareeksheData = [];
 const pareeksheSubjectsList = [
     { id: "p1", name: "वल्लीत्रयम्", max: 30 }, { id: "p2", name: "अरुण-प्रश्नः", max: 25 },
     { id: "p3", name: "सह वै प्रश्नः", max: 15 }, { id: "p4", name: "चित्तिः", max: 20 },
