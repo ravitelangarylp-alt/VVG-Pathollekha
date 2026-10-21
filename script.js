@@ -1217,20 +1217,31 @@ function renderAdminPareekshe() {
     let vedapatha = document.getElementById('pareeksheAdminGanaSelect').value;
     let container = document.getElementById('adminPareeksheContainer');
     if(!vedapatha) { container.innerHTML = ""; return; }
-    
+
     let filtered = studentsData.filter(s => s.vedapatha === vedapatha);
-    let html = `<table class="report-table" style="width:100%;"><thead><tr><th>छात्रः (Student)</th><th>Examiner 1</th><th>Examiner 2</th></tr></thead><tbody>`;
-    filtered.forEach(st => {
-        html += `<tr>
-            <td style="font-weight:bold; font-size:1.1rem; color:#0D47A1;">${st.name}</td>
-            <td><button class="btn-primary" style="background:#0288D1; margin:0; padding:6px 10px; font-size:0.85rem;" onclick="downloadPareekshePDF('${st.name}', '${vedapatha}', 1)">📥 PDF (परीक्षकः १)</button></td>
-            <td><button class="btn-primary" style="background:#E53935; margin:0; padding:6px 10px; font-size:0.85rem;" onclick="downloadPareekshePDF('${st.name}', '${vedapatha}', 2)">📥 PDF (परीक्षकः २)</button></td>
-        </tr>`;
-    });
-    html += `</tbody></table>`;
+    
+    let html = `<div style="background:#E3F2FD; padding:20px; border-radius:8px; border:1px solid #90CAF9; text-align:center;">
+        <h4 style="margin-top:0; color:#1565C0;">${vedapatha} - वेदपाठ-समूहः (Total Students: ${filtered.length})</h4>
+        <p style="color:#555; font-size:0.9rem; margin-bottom:15px;">अस्मिन् समूहे सर्वेषां छात्राणां अङ्काः पश्यन्तु अथवा डाउनलोड् कुर्वन्तु।</p>
+        
+        <div style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+            <button class="btn-primary" style="background:#0288D1; margin:0;" onclick="viewPareeksheGroup('${vedapatha}', 1)">👁️ View (परीक्षकः १)</button>
+            <button class="btn-primary" style="background:#E53935; margin:0;" onclick="downloadPareeksheGroupPDF('${vedapatha}', 1)">📥 Download PDF (परीक्षकः १)</button>
+        </div>
+        
+        <div style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">
+            <button class="btn-primary" style="background:#00796B; margin:0;" onclick="viewPareeksheGroup('${vedapatha}', 2)">👁️ View (परीक्षकः २)</button>
+            <button class="btn-primary" style="background:#D84315; margin:0;" onclick="downloadPareeksheGroupPDF('${vedapatha}', 2)">📥 Download PDF (परीक्षकः २)</button>
+        </div>
+    </div>`;
+    
     container.innerHTML = html;
 }
 
-function downloadPareekshePDF(student, vedapatha, examinerNum) {
-    alert("PDF generation for Examiner " + examinerNum + " pending implementation.");
+function viewPareeksheGroup(vedapatha, examinerNum) {
+    alert("Group View for " + vedapatha + " (Examiner " + examinerNum + ") will open here. PDF logic pending.");
+}
+
+function downloadPareeksheGroupPDF(vedapatha, examinerNum) {
+    alert("Group Download for " + vedapatha + " (Examiner " + examinerNum + ") will start here. PDF logic pending.");
 }
