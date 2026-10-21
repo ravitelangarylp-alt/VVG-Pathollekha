@@ -1063,28 +1063,34 @@ const pareeksheSubjectsList = [
 ];
 
 function setupPareeksheDropdown() {
-    // 1. Populate Examiner Dropdown safely
+    // 1. Populate Examiner Dropdown
     let exHtml = '<option value="">-- परीक्षकं चिनोतु (Select Examiner) --</option>';
     if (typeof acharyasData !== 'undefined' && acharyasData.length > 0) {
         acharyasData.forEach(ach => {
-            let aName = ach.Name || ach.name || "";
-            if(aName) exHtml += `<option value="${aName}">${aName}</option>`;
+            // Safely get the first or second column value (Name) ignoring key names
+            let aName = ach.Name || ach.name || ach['Name'] || Object.values(ach)[1] || Object.values(ach)[0];
+            if(aName && aName !== 'Name' && aName !== 'name') {
+                exHtml += `<option value="${aName}">${aName}</option>`;
+            }
         });
     }
     let exSelect = document.getElementById('pareeksheExaminerSelect');
     if (exSelect) exSelect.innerHTML = exHtml;
 
-    // 2. Populate Vedapatha Dropdowns safely
+    // 2. Populate Vedapatha Dropdown
+    let html = '<option value="">-- वेदपाठं चिनोतु (Select Vedapatha) --</option>';
     if (typeof studentsData !== 'undefined' && studentsData.length > 0) {
-        let uniqueVedapatha = [...new Set(studentsData.map(s => s.Vedapatha || s.vedapatha).filter(Boolean))];
-        let html = '<option value="">-- वेदपाठं चिनोतु (Select Vedapatha) --</option>';
-        uniqueVedapatha.forEach(v => { html += `<option value="${v}">${v}</option>`; });
-        
-        let acharyaSelect = document.getElementById('pareeksheGanaSelect');
-        let adminSelect = document.getElementById('pareeksheAdminGanaSelect');
-        if(acharyaSelect) acharyaSelect.innerHTML = html;
-        if(adminSelect) adminSelect.innerHTML = html;
+        let uniqueVedapatha = [...new Set(studentsData.map(s => s.Vedapatha || s.vedapatha || Object.values(s)[3] || Object.values(s)[2]).filter(Boolean))];
+        uniqueVedapatha.forEach(v => { 
+            if(v && v !== 'Vedapatha' && v !== 'vedapatha') {
+                html += `<option value="${v}">${v}</option>`; 
+            }
+        });
     }
+    let acharyaSelect = document.getElementById('pareeksheGanaSelect');
+    let adminSelect = document.getElementById('pareeksheAdminGanaSelect');
+    if(acharyaSelect) acharyaSelect.innerHTML = html;
+    if(adminSelect) adminSelect.innerHTML = html;
 }
 
 function setExaminerAndShowGana() {
