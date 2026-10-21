@@ -97,17 +97,16 @@
             
             <div id="pareeksheAcharyaView" style="display:none; margin-top:20px;">
                 <h3 style="color:#D35400;">परीक्षक-विभागः (Examiner View)</h3>
-                <p style="color:#555; font-weight:bold;">Select Gana to evaluate students:</p>
+                <p style="color:#555; font-weight:bold;">Select Vedapatha to evaluate students:</p>
                 <select id="pareeksheGanaSelect" class="form-control" onchange="renderPareeksheStudents()"></select>
                 <div id="pareeksheStudentsContainer" style="margin-top:20px;"></div>
             </div>
             
             <div id="pareeksheAdminView" style="display:none; margin-top:20px;">
                 <h3 style="color:#1565C0;">प्रशासकः - परीक्षा-अहवालः (Admin Report)</h3>
-                <p style="color:#555; font-weight:bold;">Select a Gana to view and download Exam PDFs:</p>
+                <p style="color:#555; font-weight:bold;">Select a Vedapatha to view and download Exam PDFs:</p>
                 <select id="pareeksheAdminGanaSelect" class="form-control" onchange="renderAdminPareekshe()">
-                    <option value="">-- गणं चिनोतु (Select Gana) --</option>
-                    <option value="तपः">तपः</option><option value="तेजः">तेजः</option><option value="ओजः">ओजः</option><option value="वर्चः">वर्चः</option><option value="प्रेयः">प्रेयः</option><option value="श्रेयः">श्रेयः</option><option value="भ्राजः">भ्राजः</option><option value="यशः">यशः</option>
+                    <option value="">-- वेदपाठं चिनोतु (Select Vedapatha) --</option>
                 </select>
                 <div id="adminPareeksheContainer" style="margin-top:20px;"></div>
             </div>

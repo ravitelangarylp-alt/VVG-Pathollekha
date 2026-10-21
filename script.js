@@ -1061,43 +1061,68 @@ const pareeksheSubjectsList = [
 ];
 
 function setupPareeksheDropdown() {
-    let html = '<option value="">-- स्वस्य गणं चिनोतु --</option>';
-    ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "भ्राजः", "यशः"].forEach(g => { html += `<option value="${g}">${g}</option>`; });
-    document.getElementById('pareeksheGanaSelect').innerHTML = html;
+    let uniqueVedapatha = [...new Set(studentsData.map(s => s.vedapatha).filter(Boolean))];
+    let html = '<option value="">-- वेदपाठं चिनोतु (Select Vedapatha) --</option>';
+    uniqueVedapatha.forEach(v => { html += `<option value="${v}">${v}</option>`; });
+    let acharyaSelect = document.getElementById('pareeksheGanaSelect');
+    let adminSelect = document.getElementById('pareeksheAdminGanaSelect');
+    if(acharyaSelect) acharyaSelect.innerHTML = html;
+    if(adminSelect) adminSelect.innerHTML = html;
 }
 
 function renderPareeksheStudents() {
-    let gana = document.getElementById('pareeksheGanaSelect').value;
+    let vedapatha = document.getElementById('pareeksheGanaSelect').value;
     let container = document.getElementById('pareeksheStudentsContainer');
-    if(!gana) { container.innerHTML = ""; return; }
+    if(!vedapatha) { container.innerHTML = ""; return; }
     
-    let filtered = studentsData.filter(s => s.gana === gana);
+    let filtered = studentsData.filter(s => s.vedapatha === vedapatha);
     let html = `<table class="report-table" style="width:100%;"><thead><tr><th>छात्रः (Student)</th><th>Action</th></tr></thead><tbody>`;
     filtered.forEach(st => {
+        let btnText = "📝 परीक्षा-अङ्काः";
+        let btnColor = "#F57C00";
+        // Update logic indicator if already evaluated by current logged-in Acharya
+        let existing = typeof pareeksheData !== 'undefined' ? pareeksheData.find(p => p.Student === st.name && p.Examiner === currentLoggedIn) : null;
+        if(existing) { btnText = "✅ सम्पादियतु (Edit/Update)"; btnColor = "#4CAF50"; }
+        
         html += `<tr><td style="font-weight:bold; font-size:1.1rem; color:#1B5E20;">${st.name}</td>
-        <td><button class="btn-primary" style="background:#F57C00; margin:0; padding:6px 12px; font-size:0.9rem;" onclick="openPareeksheModal('${st.name}', '${gana}')">📝 परीक्षा-अङ्काः (Enter Marks)</button></td></tr>`;
+        <td><button class="btn-primary" style="background:${btnColor}; margin:0; padding:6px 12px; font-size:0.9rem;" onclick="openPareeksheModal('${st.name}', '${vedapatha}')">${btnText}</button></td></tr>`;
     });
     html += `</tbody></table>`;
     container.innerHTML = html;
 }
 
-function openPareeksheModal(studentName, ganaName) {
+function openPareeksheModal(studentName, vedapathaName) {
     document.getElementById('parStudentName').innerText = studentName;
-    document.getElementById('parGana').value = ganaName;
+    document.getElementById('parGana').value = vedapathaName;
     document.getElementById('parAbhivyakti').value = 0;
     document.getElementById('parUchcharane').value = 0;
     document.getElementById('parRemarks').value = "";
     
+    // Check for existing entry by current examiner
+    let existing = typeof pareeksheData !== 'undefined' ? pareeksheData.find(p => p.Student === studentName && p.Examiner === currentLoggedIn) : null;
+    
     let html = "";
     pareeksheSubjectsList.forEach((sub, i) => {
+        let isChecked = false;
+        let markVal = 0;
+        if(existing && existing[sub.id]) {
+            isChecked = true;
+            markVal = existing[sub.id];
+        }
         html += `<div style="display:flex; align-items:center; justify-content:space-between; background:#FAFAFA; padding:10px; border-radius:5px; border:1px solid #E0E0E0;">
             <label style="display:flex; align-items:center; gap:8px; font-weight:bold; color:#333; cursor:pointer; margin:0;">
-                <input type="checkbox" id="chk_${sub.id}" style="width:18px; height:18px;" onchange="toggleParSubject('${sub.id}')"> ${sub.name} (Max ${sub.max})
+                <input type="checkbox" id="chk_${sub.id}" style="width:18px; height:18px;" onchange="toggleParSubject('${sub.id}')" ${isChecked ? 'checked' : ''}> ${sub.name} (Max ${sub.max})
             </label>
-            <input type="number" id="mark_${sub.id}" class="form-control" style="width:80px; margin:0; display:none;" max="${sub.max}" min="0" value="0" oninput="calcPareeksheTotal()">
+            <input type="number" id="mark_${sub.id}" class="form-control" style="width:80px; margin:0; display:${isChecked ? 'block' : 'none'};" max="${sub.max}" min="0" value="${markVal}" oninput="calcPareeksheTotal()">
         </div>`;
     });
     document.getElementById('parSubjectsContainer').innerHTML = html;
+    
+    if(existing) {
+        document.getElementById('parAbhivyakti').value = existing.Abhivyakti || 0;
+        document.getElementById('parUchcharane').value = existing.Uchcharane || 0;
+        document.getElementById('parRemarks').value = existing.Remarks || "";
+    }
     calcPareeksheTotal();
     document.getElementById('pareeksheModal').style.display = 'flex';
 }
@@ -1140,6 +1165,23 @@ function submitPareekshe() {
 }
 
 function renderAdminPareekshe() {
+    let vedapatha = document.getElementById('pareeksheAdminGanaSelect').value;
     let container = document.getElementById('adminPareeksheContainer');
-    container.innerHTML = "<p style='color:#1565C0; font-weight:bold;'>Admin View logic pending backend setup.</p>";
+    if(!vedapatha) { container.innerHTML = ""; return; }
+    
+    let filtered = studentsData.filter(s => s.vedapatha === vedapatha);
+    let html = `<table class="report-table" style="width:100%;"><thead><tr><th>छात्रः (Student)</th><th>Examiner 1</th><th>Examiner 2</th></tr></thead><tbody>`;
+    filtered.forEach(st => {
+        html += `<tr>
+            <td style="font-weight:bold; font-size:1.1rem; color:#0D47A1;">${st.name}</td>
+            <td><button class="btn-primary" style="background:#0288D1; margin:0; padding:6px 10px; font-size:0.85rem;" onclick="downloadPareekshePDF('${st.name}', '${vedapatha}', 1)">📥 PDF (परीक्षकः १)</button></td>
+            <td><button class="btn-primary" style="background:#E53935; margin:0; padding:6px 10px; font-size:0.85rem;" onclick="downloadPareekshePDF('${st.name}', '${vedapatha}', 2)">📥 PDF (परीक्षकः २)</button></td>
+        </tr>`;
+    });
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function downloadPareekshePDF(student, vedapatha, examinerNum) {
+    alert("PDF generation for Examiner " + examinerNum + " pending implementation.");
 }
