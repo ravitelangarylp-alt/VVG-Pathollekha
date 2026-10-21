@@ -1160,8 +1160,57 @@ function calcPareeksheTotal() {
 }
 
 function submitPareekshe() {
-    alert("Backend link pending! UI setup complete.");
-    document.getElementById('pareeksheModal').style.display = 'none';
+    let studentName = document.getElementById('parStudentName').innerText;
+    let vedapatha = document.getElementById('parGana').value; 
+    let abhivyakti = document.getElementById('parAbhivyakti').value || 0;
+    let uchcharane = document.getElementById('parUchcharane').value || 0;
+    let remarks = document.getElementById('parRemarks').value || "";
+    let total = document.getElementById('parTotalMarks').innerText;
+    let max = document.getElementById('parMaxMarks').innerText;
+    let percentage = document.getElementById('parPercentage').innerText;
+
+    let subjectsData = [];
+    pareeksheSubjectsList.forEach(sub => {
+        let chk = document.getElementById('chk_' + sub.id);
+        if(chk && chk.checked) {
+            subjectsData.push({
+                name: sub.name,
+                max: sub.max,
+                obtained: document.getElementById('mark_' + sub.id).value || 0
+            });
+        }
+    });
+
+    let formData = new URLSearchParams();
+    formData.append('action', 'addVedaPareekshe');
+    formData.append('student', studentName);
+    formData.append('vedapatha', vedapatha);
+    formData.append('examiner', currentLoggedIn);
+    formData.append('abhivyakti', abhivyakti);
+    formData.append('uchcharane', uchcharane);
+    formData.append('remarks', remarks);
+    formData.append('total', total);
+    formData.append('max', max);
+    formData.append('percentage', percentage);
+    formData.append('subjectsData', JSON.stringify(subjectsData));
+
+    let btn = document.getElementById('parSubmitBtn');
+    btn.innerText = "समर्प्यते... (Submitting)";
+    btn.disabled = true;
+
+    fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData })
+    .then(res => res.json())
+    .then(data => {
+        alert("सफलम्! परीक्षा-अङ्काः रक्षिताः। (Marks Submitted Successfully)");
+        document.getElementById('pareeksheModal').style.display = 'none';
+        btn.innerText = "समर्पयतु (Submit Marks)";
+        btn.disabled = false;
+        fetchDataFromGoogleSheets(); // Refresh data to show Edit option
+    }).catch(err => {
+        alert("दोषः जातः! (Error submitting data)");
+        btn.innerText = "समर्पयतु (Submit Marks)";
+        btn.disabled = false;
+    });
 }
 
 function renderAdminPareekshe() {
