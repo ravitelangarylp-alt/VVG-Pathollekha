@@ -1052,7 +1052,6 @@ function submitCharitrya() {
 // ----------------------------------------------------
 // 📜 VEDA PAREEKSHE (Veda Exam) LOGIC
 // ----------------------------------------------------
-let currentExaminer = "";
 const pareeksheSubjectsList = [
     { id: "p1", name: "वल्लीत्रयम्", max: 30 }, { id: "p2", name: "अरुण-प्रश्नः", max: 25 },
     { id: "p3", name: "सह वै प्रश्नः", max: 15 }, { id: "p4", name: "चित्तिः", max: 20 },
@@ -1063,21 +1062,6 @@ const pareeksheSubjectsList = [
 ];
 
 function setupPareeksheDropdown() {
-    // 1. Populate Examiner Dropdown
-    let exHtml = '<option value="">-- परीक्षकं चिनोतु (Select Examiner) --</option>';
-    if (typeof acharyasData !== 'undefined' && acharyasData.length > 0) {
-        acharyasData.forEach(ach => {
-            // Safely get the first or second column value (Name) ignoring key names
-            let aName = ach.Name || ach.name || ach['Name'] || Object.values(ach)[1] || Object.values(ach)[0];
-            if(aName && aName !== 'Name' && aName !== 'name') {
-                exHtml += `<option value="${aName}">${aName}</option>`;
-            }
-        });
-    }
-    let exSelect = document.getElementById('pareeksheExaminerSelect');
-    if (exSelect) exSelect.innerHTML = exHtml;
-
-    // 2. Populate Vedapatha Dropdown
     let html = '<option value="">-- वेदपाठं चिनोतु (Select Vedapatha) --</option>';
     if (typeof studentsData !== 'undefined' && studentsData.length > 0) {
         let uniqueVedapatha = [...new Set(studentsData.map(s => s.Vedapatha || s.vedapatha || Object.values(s)[3] || Object.values(s)[2]).filter(Boolean))];
@@ -1093,17 +1077,6 @@ function setupPareeksheDropdown() {
     if(adminSelect) adminSelect.innerHTML = html;
 }
 
-function setExaminerAndShowGana() {
-    currentExaminer = document.getElementById('pareeksheExaminerSelect').value;
-    if(currentExaminer) {
-        document.getElementById('pareeksheGanaSelectBlock').style.display = 'block';
-        renderPareeksheStudents();
-    } else {
-        document.getElementById('pareeksheGanaSelectBlock').style.display = 'none';
-        document.getElementById('pareeksheStudentsContainer').innerHTML = "";
-    }
-}
-
 function renderPareeksheStudents() {
     let vedapatha = document.getElementById('pareeksheGanaSelect').value;
     let container = document.getElementById('pareeksheStudentsContainer');
@@ -1114,8 +1087,8 @@ function renderPareeksheStudents() {
     filtered.forEach(st => {
         let btnText = "📝 परीक्षा-अङ्काः";
         let btnColor = "#F57C00";
-        // Update logic indicator if already evaluated by current selected Examiner
-        let existing = typeof pareeksheData !== 'undefined' ? pareeksheData.find(p => (p.Student || p.student) === st.name && (p.Examiner || p.examiner) === currentExaminer) : null;
+        // Update logic indicator if already evaluated by current logged-in Acharya
+        let existing = typeof pareeksheData !== 'undefined' ? pareeksheData.find(p => (p.Student || p.student) === st.name && (p.Examiner || p.examiner) === currentLoggedIn) : null;
         if(existing) { btnText = "✅ सम्पादियतु (Edit/Update)"; btnColor = "#4CAF50"; }
         
         html += `<tr><td style="font-weight:bold; font-size:1.1rem; color:#1B5E20;">${st.name}</td>
@@ -1219,7 +1192,7 @@ function submitPareekshe() {
     formData.append('action', 'addVedaPareekshe');
     formData.append('student', studentName);
     formData.append('vedapatha', vedapatha);
-    formData.append('examiner', currentExaminer);
+    formData.append('examiner', currentLoggedIn);
     formData.append('abhivyakti', abhivyakti);
     formData.append('uchcharane', uchcharane);
     formData.append('remarks', remarks);
@@ -1274,16 +1247,6 @@ function renderAdminPareekshe() {
 
 function generatePareeksheGroupHTML(vedapatha, examinerNum) {
     let filteredStudents = studentsData.filter(s => s.vedapatha === vedapatha);
-    
-    // Dynamically find the examiner's name from the submitted data for this group
-    let examinerName = "अनिर्दिष्टः (Pending)";
-    if(typeof pareeksheData !== 'undefined') {
-        let groupEvals = pareeksheData.filter(p => (p.Vedapatha || p.vedapatha) === vedapatha);
-        let uniqueExaminers = [...new Set(groupEvals.map(p => p.Examiner || p.examiner).filter(Boolean))].sort();
-        if(uniqueExaminers.length >= examinerNum) {
-            examinerName = uniqueExaminers[examinerNum - 1];
-        }
-    }
 
     let html = `<div style="width: 794px; padding: 40px; background: white; color: black; font-family: 'Laila', sans-serif;">
         <div style="display:flex; align-items:center; justify-content:center; margin-bottom:20px; border-bottom: 2px solid #2E7D32; padding-bottom: 15px;">
@@ -1291,15 +1254,15 @@ function generatePareeksheGroupHTML(vedapatha, examinerNum) {
             <div style="text-align:center;">
                 <h1 style="color:#1B5E20; font-size:32px; margin:0;">वेदविज्ञानगुरुकुलम्</h1>
                 <h2 style="color:#1565C0; font-size:24px; margin:10px 0;">वेद-परीक्षा - ${vedapatha}</h2>
-                <h3 style="color:#424242; font-size:20px; margin:0;">परीक्षकः : ${examinerName}</h3>
+                <h3 style="color:#424242; font-size:20px; margin:0;">परीक्षकः : ______________________</h3>
             </div>
         </div>`;
 
     filteredStudents.forEach((st) => {
-        // Find evaluation specifically by this examiner
+        // Find any evaluation for this student in this vedapatha
         let evalData = null;
-        if(typeof pareeksheData !== 'undefined' && examinerName !== "अनिर्दिष्टः (Pending)") {
-            evalData = pareeksheData.find(p => (p.Student || p.student) === st.name && (p.Examiner || p.examiner) === examinerName);
+        if(typeof pareeksheData !== 'undefined') {
+            evalData = pareeksheData.find(p => (p.Student || p.student) === st.name && (p.Vedapatha || p.vedapatha) === vedapatha);
         }
         
         html += `<div style="border: 2px solid #A5D6A7; border-radius: 8px; padding: 15px; margin-bottom: 25px; page-break-inside: avoid;">
