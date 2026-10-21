@@ -1063,25 +1063,28 @@ const pareeksheSubjectsList = [
 ];
 
 function setupPareeksheDropdown() {
-    if (!studentsData || studentsData.length === 0) return;
-
+    // 1. Populate Examiner Dropdown safely
     let exHtml = '<option value="">-- परीक्षकं चिनोतु (Select Examiner) --</option>';
-    if(typeof acharyasData !== 'undefined') {
+    if (typeof acharyasData !== 'undefined' && acharyasData.length > 0) {
         acharyasData.forEach(ach => {
-            exHtml += `<option value="${ach.name}">${ach.name}</option>`;
+            let aName = ach.Name || ach.name || "";
+            if(aName) exHtml += `<option value="${aName}">${aName}</option>`;
         });
     }
     let exSelect = document.getElementById('pareeksheExaminerSelect');
-    if(exSelect) exSelect.innerHTML = exHtml;
+    if (exSelect) exSelect.innerHTML = exHtml;
 
-    let uniqueVedapatha = [...new Set(studentsData.map(s => s.vedapatha).filter(Boolean))];
-    let html = '<option value="">-- वेदपाठं चिनोतु (Select Vedapatha) --</option>';
-    uniqueVedapatha.forEach(v => { html += `<option value="${v}">${v}</option>`; });
-    
-    let acharyaSelect = document.getElementById('pareeksheGanaSelect');
-    let adminSelect = document.getElementById('pareeksheAdminGanaSelect');
-    if(acharyaSelect) acharyaSelect.innerHTML = html;
-    if(adminSelect) adminSelect.innerHTML = html;
+    // 2. Populate Vedapatha Dropdowns safely
+    if (typeof studentsData !== 'undefined' && studentsData.length > 0) {
+        let uniqueVedapatha = [...new Set(studentsData.map(s => s.Vedapatha || s.vedapatha).filter(Boolean))];
+        let html = '<option value="">-- वेदपाठं चिनोतु (Select Vedapatha) --</option>';
+        uniqueVedapatha.forEach(v => { html += `<option value="${v}">${v}</option>`; });
+        
+        let acharyaSelect = document.getElementById('pareeksheGanaSelect');
+        let adminSelect = document.getElementById('pareeksheAdminGanaSelect');
+        if(acharyaSelect) acharyaSelect.innerHTML = html;
+        if(adminSelect) adminSelect.innerHTML = html;
+    }
 }
 
 function setExaminerAndShowGana() {
