@@ -2,6 +2,7 @@ let currentLoggedIn = ""; let isAdmin = false; let allSettingsArray = [];
 // Unified Data Variables
 let currentReportDataset = []; let currentReportColumns = []; let currentReportTitleStr = ""; let currentActiveFiltersArr = [];
 let charitryaData = [];
+let pareeksheData = [];
 
 window.onload = function() {
     try {
@@ -65,7 +66,7 @@ function fetchDataFromGoogleSheets() {
         timetableData = {};
         (data.timetable || []).forEach(t => { if(!t.Acharya) return; if(!timetableData[t.Acharya]) timetableData[t.Acharya] = []; timetableData[t.Acharya].push({gana: t.Gana || "", time: t.Time || "", subject: t.Subject || "", vibhaga: t.Vibhaga || "", rowIdx: t.rowIdx}); });
         holidaysData = data.holidays || []; holidaysData.forEach(h => { h.normalizedDate = normalizeSheetDate(h.Date); });
-        messagesData = data.messages || []; avalokanamData = data.avalokanam || []; charitryaData = data.charitrya || [];
+        messagesData = data.messages || []; avalokanamData = data.avalokanam || []; charitryaData = data.charitrya || []; pareeksheData = data.pareekshe || [];
         allSettingsArray = data.settings || [];
         settingsData = {}; (data.settings || []).forEach(row => { if(row.Category) settingsData[row.Category] = row.Value; });
         
@@ -126,6 +127,16 @@ function showSection(sectionId) {
             document.getElementById('satraAcharyaView').style.display = 'block';
             document.getElementById('satraAdminView').style.display = 'none';
             populateGanacharyaDropdown();
+        }
+    } else if (sectionId === 'pareeksheView') {
+        document.getElementById('btn-pareekshe').classList.add('active');
+        if (typeof isAdmin !== 'undefined' && isAdmin === true) {
+            document.getElementById('pareeksheAdminView').style.display = 'block';
+            document.getElementById('pareeksheAcharyaView').style.display = 'none';
+        } else {
+            document.getElementById('pareeksheAcharyaView').style.display = 'block';
+            document.getElementById('pareeksheAdminView').style.display = 'none';
+            setupPareeksheDropdown();
         }
     }
 }
@@ -1035,4 +1046,101 @@ function submitCharitrya() {
     }).catch(err => {
         alert("दोषः जातः! (Error submitting)"); btn.innerText = "समर्पयतु (Submit Evaluation)"; btn.disabled = false;
     });
+}
+
+// ----------------------------------------------------
+// 📜 VEDA PAREEKSHE (Veda Exam) LOGIC
+// ----------------------------------------------------
+let pareeksheData = [];
+const pareeksheSubjectsList = [
+    { id: "p1", name: "वल्लीत्रयम्", max: 30 }, { id: "p2", name: "अरुण-प्रश्नः", max: 25 },
+    { id: "p3", name: "सह वै प्रश्नः", max: 15 }, { id: "p4", name: "चित्तिः", max: 20 },
+    { id: "p5", name: "महानारायणोपनिषद्", max: 25 }, { id: "p6", name: "सूक्तानि", max: 20 },
+    { id: "p7", name: "उदकशान्तिः (ब्राह्मणभागः)", max: 20 }, { id: "p8", name: "उदकशान्तिः (संहिताभागः)", max: 20 },
+    { id: "p9", name: "रुद्र-प्रश्नः", max: 10 }, { id: "p10", name: "नम-प्रश्नः", max: 10 },
+    { id: "p11", name: "सन्ध्यावन्दनम् + इतराणि", max: 20 }
+];
+
+function setupPareeksheDropdown() {
+    let html = '<option value="">-- स्वस्य गणं चिनोतु --</option>';
+    ["तपः", "तेजः", "ओजः", "वर्चः", "प्रेयः", "श्रेयः", "भ्राजः", "यशः"].forEach(g => { html += `<option value="${g}">${g}</option>`; });
+    document.getElementById('pareeksheGanaSelect').innerHTML = html;
+}
+
+function renderPareeksheStudents() {
+    let gana = document.getElementById('pareeksheGanaSelect').value;
+    let container = document.getElementById('pareeksheStudentsContainer');
+    if(!gana) { container.innerHTML = ""; return; }
+    
+    let filtered = studentsData.filter(s => s.gana === gana);
+    let html = `<table class="report-table" style="width:100%;"><thead><tr><th>छात्रः (Student)</th><th>Action</th></tr></thead><tbody>`;
+    filtered.forEach(st => {
+        html += `<tr><td style="font-weight:bold; font-size:1.1rem; color:#1B5E20;">${st.name}</td>
+        <td><button class="btn-primary" style="background:#F57C00; margin:0; padding:6px 12px; font-size:0.9rem;" onclick="openPareeksheModal('${st.name}', '${gana}')">📝 परीक्षा-अङ्काः (Enter Marks)</button></td></tr>`;
+    });
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+function openPareeksheModal(studentName, ganaName) {
+    document.getElementById('parStudentName').innerText = studentName;
+    document.getElementById('parGana').value = ganaName;
+    document.getElementById('parAbhivyakti').value = 0;
+    document.getElementById('parUchcharane').value = 0;
+    document.getElementById('parRemarks').value = "";
+    
+    let html = "";
+    pareeksheSubjectsList.forEach((sub, i) => {
+        html += `<div style="display:flex; align-items:center; justify-content:space-between; background:#FAFAFA; padding:10px; border-radius:5px; border:1px solid #E0E0E0;">
+            <label style="display:flex; align-items:center; gap:8px; font-weight:bold; color:#333; cursor:pointer; margin:0;">
+                <input type="checkbox" id="chk_${sub.id}" style="width:18px; height:18px;" onchange="toggleParSubject('${sub.id}')"> ${sub.name} (Max ${sub.max})
+            </label>
+            <input type="number" id="mark_${sub.id}" class="form-control" style="width:80px; margin:0; display:none;" max="${sub.max}" min="0" value="0" oninput="calcPareeksheTotal()">
+        </div>`;
+    });
+    document.getElementById('parSubjectsContainer').innerHTML = html;
+    calcPareeksheTotal();
+    document.getElementById('pareeksheModal').style.display = 'flex';
+}
+
+function toggleParSubject(subId) {
+    let chk = document.getElementById('chk_' + subId);
+    let markInput = document.getElementById('mark_' + subId);
+    markInput.style.display = chk.checked ? 'block' : 'none';
+    if(!chk.checked) markInput.value = 0;
+    calcPareeksheTotal();
+}
+
+function calcPareeksheTotal() {
+    let totalObtained = 0;
+    let totalMax = 30; // 10 (Abhivyakti) + 20 (Uchcharane) common base
+    
+    pareeksheSubjectsList.forEach(sub => {
+        let chk = document.getElementById('chk_' + sub.id);
+        if(chk && chk.checked) {
+            totalMax += sub.max;
+            let val = parseFloat(document.getElementById('mark_' + sub.id).value) || 0;
+            totalObtained += val;
+        }
+    });
+    
+    let ab = parseFloat(document.getElementById('parAbhivyakti').value) || 0;
+    let uc = parseFloat(document.getElementById('parUchcharane').value) || 0;
+    totalObtained += (ab + uc);
+    
+    let percentage = ((totalObtained / totalMax) * 100).toFixed(2);
+    
+    document.getElementById('parTotalMarks').innerText = totalObtained;
+    document.getElementById('parMaxMarks').innerText = totalMax;
+    document.getElementById('parPercentage').innerText = percentage;
+}
+
+function submitPareekshe() {
+    alert("Backend link pending! UI setup complete.");
+    document.getElementById('pareeksheModal').style.display = 'none';
+}
+
+function renderAdminPareekshe() {
+    let container = document.getElementById('adminPareeksheContainer');
+    container.innerHTML = "<p style='color:#1565C0; font-weight:bold;'>Admin View logic pending backend setup.</p>";
 }

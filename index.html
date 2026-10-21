@@ -33,6 +33,7 @@
         <button id="btn-dashboard" class="btn-tab active" onclick="showSection('dashboard')">📝 अद्यतन-पाठोल्लेखः (Dashboard)</button>
         <button id="btn-pradarshini" class="btn-tab" onclick="showSection('pradarshini')">📊 पाठोल्लेख-प्रदर्शिनी (Board)</button>
         <button id="btn-satra" class="btn-tab" onclick="showSection('satraView')">📑 सत्रावलोकनम्</button>
+        <button id="btn-pareekshe" class="btn-tab" onclick="showSection('pareeksheView')">📜 वेद-परीक्षा</button>
     </div>
 
     <!-- 1. DASHBOARD VIEW (ಅದ್ಯತನ ಪಾಠೋಲ್ಲೇಖ ಮತ್ತು ಲಾಗಿನ್) -->
@@ -86,6 +87,29 @@
                     <option value="तपः">तपः</option><option value="तेजः">तेजः</option><option value="ओजः">ओजः</option><option value="वर्चः">वर्चः</option><option value="प्रेयः">प्रेयः</option><option value="श्रेयः">श्रेयः</option><option value="भ्राजः">भ्राजः</option><option value="यशः">यशः</option>
                 </select>
                 <div id="adminSatraStudentsContainer" style="margin-top:20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pareeksheView" class="view-section" style="display: none;">
+        <div style="background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h2 style="color: #1B5E20; text-align: center; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">📜 वेद-परीक्षा (Veda Exam)</h2>
+            
+            <div id="pareeksheAcharyaView" style="display:none; margin-top:20px;">
+                <h3 style="color:#D35400;">परीक्षक-विभागः (Examiner View)</h3>
+                <p style="color:#555; font-weight:bold;">Select Gana to evaluate students:</p>
+                <select id="pareeksheGanaSelect" class="form-control" onchange="renderPareeksheStudents()"></select>
+                <div id="pareeksheStudentsContainer" style="margin-top:20px;"></div>
+            </div>
+            
+            <div id="pareeksheAdminView" style="display:none; margin-top:20px;">
+                <h3 style="color:#1565C0;">प्रशासकः - परीक्षा-अहवालः (Admin Report)</h3>
+                <p style="color:#555; font-weight:bold;">Select a Gana to view and download Exam PDFs:</p>
+                <select id="pareeksheAdminGanaSelect" class="form-control" onchange="renderAdminPareekshe()">
+                    <option value="">-- गणं चिनोतु (Select Gana) --</option>
+                    <option value="तपः">तपः</option><option value="तेजः">तेजः</option><option value="ओजः">ओजः</option><option value="वर्चः">वर्चः</option><option value="प्रेयः">प्रेयः</option><option value="श्रेयः">श्रेयः</option><option value="भ्राजः">भ्राजः</option><option value="यशः">यशः</option>
+                </select>
+                <div id="adminPareeksheContainer" style="margin-top:20px;"></div>
             </div>
         </div>
     </div>
@@ -217,6 +241,42 @@
         <div id="charitryaQuestionsContainer"></div>
         <button id="charitryaSubmitBtn" class="btn-primary" style="width: 100%; margin: 20px 0 10px 0; background: #0288D1;" onclick="submitCharitrya()">समर्पयतु (Submit Evaluation)</button>
         <button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="closeCharitryaModal()">निरस्यतु (Close)</button>
+    </div>
+</div>
+
+<!-- Pareekshe Form Modal -->
+<div class="modal" id="pareeksheModal">
+    <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
+        <h3 style="color: #1B5E20; font-family:'Yatra One', cursive; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">वेद-परीक्षा - <span id="parStudentName"></span></h3>
+        <input type="hidden" id="parGana">
+        
+        <p style="color:#D32F2F; font-weight:bold; font-size:0.9rem;">* Check the subjects applicable for this student and enter marks.</p>
+        <div id="parSubjectsContainer" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;"></div>
+        
+        <div style="background:#E8F5E9; padding:15px; border-radius:8px; border:1px solid #A5D6A7;">
+            <h4 style="margin-top:0; color:#2E7D32;">सामान्य-विषयौ (Common Mandatory Subjects)</h4>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <label style="font-weight:bold;">अभिव्यक्ति-सामर्थ्यम् (Max 10):</label>
+                <input type="number" id="parAbhivyakti" class="form-control" style="width:100px; margin:0;" max="10" min="0" oninput="calcPareeksheTotal()" value="0">
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label style="font-weight:bold;">उच्चारणम् (Max 20):</label>
+                <input type="number" id="parUchcharane" class="form-control" style="width:100px; margin:0;" max="20" min="0" oninput="calcPareeksheTotal()" value="0">
+            </div>
+        </div>
+        
+        <div style="margin-top:20px;">
+            <label style="font-weight:bold; color:#424242;">परीक्षकस्य अभिप्रायः (Remarks / Feedback):</label>
+            <textarea id="parRemarks" class="form-control" rows="3" placeholder="अत्र लिखतु..."></textarea>
+        </div>
+        
+        <div style="background:#FFF3E0; padding:15px; margin-top:20px; border-radius:8px; border:1px dashed #FFB74D; text-align:center; font-size:1.2rem; font-weight:bold; color:#E65100;">
+            Total: <span id="parTotalMarks">0</span> / <span id="parMaxMarks">30</span> <br>
+            Percentage: <span id="parPercentage">0</span>%
+        </div>
+        
+        <button id="parSubmitBtn" class="btn-primary" style="width: 100%; margin: 20px 0 10px 0; background:#0288D1;" onclick="submitPareekshe()">समर्पयतु (Submit Marks)</button>
+        <button class="btn-primary btn-outline" style="width: 100%; margin: 0;" onclick="document.getElementById('pareeksheModal').style.display='none'">निरस्यतु (Close)</button>
     </div>
 </div>
 
