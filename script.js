@@ -1238,10 +1238,117 @@ function renderAdminPareekshe() {
     container.innerHTML = html;
 }
 
+function generatePareeksheGroupHTML(vedapatha, examinerNum) {
+    let filteredStudents = studentsData.filter(s => s.vedapatha === vedapatha);
+    let html = `<div style="width: 794px; padding: 40px; background: white; color: black; font-family: 'Laila', sans-serif;">
+        <div style="text-align:center; margin-bottom:30px; border-bottom: 2px solid #2E7D32; padding-bottom: 15px;">
+            <h1 style="color:#1B5E20; font-size:32px; margin:0;">वेदविज्ञानगुरुकुलम्</h1>
+            <h2 style="color:#1565C0; font-size:24px; margin:10px 0;">वेद-परीक्षा - ${vedapatha}</h2>
+            <h3 style="color:#424242; font-size:18px; margin:0;">परीक्षकः ${examinerNum} अहवालः</h3>
+        </div>`;
+
+    filteredStudents.forEach((st) => {
+        // Find evaluations for this student
+        let studentEvals = [];
+        if(typeof pareeksheData !== 'undefined') {
+            studentEvals = pareeksheData.filter(p => (p.Student || p.student) === st.name);
+            // Sort alphabetically by Examiner name to consistently separate Examiner 1 and 2
+            studentEvals.sort((a, b) => String(a.Examiner || a.examiner).localeCompare(String(b.Examiner || b.examiner)));
+        }
+        
+        let evalData = studentEvals[examinerNum - 1]; // 0 for Ex 1, 1 for Ex 2
+
+        html += `<div style="border: 2px solid #A5D6A7; border-radius: 8px; padding: 15px; margin-bottom: 25px; page-break-inside: avoid;">
+            <div style="display:flex; justify-content:space-between; border-bottom: 1px dashed #CCC; padding-bottom:10px; margin-bottom:10px;">
+                <span style="font-size:20px; font-weight:bold; color:#D32F2F;">छात्रः : ${st.name}</span>
+                <span style="font-weight:bold; color:#424242; font-size:16px;">परीक्षकः : ${evalData ? (evalData.Examiner || evalData.examiner) : 'Pending'}</span>
+            </div>`;
+
+        if(evalData) {
+            let subs = [];
+            try { subs = JSON.parse(evalData.Subjects_JSON || evalData.subjects_json || '[]'); } catch(e) {}
+            
+            html += `<table style="width:100%; border-collapse:collapse; text-align:left; font-size:15px;" border="1">
+                <tr style="background:#E8F5E9;"><th style="padding:8px;">विषयः (Subject)</th><th style="padding:8px; width:80px;">Max</th><th style="padding:8px; width:100px;">Obtained</th></tr>
+                <tr><td style="padding:8px;">अभिव्यक्ति-सामर्थ्यम्</td><td style="padding:8px;">10</td><td style="padding:8px; font-weight:bold;">${evalData.Abhivyakti || evalData.abhivyakti}</td></tr>
+                <tr><td style="padding:8px;">उच्चारणम्</td><td style="padding:8px;">20</td><td style="padding:8px; font-weight:bold;">${evalData.Uchcharane || evalData.uchcharane}</td></tr>`;
+            
+            subs.forEach(s => {
+                html += `<tr><td style="padding:8px;">${s.name}</td><td style="padding:8px;">${s.max}</td><td style="padding:8px; font-weight:bold;">${s.obtained}</td></tr>`;
+            });
+
+            html += `<tr style="background:#FFF3E0; font-weight:bold; font-size:16px;">
+                <td style="padding:8px; text-align:right;">Total & Percentage:</td>
+                <td style="padding:8px;">${evalData.Max || evalData.max}</td>
+                <td style="padding:8px; color:#E65100;">${evalData.Total || evalData.total} (${evalData.Percentage || evalData.percentage}%)</td>
+            </tr></table>
+            <p style="margin-top:12px; font-size:15px; color:#333;"><b>अभिप्रायः (Remarks):</b> ${evalData.Remarks || evalData.remarks || 'No remarks'}</p>`;
+        } else {
+            html += `<p style="color:#757575; font-style:italic; font-size:15px;">अस्य छात्रस्य अङ्काः न प्रविष्टाः (Marks not entered by Examiner ${examinerNum} yet).</p>`;
+        }
+        html += `</div>`;
+    });
+    
+    html += `</div>`;
+    return html;
+}
+
 function viewPareeksheGroup(vedapatha, examinerNum) {
-    alert("Group View for " + vedapatha + " (Examiner " + examinerNum + ") will open here. PDF logic pending.");
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html><head>
+        <title>Veda Pareekshe - ${vedapatha} (Examiner ${examinerNum})</title>
+        <link href="https://fonts.googleapis.com/css2?family=Laila:wght@400;600;700&display=swap" rel="stylesheet">
+        </head>
+        <body style="background:#525659; display:flex; justify-content:center; padding:20px; margin:0;">
+            <div style="box-shadow: 0 0 15px rgba(0,0,0,0.6);">${generatePareeksheGroupHTML(vedapatha, examinerNum)}</div>
+        </body></html>
+    `);
+    printWindow.document.close();
 }
 
 function downloadPareeksheGroupPDF(vedapatha, examinerNum) {
-    alert("Group Download for " + vedapatha + " (Examiner " + examinerNum + ") will start here. PDF logic pending.");
+    let btn = event.target;
+    let originalText = btn.innerText;
+    btn.innerText = "⏳ Generating PDF...";
+    btn.disabled = true;
+
+    const reportDiv = document.createElement('div');
+    reportDiv.style.position = 'absolute';
+    reportDiv.style.top = '-9999px';
+    reportDiv.style.left = '-9999px';
+    reportDiv.innerHTML = generatePareeksheGroupHTML(vedapatha, examinerNum);
+    document.body.appendChild(reportDiv);
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'pt', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    html2canvas(reportDiv.firstElementChild, { scale: 2, useCORS: true }).then(canvas => {
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        let imgHeight = (canvas.height * pdfWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+        
+        pdf.save(`VedaPareekshe_${vedapatha}_Examiner${examinerNum}.pdf`);
+        document.body.removeChild(reportDiv);
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }).catch(err => {
+        alert("Error generating PDF. Please try again.");
+        document.body.removeChild(reportDiv);
+        btn.innerText = originalText;
+        btn.disabled = false;
+    });
 }
