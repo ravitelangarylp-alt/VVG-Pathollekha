@@ -66,7 +66,7 @@ function fetchDataFromGoogleSheets() {
         timetableData = {};
         (data.timetable || []).forEach(t => { if(!t.Acharya) return; if(!timetableData[t.Acharya]) timetableData[t.Acharya] = []; timetableData[t.Acharya].push({gana: t.Gana || "", time: t.Time || "", subject: t.Subject || "", vibhaga: t.Vibhaga || "", rowIdx: t.rowIdx}); });
         holidaysData = data.holidays || []; holidaysData.forEach(h => { h.normalizedDate = normalizeSheetDate(h.Date); });
-        messagesData = data.messages || []; avalokanamData = data.avalokanam || []; charitryaData = data.charitrya || []; pareeksheData = data.pareekshe || [];
+        messagesData = data.messages || []; avalokanamData = data.avalokanam || []; charitryaData = data.charitrya || []; pareeksheData = data.veda_pareekshe || [];
         allSettingsArray = data.settings || [];
         settingsData = {}; (data.settings || []).forEach(row => { if(row.Category) settingsData[row.Category] = row.Value; });
         
