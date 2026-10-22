@@ -1192,7 +1192,8 @@ function submitPareekshe() {
     formData.append('action', 'addVedaPareekshe');
     formData.append('student', studentName);
     formData.append('vedapatha', vedapatha);
-    formData.append('examiner', currentLoggedIn);
+    let slot = document.getElementById('parExaminerSlot').value;
+    formData.append('examiner', slot);
     formData.append('abhivyakti', abhivyakti);
     formData.append('uchcharane', uchcharane);
     formData.append('remarks', remarks);
@@ -1259,10 +1260,11 @@ function generatePareeksheGroupHTML(vedapatha, examinerNum) {
         </div>`;
 
     filteredStudents.forEach((st) => {
-        // Find any evaluation for this student in this vedapatha
+        // Find evaluation by expected slot (Examiner 1 or Examiner 2)
         let evalData = null;
         if(typeof pareeksheData !== 'undefined') {
-            evalData = pareeksheData.find(p => (p.Student || p.student) === st.name && (p.Vedapatha || p.vedapatha) === vedapatha);
+            let expectedSlot = "Examiner " + examinerNum;
+            evalData = pareeksheData.find(p => (p.Student || p.student) === st.name && (p.Examiner || p.examiner) === expectedSlot);
         }
         
         html += `<div style="border: 2px solid #A5D6A7; border-radius: 8px; padding: 15px; margin-bottom: 25px; page-break-inside: avoid;">
