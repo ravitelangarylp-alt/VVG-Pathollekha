@@ -255,7 +255,7 @@
         <h3 style="color: #1B5E20; font-family:'Yatra One', cursive; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">वेद-परीक्षा - <span id="parStudentName"></span></h3>
         <div style="background:#FFF9C4; padding:10px; border-radius:5px; margin-bottom:15px; border: 1px solid #FBC02D;">
             <label style="font-weight:bold; color:#F57F17;">भवतः परीक्षक-स्थानं चिनोतु (Select Examiner Slot):</label>
-            <select id="parExaminerSlot" class="form-control" style="margin-top:5px; font-weight:bold;">
+            <select id="parExaminerSlot" class="form-control" style="margin-top:5px; font-weight:bold;" onchange="loadPareeksheDataForSlot()">
                 <option value="Examiner 1">परीक्षकः १ (Examiner 1)</option>
                 <option value="Examiner 2">परीक्षकः २ (Examiner 2)</option>
             </select>

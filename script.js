@@ -654,12 +654,11 @@ function checkAndShowAvalokanamBanner() {
 }
 
 function checkAvalokanamVisibility() {
-    // If it's the admin view, we don't need to show the Acharya fill button
     if (typeof isAdmin !== 'undefined' && isAdmin) return; 
     
     let isOn = false;
-    if (typeof settingsData !== 'undefined') {
-        // Match the category name saved by the Admin settings toggle
+    // Added Array.isArray check to prevent TypeError
+    if (typeof settingsData !== 'undefined' && Array.isArray(settingsData)) {
         let setting = settingsData.find(s => (s.Category || s.category) === 'Avalokanam_Status');
         if (setting && (setting.Value || setting.value) === 'ON') {
             isOn = true;
@@ -671,7 +670,6 @@ function checkAvalokanamVisibility() {
         container.style.display = isOn ? 'block' : 'none';
     }
 }
-
 function openAvalokanamModal() {
     document.getElementById('avModalPakshaTitle').innerText = settingsData['Avalokanam_Paksha'] || ""; const sel = document.getElementById('avClassSelect'); 
     let htmlStr = '<option value="">-- कक्षां चिनोतु (Select Class) --</option>'; const classes = timetableData[currentLoggedIn] || []; let submittedSets = new Set();
@@ -1123,37 +1121,65 @@ function renderPareeksheStudents() {
 function openPareeksheModal(studentName, vedapathaName) {
     document.getElementById('parStudentName').innerText = studentName;
     document.getElementById('parGana').value = vedapathaName;
-    document.getElementById('parAbhivyakti').value = 0;
-    document.getElementById('parUchcharane').value = 0;
-    document.getElementById('parRemarks').value = "";
+    document.getElementById('parExaminerSlot').value = "Examiner 1"; // Default slot
     
-    // Check for existing entry by current examiner
-    let existing = typeof pareeksheData !== 'undefined' ? pareeksheData.find(p => p.Student === studentName && p.Examiner === currentLoggedIn) : null;
-    
+    // Render all checkboxes first so they exist in the DOM
     let html = "";
     pareeksheSubjectsList.forEach((sub, i) => {
-        let isChecked = false;
-        let markVal = 0;
-        if(existing && existing[sub.id]) {
-            isChecked = true;
-            markVal = existing[sub.id];
-        }
         html += `<div style="display:flex; align-items:center; justify-content:space-between; background:#FAFAFA; padding:10px; border-radius:5px; border:1px solid #E0E0E0;">
             <label style="display:flex; align-items:center; gap:8px; font-weight:bold; color:#333; cursor:pointer; margin:0;">
-                <input type="checkbox" id="chk_${sub.id}" style="width:18px; height:18px;" onchange="toggleParSubject('${sub.id}')" ${isChecked ? 'checked' : ''}> ${sub.name} (Max ${sub.max})
+                <input type="checkbox" id="chk_${sub.id}" style="width:18px; height:18px;" onchange="toggleParSubject('${sub.id}')"> ${sub.name} (Max ${sub.max})
             </label>
-            <input type="number" id="mark_${sub.id}" class="form-control" style="width:80px; margin:0; display:${isChecked ? 'block' : 'none'};" max="${sub.max}" min="0" value="${markVal}" oninput="calcPareeksheTotal()">
+            <input type="number" id="mark_${sub.id}" class="form-control" style="width:80px; margin:0; display:none;" max="${sub.max}" min="0" value="0" oninput="calcPareeksheTotal()">
         </div>`;
     });
     document.getElementById('parSubjectsContainer').innerHTML = html;
     
-    if(existing) {
-        document.getElementById('parAbhivyakti').value = existing.Abhivyakti || 0;
-        document.getElementById('parUchcharane').value = existing.Uchcharane || 0;
-        document.getElementById('parRemarks').value = existing.Remarks || "";
+    // Now dynamically load data if it exists
+    loadPareeksheDataForSlot();
+    
+    document.getElementById('pareeksheModal').style.display = 'flex';
+}
+
+function loadPareeksheDataForSlot() {
+    let studentName = document.getElementById('parStudentName').innerText;
+    let slot = document.getElementById('parExaminerSlot').value;
+    
+    // Reset everything to 0 first
+    document.getElementById('parAbhivyakti').value = 0;
+    document.getElementById('parUchcharane').value = 0;
+    document.getElementById('parRemarks').value = "";
+    pareeksheSubjectsList.forEach(sub => {
+        let chk = document.getElementById('chk_' + sub.id);
+        let markInput = document.getElementById('mark_' + sub.id);
+        if(chk) chk.checked = false;
+        if(markInput) { markInput.value = 0; markInput.style.display = 'none'; }
+    });
+
+    // Search in pareeksheData for a match
+    if(typeof pareeksheData !== 'undefined') {
+        let existing = pareeksheData.find(p => String(p.Student || p.student).trim() === String(studentName).trim() && String(p.Examiner || p.examiner).trim().toLowerCase() === String(slot).trim().toLowerCase());
+        
+        if(existing) {
+            document.getElementById('parAbhivyakti').value = existing.Abhivyakti || existing.abhivyakti || 0;
+            document.getElementById('parUchcharane').value = existing.Uchcharane || existing.uchcharane || 0;
+            document.getElementById('parRemarks').value = existing.Remarks || existing.remarks || "";
+            
+            let subs = [];
+            try { subs = JSON.parse(existing.Subjects_JSON || existing.subjects_json || '[]'); } catch(e) {}
+            
+            subs.forEach(s => {
+                let subObj = pareeksheSubjectsList.find(ps => ps.name === s.name);
+                if(subObj) {
+                    document.getElementById('chk_' + subObj.id).checked = true;
+                    let markInput = document.getElementById('mark_' + subObj.id);
+                    markInput.value = s.obtained || 0;
+                    markInput.style.display = 'block';
+                }
+            });
+        }
     }
     calcPareeksheTotal();
-    document.getElementById('pareeksheModal').style.display = 'flex';
 }
 
 function toggleParSubject(subId) {
@@ -1348,31 +1374,40 @@ function downloadPareeksheGroupPDF(vedapatha, examinerNum) {
     btn.disabled = true;
 
     const reportDiv = document.createElement('div');
+    // FIX: Keep it in the viewport but invisible to prevent horizontal cropping
     reportDiv.style.position = 'absolute';
-    reportDiv.style.top = '-9999px';
-    reportDiv.style.left = '-9999px';
+    reportDiv.style.top = '0px';
+    reportDiv.style.left = '0px';
+    reportDiv.style.width = '794px'; 
+    reportDiv.style.zIndex = '-1000';
+    reportDiv.style.opacity = '0';
     reportDiv.innerHTML = generatePareeksheGroupHTML(vedapatha, examinerNum);
     document.body.appendChild(reportDiv);
 
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    html2canvas(reportDiv.firstElementChild, { scale: 2, useCORS: true }).then(canvas => {
+    html2canvas(reportDiv.firstElementChild, { 
+        scale: 2, 
+        useCORS: true,
+        width: 794,
+        windowWidth: 794
+    }).then(canvas => {
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
         let imgHeight = (canvas.height * pdfWidth) / canvas.width;
         let heightLeft = imgHeight;
         let position = 0;
 
         pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
-        heightLeft -= pageHeight;
+        heightLeft -= pdfHeight;
 
         while (heightLeft > 0) {
             position = heightLeft - imgHeight;
             pdf.addPage();
             pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
-            heightLeft -= pageHeight;
+            heightLeft -= pdfHeight;
         }
         
         pdf.save(`VedaPareekshe_${vedapatha}_Examiner${examinerNum}.pdf`);
