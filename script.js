@@ -1260,11 +1260,15 @@ function generatePareeksheGroupHTML(vedapatha, examinerNum) {
         </div>`;
 
     filteredStudents.forEach((st) => {
-        // Find evaluation by expected slot (Examiner 1 or Examiner 2)
+        // Find evaluation by expected slot (Examiner 1 or Examiner 2) with robust matching
         let evalData = null;
         if(typeof pareeksheData !== 'undefined') {
-            let expectedSlot = "Examiner " + examinerNum;
-            evalData = pareeksheData.find(p => (p.Student || p.student) === st.name && (p.Examiner || p.examiner) === expectedSlot);
+            let expectedSlot = ("Examiner " + examinerNum).toLowerCase().trim();
+            evalData = pareeksheData.find(p => {
+                let dbStudent = String(p.Student || p.student || p.studentname || "").trim();
+                let dbExaminer = String(p.Examiner || p.examiner || "").toLowerCase().trim();
+                return dbStudent === String(st.name).trim() && dbExaminer === expectedSlot;
+            });
         }
         
         html += `<div style="border: 2px solid #A5D6A7; border-radius: 8px; padding: 15px; margin-bottom: 25px; page-break-inside: avoid;">
