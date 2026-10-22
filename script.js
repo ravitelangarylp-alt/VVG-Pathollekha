@@ -70,6 +70,8 @@ function fetchDataFromGoogleSheets() {
         allSettingsArray = data.settings || [];
         settingsData = {}; (data.settings || []).forEach(row => { if(row.Category) settingsData[row.Category] = row.Value; });
         
+        checkAvalokanamVisibility();
+        
         populateAcharyaDropdowns(); 
         setupPareeksheDropdown();
         updateTodayView(); 
@@ -190,7 +192,7 @@ function verifyAdmin() { const pin = document.getElementById('adminPin').value; 
 
 function getVocative(name) { if (name === "विष्णुः") return "विष्णो"; if (name === "सुब्रह्मण्य. आ.") return name; return name.replace(/ः$/, ''); }
 
-function verifyAcharya() { const name = document.getElementById('acharyaSelect').value; const pin = document.getElementById('acharyaPin').value; if(!name) return alert("कृपया आचार्यं चिनोतु!"); if(acharyaPasswords[name] === pin) { closeModals(); isAdmin = false; currentLoggedIn = name; document.getElementById('mainTabs').style.display = 'none'; showSection('entryFormSection'); document.getElementById('loggedInAcharya').innerText = "स्वागतम्, " + getVocative(name); document.getElementById('dateInput').value = new Date().toISOString().split('T')[0]; document.getElementById('dateInput').setAttribute('readonly', 'true'); switchEntryTab('classes'); populateClassDropdown(name, document.getElementById('dateInput').value); renderAcharyaMessages(); checkFormHolidayState(); checkAndShowAvalokanamBanner(); } else { alert("असमीचीनः कूटशब्दः!"); } }
+function verifyAcharya() { const name = document.getElementById('acharyaSelect').value; const pin = document.getElementById('acharyaPin').value; if(!name) return alert("कृपया आचार्यं चिनोतु!"); if(acharyaPasswords[name] === pin) { closeModals(); isAdmin = false; currentLoggedIn = name; document.getElementById('mainTabs').style.display = 'none'; showSection('entryFormSection'); document.getElementById('loggedInAcharya').innerText = "स्वागतम्, " + getVocative(name); document.getElementById('dateInput').value = new Date().toISOString().split('T')[0]; document.getElementById('dateInput').setAttribute('readonly', 'true'); switchEntryTab('classes'); populateClassDropdown(name, document.getElementById('dateInput').value); renderAcharyaMessages(); checkFormHolidayState(); checkAndShowAvalokanamBanner(); checkAvalokanamVisibility(); } else { alert("असमीचीनः कूटशब्दः!"); } }
 
 function logout() { currentLoggedIn = ""; isAdmin = false; document.getElementById('descriptionInput').value = ""; document.getElementById('attendanceSection').style.display="none"; const mbox = document.getElementById('acharyaMessageContainer'); if(mbox) mbox.innerHTML=""; goToDashboard(); }
 
@@ -651,6 +653,25 @@ function checkAndShowAvalokanamBanner() {
     }
 }
 
+function checkAvalokanamVisibility() {
+    // If it's the admin view, we don't need to show the Acharya fill button
+    if (typeof isAdmin !== 'undefined' && isAdmin) return; 
+    
+    let isOn = false;
+    if (typeof settingsData !== 'undefined') {
+        // Match the category name saved by the Admin settings toggle
+        let setting = settingsData.find(s => (s.Category || s.category) === 'Avalokanam_Status');
+        if (setting && (setting.Value || setting.value) === 'ON') {
+            isOn = true;
+        }
+    }
+    
+    let container = document.getElementById('acharyaAvalokanamContainer');
+    if (container) {
+        container.style.display = isOn ? 'block' : 'none';
+    }
+}
+
 function openAvalokanamModal() {
     document.getElementById('avModalPakshaTitle').innerText = settingsData['Avalokanam_Paksha'] || ""; const sel = document.getElementById('avClassSelect'); 
     let htmlStr = '<option value="">-- कक्षां चिनोतु (Select Class) --</option>'; const classes = timetableData[currentLoggedIn] || []; let submittedSets = new Set();
@@ -1058,7 +1079,8 @@ const pareeksheSubjectsList = [
     { id: "p5", name: "महानारायणोपनिषद्", max: 25 }, { id: "p6", name: "सूक्तानि", max: 20 },
     { id: "p7", name: "उदकशान्तिः (ब्राह्मणभागः)", max: 20 }, { id: "p8", name: "उदकशान्तिः (संहिताभागः)", max: 20 },
     { id: "p9", name: "रुद्र-प्रश्नः", max: 10 }, { id: "p10", name: "नम-प्रश्नः", max: 10 },
-    { id: "p11", name: "सन्ध्यावन्दनम् + इतराणि", max: 20 }
+    { id: "p11", name: "सन्ध्यावन्दनम् + इतराणि", max: 20 },
+    { id: "p12", name: "ब्राह्मणभागः", max: 20 }
 ];
 
 function setupPareeksheDropdown() {
