@@ -149,6 +149,13 @@ function showSection(sectionId) {
             document.getElementById('pareeksheAdminView').style.display = 'none';
             setupPareeksheDropdown();
         }
+    } else if (sectionId === 'reportCardsView') {
+        const rcBtn = document.getElementById('btn-reportcards');
+        if(rcBtn) rcBtn.classList.add('active');
+        const sel = document.getElementById('reportCardsGanaSelect');
+        if(sel) sel.value = "";
+        const cont = document.getElementById('reportCardsListContainer');
+        if(cont) cont.innerHTML = "";
     }
 }
 
@@ -558,9 +565,26 @@ async function submitDuties() {
 }
 
 
-// ----------------------------------------------------
-// CMS: SYSTEM SETTINGS LOGIC WITH AI & DUTIES TAB
-// ----------------------------------------------------
+window.renderReportCardsList = function() {
+    let gana = document.getElementById('reportCardsGanaSelect').value;
+    let container = document.getElementById('reportCardsListContainer');
+    if(!gana) { container.innerHTML = ""; return; }
+
+    let filteredStudents = studentsData.filter(s => s.gana === gana);
+    let html = `<table class="report-table" style="width:100%;"><thead><tr><th>छात्रः (Student)</th><th>Action</th></tr></thead><tbody>`;
+
+    filteredStudents.forEach(st => {
+        html += `<tr>
+            <td style="font-weight:bold; font-size:1.1rem; color:#0D47A1;">${st.name}</td>
+            <td>
+                <button class="btn-primary" style="background:#0288D1; margin:0; margin-right:10px; padding:8px 15px;" onclick="viewStudentReport('${st.name}', '${gana}')">👁️ View</button>
+                <button class="btn-primary" style="background:#E53935; margin:0; padding:8px 15px;" onclick="downloadStudentPDF('${st.name}', '${gana}')">📥 Download PDF</button>
+            </td>
+        </tr>`;
+    });
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+};
 function switchReportCategory(category, btnElement) {
     document.querySelectorAll('.rep-tab').forEach(el => el.classList.remove('active')); btnElement.classList.add('active');
     document.getElementById('cmsSection').style.display = 'none'; document.getElementById('reportsSection').style.display = 'none'; const aiSec = document.getElementById('aiChatSection'); if(aiSec) aiSec.style.display = 'none';
@@ -905,27 +929,22 @@ function generateReportHTML(studentName, gana) {
                 <span>छात्रः : ${studentName}</span>
                 <span>गणः : ${gana}</span>
             </div>
-            <table border="1" style="width:100%; border-collapse:collapse; text-align:left; font-size:15px; flex-grow: 1;">
-                <tr style="background:#2E7D32; color:white;">
-                    <th style="padding:12px;">विषयः (Subject)</th>
-                    <th style="padding:12px;">स्वाध्यायपूरणम् (Notes)</th>
-                    <th style="padding:12px;">विषयावधारणम् (Trans.)</th>
-                    <th style="padding:12px;">भागग्रहणम् (Part.)</th>
-                    <th style="padding:12px;">अभिप्रायः (Remarks)</th>
-                </tr>
     `;
     let academicRows = "";
     avalokanamData.filter(a => window.matchStudentNames(a.Student, studentName)).forEach(av => {
-        academicRows += `<tr>
-            <td style="padding:12px;"><b>${av.Subject}</b><br><small>(${av.Acharya})</small></td>
-            <td style="padding:12px;">${av.Lekhanam}</td>
-            <td style="padding:12px;">${av.Anuvadah}</td>
-            <td style="padding:12px;">${av.Sahabhagita}</td>
-            <td style="padding:12px;">${av.Tippani}</td>
-        </tr>`;
+        academicRows += `
+        <div style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #E0E0E0;">
+            <div style="font-size: 16px; font-weight: bold; color: #2E7D32;">${av.Subject} <span style="font-size: 13px; color: #555; font-weight: normal;">(${av.Acharya})</span></div>
+            <div style="display: flex; gap: 25px; font-size: 14px; margin-top: 6px;">
+                <div><b>स्वाध्यायपूरणम् (Notes):</b> <span style="color:#D32F2F; font-weight:bold;">${av.Lekhanam || '-'}</span></div>
+                <div><b>विषयावधारणम् (Trans.):</b> <span style="color:#D32F2F; font-weight:bold;">${av.Anuvadah || '-'}</span></div>
+                <div><b>भागग्रहणम् (Part.):</b> <span style="color:#D32F2F; font-weight:bold;">${av.Sahabhagita || '-'}</span></div>
+            </div>
+            <div style="font-size: 14px; margin-top: 6px; color: #333;"><b>अभिप्रायः (Remarks):</b> ${av.Tippani || 'No Remark'}</div>
+        </div>`;
     });
-    if(!academicRows) academicRows = `<tr><td colspan="5" style="padding:12px; text-align:center;">Data Not Found</td></tr>`;
-    page1Html += academicRows + `</table>
+    if(!academicRows) academicRows = '<div style="padding:15px; text-align:center; color:#757575;">Data Not Found</div>';
+    page1Html += academicRows + `
             <div style="display:flex; justify-content:space-between; margin-top: 40px; margin-bottom: 20px; font-weight:bold; font-size:18px;">
                 <span>आचार्यः (Acharya)</span>
                 <span>गणाचार्यः (Ganacharya)</span>
@@ -997,6 +1016,7 @@ function downloadStudentPDF(studentName, gana) {
     reportDiv.style.position = 'absolute';
     reportDiv.style.top = '-9999px';
     reportDiv.style.left = '-9999px';
+    reportDiv.style.width = '794px';
     reportDiv.innerHTML = generateReportHTML(studentName, gana);
     document.body.appendChild(reportDiv);
 
@@ -1006,8 +1026,8 @@ function downloadStudentPDF(studentName, gana) {
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
     Promise.all([
-        html2canvas(document.getElementById('pdfPage1'), { scale: 2, useCORS: true }),
-        html2canvas(document.getElementById('pdfPage2'), { scale: 2, useCORS: true })
+        html2canvas(document.getElementById('pdfPage1'), { scale: 2, useCORS: true, width: 794, windowWidth: 794 }),
+        html2canvas(document.getElementById('pdfPage2'), { scale: 2, useCORS: true, width: 794, windowWidth: 794 })
     ]).then(canvases => {
         const imgData1 = canvases[0].toDataURL('image/jpeg', 1.0);
         pdf.addImage(imgData1, 'JPEG', 0, 0, pdfWidth, pdfHeight);
