@@ -1,6 +1,6 @@
 // data.js - अत्र केवलं दत्तांश-सङ्केतः (Dynamic Data API) अस्ति
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJzhU2ymVmuGli0LlWF009mWRBIgNAzmdy4OWMHAeDKbE29i3etnAhb2c-AjnjmNGqbQ/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDmV5NDkfntxrfRDufrOO0hUMB6yamo_FvVUr-TyMwUDNz0p-QmJZZZIP_HVxN86kVhw/exec";
 
 // Global Variables - These will be populated dynamically from Google Sheets
 let acharyaPasswords = {};

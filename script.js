@@ -1,3 +1,11 @@
+window.matchStudentNames = function(dbName, uiName) {
+    if(!dbName || !uiName) return false;
+    // ಅತ್ಯಂತ ಕಠಿಣವಾದ ಮ್ಯಾಚಿಂಗ್ - ಎಲ್ಲಾ ಸ್ಪೇಸ್, ವಿಸರ್ಗ, ಕೋಲನ್ ಮತ್ತು ಅಗೋಚರ ಅಕ್ಷರಗಳನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ
+    let cleanDb = String(dbName).split('(')[0].replace(/[\s:ः\u200B-\u200D\uFEFF]/g, '').trim();
+    let cleanUi = String(uiName).split('(')[0].replace(/[\s:ः\u200B-\u200D\uFEFF]/g, '').trim();
+    return cleanDb === cleanUi && cleanDb !== "";
+};
+
 let currentLoggedIn = ""; let isAdmin = false; let allSettingsArray = [];
 // Unified Data Variables
 let currentReportDataset = []; let currentReportColumns = []; let currentReportTitleStr = ""; let currentActiveFiltersArr = [];
@@ -45,12 +53,6 @@ function normalizeSheetDate(dStr) {
 }
 function normalizeKeyStr(str) { return (str || "").toString().replace(/[\s\-\–\—_]/g, '').toLowerCase(); }
 function makeKey(ach, gana, sub) { return normalizeKeyStr(ach) + '|' + normalizeKeyStr(gana) + '|' + normalizeKeyStr(sub); }
-
-function matchStudentNames(dbName, uiName) {
-    let cleanDb = String(dbName || "").split('(')[0].replace(/[\s:ः]/g, '');
-    let cleanUi = String(uiName || "").split('(')[0].replace(/[\s:ः]/g, '');
-    return cleanDb === cleanUi && cleanDb !== "";
-}
 
 function setupDailyReminder() {
     const now = new Date(); const yyyy = now.getFullYear(); const mm = String(now.getMonth() + 1).padStart(2, '0'); const dd = String(now.getDate()).padStart(2, '0');
@@ -202,7 +204,6 @@ function verifyAcharya() { const name = document.getElementById('acharyaSelect')
 
 function logout() { currentLoggedIn = ""; isAdmin = false; document.getElementById('descriptionInput').value = ""; document.getElementById('attendanceSection').style.display="none"; const mbox = document.getElementById('acharyaMessageContainer'); if(mbox) mbox.innerHTML=""; goToDashboard(); }
 
-
 // ----------------------------------------------------
 // 📊 ಪಾಠೋಲ್ಲೇಖ ಪ್ರದರ್ಶಿನಿ (PRADARSHINI BOARD GENERATOR)
 // ----------------------------------------------------
@@ -225,14 +226,10 @@ function generatePradarshiniBoard() {
 
     for (let ach in acharyaPasswords) {
         let classes = timetableData[ach] || [];
-        
-        // ಪಾಠಗಳನ್ನು ಸಮಯದ ಆಧಾರದ ಮೇಲೆ (ಮೊದಲನೇ ಕ್ಲಾಸ್, ಎರಡನೇ ಕ್ಲಾಸ್...) ವಿಂಗಡಿಸುವುದು
         classes.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
-        
         let dutyStr = settingsData['Duty_' + ach] || "";
         let duties = dutyStr.split(',').map(d => d.trim()).filter(Boolean);
         
-        // ಪಕ್ಕ-ಪಕ್ಕದಲ್ಲಿ ಬಾಕ್ಸ್‌ಗಳು ಬರಲು Flexbox ವಿನ್ಯಾಸ 
         let detailsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch;">`;
         let hasItems = false;
 
@@ -375,7 +372,6 @@ function updateTodayView() {
 
 function escapeQuotes(str) { return str ? str.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n') : ''; }
 function showDescModal(sub, desc, att) { document.getElementById('detailSubject').innerText = sub; document.getElementById('detailDescription').innerText = desc; document.getElementById('detailAttendance').innerText = att || "ಮಾಹಿತिः नास्ति"; document.getElementById('detailsModal').style.display = 'flex'; }
-
 
 function getExpectedStudents(ganaStr, subject, vibhaga, acharya) {
     if(!ganaStr || ganaStr === "इतरकार्यम्" || ganaStr === "दायित्वम्") return []; 
@@ -618,18 +614,13 @@ function deleteRecord(actionType, sheetNameOrRowIdx, actualRowIdx) {
 function updateAdminAvalokanamUI() { const pName = document.getElementById('cmsPakshaName'); const sText = document.getElementById('cmsAvalokanamStatusText'); if(!pName || !sText) return; pName.value = settingsData['Avalokanam_Paksha'] || ""; if(settingsData['Avalokanam_Status'] === 'ON') { sText.innerText = "ON (Active)"; sText.style.color = "#2E7D32"; } else { sText.innerText = "OFF (Inactive)"; sText.style.color = "#D32F2F"; } }
 function setAvalokanamStatus(status) { let paksha = document.getElementById('cmsPakshaName').value.trim(); if(status === 'ON' && !paksha) return alert("Please enter the Paksha Name first!"); Promise.all([ fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: new URLSearchParams({action: 'updateSetting', key: 'Avalokanam_Status', value: status}) }), fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: new URLSearchParams({action: 'updateSetting', key: 'Avalokanam_Paksha', value: paksha}) }) ]).then(() => { alert("Evaluation Status Updated!"); fetchDataFromGoogleSheets(); }).catch(err => alert("Error updating status.")); }
 function checkAndShowAvalokanamBanner() {
-    let settingsData = allSettingsArray;
-    console.log("🔍 Checking Avalokanam Banner Status...");
-    console.log("📦 settingsData array:", settingsData);
-    
+    let settingsDataArray = allSettingsArray;
     let avStatus = 'OFF';
     let avPaksha = '';
 
-    if (settingsData && settingsData.length > 0) {
-        settingsData.forEach(row => {
-            // Convert all values in the row to string and lowercase for safe checking
+    if (settingsDataArray && settingsDataArray.length > 0) {
+        settingsDataArray.forEach(row => {
             let rowValues = Object.values(row).map(v => String(v).trim().toLowerCase());
-            
             if (rowValues.includes('avalokanam_status')) {
                 avStatus = String(row.Value || row.value || Object.values(row)[2] || Object.values(row)[1] || 'OFF').trim().toUpperCase();
             }
@@ -639,8 +630,6 @@ function checkAndShowAvalokanamBanner() {
         });
     }
 
-    console.log("⚙️ Extracted Status:", avStatus, "| Paksha:", avPaksha);
-
     let banner = document.getElementById('avalokanamAlertBanner');
     if (banner) {
         if (avStatus === 'ON') {
@@ -649,13 +638,9 @@ function checkAndShowAvalokanamBanner() {
             if(pakshaSpan) pakshaSpan.innerText = avPaksha + " ";
             let modalTitle = document.getElementById('avModalPakshaTitle');
             if(modalTitle) modalTitle.innerText = avPaksha;
-            console.log("✅ Banner set to visible (block)");
         } else {
             banner.style.display = 'none';
-            console.log("❌ Banner hidden (Status is OFF or not matched)");
         }
-    } else {
-        console.error("🚨 Banner element not found in DOM!");
     }
 }
 
@@ -663,9 +648,8 @@ function checkAvalokanamVisibility() {
     if (typeof isAdmin !== 'undefined' && isAdmin) return; 
     
     let isOn = false;
-    // Added Array.isArray check to prevent TypeError
-    if (typeof settingsData !== 'undefined' && Array.isArray(settingsData)) {
-        let setting = settingsData.find(s => (s.Category || s.category) === 'Avalokanam_Status');
+    if (typeof allSettingsArray !== 'undefined' && Array.isArray(allSettingsArray)) {
+        let setting = allSettingsArray.find(s => (s.Category || s.category) === 'Avalokanam_Status');
         if (setting && (setting.Value || setting.value) === 'ON') {
             isOn = true;
         }
@@ -692,7 +676,6 @@ function renderAvStudents() {
     const cls = JSON.parse(decodeURIComponent(val)); let students = getExpectedStudents(cls.gana, cls.subject, cls.vibhaga, cls.acharya);
     if(students.length === 0) { container.innerHTML = "<p style='color:red;'>छात्राः न सन्ति।</p>"; return; }
     let html = `<table class="report-table" style="width:100%; min-width:650px;"><thead><tr><th>छात्रः (Student)</th><th>लेखनम् (Notes)</th><th>अनुवादः (Trans.)</th><th>सहभागिता (Part.)</th><th>टिप्पणी (Remarks)</th></tr></thead><tbody>`;
-    const options = `<option value="">-</option><option value="A+">A+</option><option value="A">A</option><option value="B+">B+</option><option value="B">B</option><option value="C">C</option><option value="NA">NA (अनुपस्थितः)</option>`;
     const selectedPaksha = settingsData['Avalokanam_Paksha'] || "";
     students.forEach(st => { 
         let savedLekhanam = "", savedAnuvadah = "", savedSahabhagita = "", savedTippani = "";
@@ -874,7 +857,10 @@ function renderGanacharyaStudents() {
     let html = `<table class="report-table" style="width:100%;"><thead><tr><th>छात्रः (Student)</th><th>Action</th></tr></thead><tbody>`;
     
     filteredStudents.forEach(st => {
-        let isDone = charitryaData.some(c => matchStudentNames(c.Student || c.student, st.name));
+        let isDone = false;
+        if (typeof charitryaData !== 'undefined' && charitryaData.length > 0) {
+            isDone = charitryaData.some(c => window.matchStudentNames(c.Student || c.student, st.name));
+        }
         let btnStr = isDone ? `<button class="btn-primary" style="background:#4CAF50; margin:0; padding:6px 12px; font-size:0.9rem;" onclick="openCharitryaForm('${st.name}', '${gana}')">✅ सम्पादियतु (Edit)</button>` : `<button class="btn-primary" style="background:#F57C00; margin:0; padding:6px 12px; font-size:0.9rem;" onclick="openCharitryaForm('${st.name}', '${gana}')">📝 चारित्र्य-अवलोकनम्</button>`;
         html += `<tr><td style="font-weight:bold; font-size:1.1rem; color:#1B5E20;">${st.name}</td><td>${btnStr}</td></tr>`;
     });
@@ -904,9 +890,8 @@ function renderAdminSatraStudents() {
 }
 
 function generateReportHTML(studentName, gana) {
-    let wrapperStyle = "width: 794px; height: 1122px; padding: 45px; box-sizing: border-box; background: white; color: black; font-family: 'Laila', sans-serif; position: relative;";
+    let wrapperStyle = "width: 794px; padding: 45px; box-sizing: border-box; background: white; color: black; font-family: 'Laila', sans-serif; display: flex; flex-direction: column; min-height: 1122px;";
 
-    // PAGE 1 HTML with Logo and Signatures
     let page1Html = `
         <div id="pdfPage1" style="${wrapperStyle}">
             <div style="display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
@@ -920,7 +905,7 @@ function generateReportHTML(studentName, gana) {
                 <span>छात्रः : ${studentName}</span>
                 <span>गणः : ${gana}</span>
             </div>
-            <table border="1" style="width:100%; border-collapse:collapse; text-align:left; font-size:15px;">
+            <table border="1" style="width:100%; border-collapse:collapse; text-align:left; font-size:15px; flex-grow: 1;">
                 <tr style="background:#2E7D32; color:white;">
                     <th style="padding:12px;">विषयः (Subject)</th>
                     <th style="padding:12px;">स्वाध्यायपूरणम् (Notes)</th>
@@ -930,7 +915,7 @@ function generateReportHTML(studentName, gana) {
                 </tr>
     `;
     let academicRows = "";
-    avalokanamData.filter(a => a.Student === studentName).forEach(av => {
+    avalokanamData.filter(a => window.matchStudentNames(a.Student, studentName)).forEach(av => {
         academicRows += `<tr>
             <td style="padding:12px;"><b>${av.Subject}</b><br><small>(${av.Acharya})</small></td>
             <td style="padding:12px;">${av.Lekhanam}</td>
@@ -941,35 +926,39 @@ function generateReportHTML(studentName, gana) {
     });
     if(!academicRows) academicRows = `<tr><td colspan="5" style="padding:12px; text-align:center;">Data Not Found</td></tr>`;
     page1Html += academicRows + `</table>
-            <div style="display:flex; justify-content:space-between; position:absolute; bottom:50px; left:45px; right:45px; font-weight:bold; font-size:18px;">
+            <div style="display:flex; justify-content:space-between; margin-top: 40px; margin-bottom: 20px; font-weight:bold; font-size:18px;">
                 <span>आचार्यः (Acharya)</span>
                 <span>गणाचार्यः (Ganacharya)</span>
             </div>
         </div>
     `;
 
-    // PAGE 2 HTML with bottom Signatures
+    // PAGE 2 - Charitrya
     let page2Html = `
         <div id="pdfPage2" style="${wrapperStyle} margin-top: 20px;">
             <div style="text-align:center; margin-bottom:20px;">
                 <h2 style="color:#1565C0; font-size: 28px;">वैयक्तिक-चारित्र्य-अवलोकनम्</h2>
             </div>
-            <table border="1" style="width:100%; border-collapse:collapse; text-align:left; font-size:15px;">
-                <tr style="background:#1565C0; color:white;">
-                    <th style="padding:12px; width:65%;">चारित्र्य-बिन्दवः (Character Points)</th>
-                    <th style="padding:12px; width:35%;">गणाचार्यस्य अभिप्रायः (Remarks)</th>
-                </tr>
     `;
-    let evalData = charitryaData.find(c => matchStudentNames(c.Student || c.student, studentName));
+    
+    let evalData = null;
+    if (typeof charitryaData !== 'undefined' && charitryaData.length > 0) {
+        evalData = charitryaData.find(c => window.matchStudentNames(c.Student || c.student || c.StudentName, studentName));
+    }
+
     charitryaPoints.forEach((point, index) => {
         let qKeyLower = 'q' + (index + 1);
         let qKeyUpper = 'Q' + (index + 1);
         let ans = evalData ? (evalData[qKeyLower] || evalData[qKeyUpper] || "") : "";
-        if (!ans) ans = "No Remark";
-        page2Html += `<tr><td style="padding:9px 12px;">${point}</td><td style="padding:9px 12px;">${ans}</td></tr>`;
+        if (!ans || String(ans).trim() === "") ans = "No Remark";
+        page2Html += `<div style="margin-bottom: 8px; border-bottom: 1px dashed #E0E0E0; padding-bottom: 5px;">
+            <div style="font-weight:bold; color:#1565C0; font-size:13px;">${point}</div>
+            <div style="color:black; font-size:13px; margin-top:3px;">${ans}</div>
+        </div>`;
     });
-    page2Html += `</table>
-            <div style="display:flex; justify-content:space-between; position:absolute; bottom:50px; left:45px; right:45px; font-weight:bold; font-size:18px;">
+    
+    page2Html += `
+            <div style="display:flex; justify-content:space-between; margin-top: 40px; margin-bottom: 20px; font-weight:bold; font-size:18px;">
                 <span>गणाचार्यः (Ganacharya)</span>
                 <span>प्रधानाचार्यः (Principal)</span>
             </div>
@@ -1043,9 +1032,10 @@ function downloadStudentPDF(studentName, gana) {
 // ----------------------------------------------------
 
 function openCharitryaForm(studentName, ganaName) {
-    console.log("Debugging CharitryaForm:", studentName, charitryaData);
     document.getElementById('charitryaStudentName').innerText = "छात्रः: " + studentName + " (" + ganaName + ")";
     document.getElementById('charitryaGana').value = ganaName;
+    document.getElementById('charitryaModal').setAttribute('data-current-student', studentName);
+    
     let html = "";
     charitryaPoints.forEach((point, index) => {
         let qNum = index + 1;
@@ -1057,21 +1047,19 @@ function openCharitryaForm(studentName, ganaName) {
     document.getElementById('charitryaQuestionsContainer').innerHTML = html;
     document.getElementById('charitryaModal').style.display = 'flex';
     
-    // Load from server data (charitryaData) first
-    if (typeof charitryaData !== 'undefined') {
-        let existingRecord = charitryaData.find(c => matchStudentNames(c.Student || c.student, studentName));
+    if (typeof charitryaData !== 'undefined' && charitryaData.length > 0) {
+        let existingRecord = charitryaData.find(c => window.matchStudentNames(c.Student || c.student || c.StudentName, studentName));
         if (existingRecord) {
-            for(let i=1; i<=16; i++) {
-                let qKeyLower = 'q' + i;
-                let qKeyUpper = 'Q' + i;
-                let val = existingRecord[qKeyLower] || existingRecord[qKeyUpper] || "";
-                let textarea = document.getElementById('char_q' + i);
-                if (textarea && val) textarea.value = val;
+            for (let i = 1; i <= 16; i++) {
+                let inputField = document.getElementById('char_q' + i);
+                let val = existingRecord['Q'+i] || existingRecord['q'+i];
+                if (inputField && val && val !== '-') {
+                    inputField.value = val;
+                }
             }
         }
     }
     
-    // Then load localStorage draft (overwrites if newer)
     loadCharitryaDraft(studentName);
 }
 
@@ -1100,19 +1088,24 @@ function loadCharitryaDraft(studentName) {
 }
 
 function submitCharitrya() {
-    let studentName = document.getElementById('charitryaStudentName').innerText.replace("छात्रः: ", "").split(" (")[0];
+    let studentName = document.getElementById('charitryaModal').getAttribute('data-current-student');
+    if(!studentName) studentName = document.getElementById('charitryaStudentName').innerText.replace("छात्रः: ", "").split(" (")[0].trim();
+    
     let ganaName = document.getElementById('charitryaGana').value;
     let satraName = document.getElementById('charitryaSatra').value;
     let formData = new URLSearchParams();
     formData.append('action', 'addCharitrya'); formData.append('satra', satraName); formData.append('gana', ganaName); formData.append('ganacharya', currentLoggedIn); formData.append('student', studentName);
     for(let i=1; i<=16; i++) { formData.append('q'+i, document.getElementById('char_q'+i).value); }
+    
     let btn = document.getElementById('charitryaSubmitBtn');
     btn.innerText = "समर्प्यते... (Submitting)"; btn.disabled = true;
+    
     fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData }).then(res => res.text()).then(data => {
         alert("सफलम्! चारीत्र्य-अवलोकनम् रक्षितम्। (Submitted Successfully)");
         localStorage.removeItem('charitrya_draft_' + studentName);
         closeCharitryaModal(); btn.innerText = "समर्पयतु (Submit Evaluation)"; btn.disabled = false;
-        renderGanacharyaStudents(); // ಬಟನ್ ಹಸಿರು ಬಣ್ಣಕ್ಕೆ (✅ सम्पादियतु) ಬದಲಾಗಲು
+        fetchDataFromGoogleSheets(); // Refresh data immediately
+        renderGanacharyaStudents(); 
     }).catch(err => {
         alert("दोषः जातः! (Error submitting)"); btn.innerText = "समर्पयतु (Submit Evaluation)"; btn.disabled = false;
     });
@@ -1157,7 +1150,6 @@ function renderPareeksheStudents() {
     filtered.forEach(st => {
         let btnText = "📝 परीक्षा-अङ्काः";
         let btnColor = "#F57C00";
-        // Update logic indicator if already evaluated by current logged-in Acharya
         let existing = typeof pareeksheData !== 'undefined' ? pareeksheData.find(p => (p.Student || p.student) === st.name && (p.Examiner || p.examiner) === currentLoggedIn) : null;
         if(existing) { btnText = "✅ सम्पादियतु (Edit/Update)"; btnColor = "#4CAF50"; }
         
@@ -1171,9 +1163,8 @@ function renderPareeksheStudents() {
 function openPareeksheModal(studentName, vedapathaName) {
     document.getElementById('parStudentName').innerText = studentName;
     document.getElementById('parGana').value = vedapathaName;
-    document.getElementById('parExaminerSlot').value = "Examiner 1"; // Default slot
+    document.getElementById('parExaminerSlot').value = "Examiner 1";
     
-    // Render all checkboxes first so they exist in the DOM
     let html = "";
     pareeksheSubjectsList.forEach((sub, i) => {
         html += `<div style="display:flex; align-items:center; justify-content:space-between; background:#FAFAFA; padding:10px; border-radius:5px; border:1px solid #E0E0E0;">
@@ -1184,10 +1175,7 @@ function openPareeksheModal(studentName, vedapathaName) {
         </div>`;
     });
     document.getElementById('parSubjectsContainer').innerHTML = html;
-    
-    // Now dynamically load data if it exists
     loadPareeksheDataForSlot();
-    
     document.getElementById('pareeksheModal').style.display = 'flex';
 }
 
@@ -1195,7 +1183,6 @@ function loadPareeksheDataForSlot() {
     let studentName = document.getElementById('parStudentName').innerText;
     let slot = document.getElementById('parExaminerSlot').value;
     
-    // Reset everything to 0 first
     document.getElementById('parAbhivyakti').value = 0;
     document.getElementById('parUchcharane').value = 0;
     document.getElementById('parRemarks').value = "";
@@ -1206,18 +1193,14 @@ function loadPareeksheDataForSlot() {
         if(markInput) { markInput.value = 0; markInput.style.display = 'none'; }
     });
 
-    // Search in pareeksheData for a match
     if(typeof pareeksheData !== 'undefined') {
         let existing = pareeksheData.find(p => String(p.Student || p.student).trim() === String(studentName).trim() && String(p.Examiner || p.examiner).trim().toLowerCase() === String(slot).trim().toLowerCase());
-        
         if(existing) {
             document.getElementById('parAbhivyakti').value = existing.Abhivyakti || existing.abhivyakti || 0;
             document.getElementById('parUchcharane').value = existing.Uchcharane || existing.uchcharane || 0;
             document.getElementById('parRemarks').value = existing.Remarks || existing.remarks || "";
-            
             let subs = [];
             try { subs = JSON.parse(existing.Subjects_JSON || existing.subjects_json || '[]'); } catch(e) {}
-            
             subs.forEach(s => {
                 let subObj = pareeksheSubjectsList.find(ps => ps.name === s.name);
                 if(subObj) {
@@ -1242,7 +1225,7 @@ function toggleParSubject(subId) {
 
 function calcPareeksheTotal() {
     let totalObtained = 0;
-    let totalMax = 30; // 10 (Abhivyakti) + 20 (Uchcharane) common base
+    let totalMax = 30;
     
     pareeksheSubjectsList.forEach(sub => {
         let chk = document.getElementById('chk_' + sub.id);
@@ -1279,43 +1262,29 @@ function submitPareekshe() {
         let chk = document.getElementById('chk_' + sub.id);
         if(chk && chk.checked) {
             subjectsData.push({
-                name: sub.name,
-                max: sub.max,
-                obtained: document.getElementById('mark_' + sub.id).value || 0
+                name: sub.name, max: sub.max, obtained: document.getElementById('mark_' + sub.id).value || 0
             });
         }
     });
 
     let formData = new URLSearchParams();
-    formData.append('action', 'addVedaPareekshe');
-    formData.append('student', studentName);
-    formData.append('vedapatha', vedapatha);
+    formData.append('action', 'addVedaPareekshe'); formData.append('student', studentName); formData.append('vedapatha', vedapatha);
     let slot = document.getElementById('parExaminerSlot').value;
-    formData.append('examiner', slot);
-    formData.append('abhivyakti', abhivyakti);
-    formData.append('uchcharane', uchcharane);
-    formData.append('remarks', remarks);
-    formData.append('total', total);
-    formData.append('max', max);
-    formData.append('percentage', percentage);
-    formData.append('subjectsData', JSON.stringify(subjectsData));
+    formData.append('examiner', slot); formData.append('abhivyakti', abhivyakti); formData.append('uchcharane', uchcharane);
+    formData.append('remarks', remarks); formData.append('total', total); formData.append('max', max);
+    formData.append('percentage', percentage); formData.append('subjectsData', JSON.stringify(subjectsData));
 
     let btn = document.getElementById('parSubmitBtn');
-    btn.innerText = "समर्प्यते... (Submitting)";
-    btn.disabled = true;
+    btn.innerText = "समर्प्यते... (Submitting)"; btn.disabled = true;
 
-    fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData })
-    .then(res => res.json())
-    .then(data => {
+    fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData }).then(res => res.json()).then(data => {
         alert("सफलम्! परीक्षा-अङ्काः रक्षिताः। (Marks Submitted Successfully)");
         document.getElementById('pareeksheModal').style.display = 'none';
-        btn.innerText = "समर्पयतु (Submit Marks)";
-        btn.disabled = false;
-        fetchDataFromGoogleSheets(); // Refresh data to show Edit option
+        btn.innerText = "समर्पयतु (Submit Marks)"; btn.disabled = false;
+        fetchDataFromGoogleSheets(); 
     }).catch(err => {
         alert("दोषः जातः! (Error submitting data)");
-        btn.innerText = "समर्पयतु (Submit Marks)";
-        btn.disabled = false;
+        btn.innerText = "समर्पयतु (Submit Marks)"; btn.disabled = false;
     });
 }
 
@@ -1325,28 +1294,23 @@ function renderAdminPareekshe() {
     if(!vedapatha) { container.innerHTML = ""; return; }
 
     let filtered = studentsData.filter(s => s.vedapatha === vedapatha);
-    
     let html = `<div style="background:#E3F2FD; padding:20px; border-radius:8px; border:1px solid #90CAF9; text-align:center;">
         <h4 style="margin-top:0; color:#1565C0;">${vedapatha} - वेदपाठ-समूहः (Total Students: ${filtered.length})</h4>
         <p style="color:#555; font-size:0.9rem; margin-bottom:15px;">अस्मिन् समूहे सर्वेषां छात्राणां अङ्काः पश्यन्तु अथवा डाउनलोड् कुर्वन्तु।</p>
-        
         <div style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
             <button class="btn-primary" style="background:#0288D1; margin:0;" onclick="viewPareeksheGroup('${vedapatha}', 1)">👁️ View (परीक्षकः १)</button>
             <button class="btn-primary" style="background:#E53935; margin:0;" onclick="downloadPareeksheGroupPDF('${vedapatha}', 1)">📥 Download PDF (परीक्षकः १)</button>
         </div>
-        
         <div style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">
             <button class="btn-primary" style="background:#00796B; margin:0;" onclick="viewPareeksheGroup('${vedapatha}', 2)">👁️ View (परीक्षकः २)</button>
             <button class="btn-primary" style="background:#D84315; margin:0;" onclick="downloadPareeksheGroupPDF('${vedapatha}', 2)">📥 Download PDF (परीक्षकः २)</button>
         </div>
     </div>`;
-    
     container.innerHTML = html;
 }
 
 function generatePareeksheGroupHTML(vedapatha, examinerNum) {
     let filteredStudents = studentsData.filter(s => s.vedapatha === vedapatha);
-
     let html = `<div style="width: 794px; padding: 40px; background: white; color: black; font-family: 'Laila', sans-serif;">
         <div style="display:flex; align-items:center; justify-content:center; margin-bottom:20px; border-bottom: 2px solid #2E7D32; padding-bottom: 15px;">
             <img src="logo.png" style="height:90px; margin-right:20px;" alt="Logo" onerror="this.style.display='none'">
@@ -1358,7 +1322,6 @@ function generatePareeksheGroupHTML(vedapatha, examinerNum) {
         </div>`;
 
     filteredStudents.forEach((st) => {
-        // Find evaluation by expected slot (Examiner 1 or Examiner 2) with robust matching
         let evalData = null;
         if(typeof pareeksheData !== 'undefined') {
             let expectedSlot = ("Examiner " + examinerNum).toLowerCase().trim();
@@ -1377,15 +1340,12 @@ function generatePareeksheGroupHTML(vedapatha, examinerNum) {
         if(evalData) {
             let subs = [];
             try { subs = JSON.parse(evalData.Subjects_JSON || evalData.subjects_json || '[]'); } catch(e) {}
-            
             html += `<table style="width:100%; border-collapse:collapse; text-align:left; font-size:15px;" border="1">
                 <tr style="background:#E8F5E9;"><th style="padding:8px;">विषयः (Subject)</th><th style="padding:8px; width:80px;">Max</th><th style="padding:8px; width:100px;">Obtained</th></tr>
                 <tr><td style="padding:8px;">अभिव्यक्ति-सामर्थ्यम्</td><td style="padding:8px;">10</td><td style="padding:8px; font-weight:bold;">${evalData.Abhivyakti || evalData.abhivyakti}</td></tr>
                 <tr><td style="padding:8px;">उच्चारणम्</td><td style="padding:8px;">20</td><td style="padding:8px; font-weight:bold;">${evalData.Uchcharane || evalData.uchcharane}</td></tr>`;
             
-            subs.forEach(s => {
-                html += `<tr><td style="padding:8px;">${s.name}</td><td style="padding:8px;">${s.max}</td><td style="padding:8px; font-weight:bold;">${s.obtained}</td></tr>`;
-            });
+            subs.forEach(s => { html += `<tr><td style="padding:8px;">${s.name}</td><td style="padding:8px;">${s.max}</td><td style="padding:8px; font-weight:bold;">${s.obtained}</td></tr>`; });
 
             html += `<tr style="background:#FFF3E0; font-weight:bold; font-size:16px;">
                 <td style="padding:8px; text-align:right;">Total & Percentage:</td>
@@ -1398,7 +1358,6 @@ function generatePareeksheGroupHTML(vedapatha, examinerNum) {
         }
         html += `</div>`;
     });
-    
     html += `</div>`;
     return html;
 }
@@ -1418,19 +1377,11 @@ function viewPareeksheGroup(vedapatha, examinerNum) {
 }
 
 function downloadPareeksheGroupPDF(vedapatha, examinerNum) {
-    let btn = event.target;
-    let originalText = btn.innerText;
-    btn.innerText = "⏳ Generating PDF...";
-    btn.disabled = true;
+    let btn = event.target; let originalText = btn.innerText; btn.innerText = "⏳ Generating PDF..."; btn.disabled = true;
 
     const reportDiv = document.createElement('div');
-    // FIX: Keep it in the viewport but invisible to prevent horizontal cropping
-    reportDiv.style.position = 'absolute';
-    reportDiv.style.top = '0px';
-    reportDiv.style.left = '0px';
-    reportDiv.style.width = '794px'; 
-    reportDiv.style.zIndex = '-1000';
-    reportDiv.style.opacity = '0';
+    reportDiv.style.position = 'absolute'; reportDiv.style.top = '0px'; reportDiv.style.left = '0px'; reportDiv.style.width = '794px'; 
+    reportDiv.style.zIndex = '-1000'; reportDiv.style.opacity = '0';
     reportDiv.innerHTML = generatePareeksheGroupHTML(vedapatha, examinerNum);
     document.body.appendChild(reportDiv);
 
@@ -1439,35 +1390,17 @@ function downloadPareeksheGroupPDF(vedapatha, examinerNum) {
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    html2canvas(reportDiv.firstElementChild, { 
-        scale: 2, 
-        useCORS: true,
-        width: 794,
-        windowWidth: 794
-    }).then(canvas => {
+    html2canvas(reportDiv.firstElementChild, { scale: 2, useCORS: true, width: 794, windowWidth: 794 }).then(canvas => {
         const imgData = canvas.toDataURL('image/jpeg', 1.0);
         let imgHeight = (canvas.height * pdfWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
-        heightLeft -= pdfHeight;
-
+        let heightLeft = imgHeight; let position = 0;
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight); heightLeft -= pdfHeight;
         while (heightLeft > 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
-            heightLeft -= pdfHeight;
+            position = heightLeft - imgHeight; pdf.addPage(); pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight); heightLeft -= pdfHeight;
         }
-        
         pdf.save(`VedaPareekshe_${vedapatha}_Examiner${examinerNum}.pdf`);
-        document.body.removeChild(reportDiv);
-        btn.innerText = originalText;
-        btn.disabled = false;
+        document.body.removeChild(reportDiv); btn.innerText = originalText; btn.disabled = false;
     }).catch(err => {
-        alert("Error generating PDF. Please try again.");
-        document.body.removeChild(reportDiv);
-        btn.innerText = originalText;
-        btn.disabled = false;
+        alert("Error generating PDF. Please try again."); document.body.removeChild(reportDiv); btn.innerText = originalText; btn.disabled = false;
     });
 }
