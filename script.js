@@ -1043,6 +1043,7 @@ function downloadStudentPDF(studentName, gana) {
 // ----------------------------------------------------
 
 function openCharitryaForm(studentName, ganaName) {
+    console.log("Debugging CharitryaForm:", studentName, charitryaData);
     document.getElementById('charitryaStudentName').innerText = "छात्रः: " + studentName + " (" + ganaName + ")";
     document.getElementById('charitryaGana').value = ganaName;
     let html = "";
