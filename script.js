@@ -46,6 +46,12 @@ function normalizeSheetDate(dStr) {
 function normalizeKeyStr(str) { return (str || "").toString().replace(/[\s\-\–\—_]/g, '').toLowerCase(); }
 function makeKey(ach, gana, sub) { return normalizeKeyStr(ach) + '|' + normalizeKeyStr(gana) + '|' + normalizeKeyStr(sub); }
 
+function matchStudentNames(dbName, uiName) {
+    let cleanDb = String(dbName || "").split('(')[0].replace(/[\s:ः]/g, '');
+    let cleanUi = String(uiName || "").split('(')[0].replace(/[\s:ः]/g, '');
+    return cleanDb === cleanUi && cleanDb !== "";
+}
+
 function setupDailyReminder() {
     const now = new Date(); const yyyy = now.getFullYear(); const mm = String(now.getMonth() + 1).padStart(2, '0'); const dd = String(now.getDate()).padStart(2, '0');
     const dtStart = yyyy + mm + dd + "T200000"; const dtEnd = yyyy + mm + dd + "T201000"; const websiteUrl = window.location.href;
@@ -676,7 +682,7 @@ function openAvalokanamModal() {
     avalokanamData.forEach(av => { if(av.Paksha === settingsData['Avalokanam_Paksha'] && av.Acharya === currentLoggedIn) { submittedSets.add(makeKey(currentLoggedIn, av.Gana, av.Subject)); } });
     classes.forEach(cls => {
         if(cls.gana === "इतरकार्यम्") return; let valStr = encodeURIComponent(JSON.stringify({acharya: currentLoggedIn, gana: cls.gana, subject: cls.subject, vibhaga: cls.vibhaga})); let key = makeKey(currentLoggedIn, cls.gana, cls.subject);
-        if(submittedSets.has(key)) { htmlStr += `<option value="${valStr}" disabled style="color:#9E9E9E;">✅ सम्पन्नम् - ${cls.gana} (${cls.subject})</option>`; } else { htmlStr += `<option value="${valStr}">${cls.gana} | ${cls.subject}</option>`; }
+        if(submittedSets.has(key)) { htmlStr += `<option value="${valStr}" style="color:#1565C0;">📝 (Partially/Fully Saved) - ${cls.gana} (${cls.subject})</option>`; } else { htmlStr += `<option value="${valStr}">${cls.gana} | ${cls.subject}</option>`; }
     });
     sel.innerHTML = htmlStr; document.getElementById('avStudentsContainer').innerHTML = ""; document.getElementById('avalokanamModal').style.display = 'flex';
 }
@@ -687,14 +693,39 @@ function renderAvStudents() {
     if(students.length === 0) { container.innerHTML = "<p style='color:red;'>छात्राः न सन्ति।</p>"; return; }
     let html = `<table class="report-table" style="width:100%; min-width:650px;"><thead><tr><th>छात्रः (Student)</th><th>लेखनम् (Notes)</th><th>अनुवादः (Trans.)</th><th>सहभागिता (Part.)</th><th>टिप्पणी (Remarks)</th></tr></thead><tbody>`;
     const options = `<option value="">-</option><option value="A+">A+</option><option value="A">A</option><option value="B+">B+</option><option value="B">B</option><option value="C">C</option><option value="NA">NA (अनुपस्थितः)</option>`;
-    students.forEach(st => { html += `<tr class="av-student-row" data-name="${st.name}"><td style="font-weight:bold; color:#1B5E20;">${st.name}</td><td><select class="form-control av-lekhanam" style="padding:6px; margin:0;">${options}</select></td><td><select class="form-control av-anuvadah" style="padding:6px; margin:0;">${options}</select></td><td><select class="form-control av-sahabhagita" style="padding:6px; margin:0;">${options}</select></td><td><input type="text" class="form-control av-tippani" style="padding:6px; margin:0;" placeholder="Optional"></td></tr>`; });
+    const selectedPaksha = settingsData['Avalokanam_Paksha'] || "";
+    students.forEach(st => { 
+        let savedLekhanam = "", savedAnuvadah = "", savedSahabhagita = "", savedTippani = "";
+        if (typeof avalokanamData !== 'undefined') {
+            let existingRecord = avalokanamData.find(a => 
+                String(a.Paksha || a.paksha) === String(selectedPaksha) && 
+                String(a.Acharya || a.acharya) === String(currentLoggedIn) && 
+                String(a.Student || a.student) === String(st.name)
+            );
+            if (existingRecord) {
+                savedLekhanam = existingRecord.Lekhanam || existingRecord.lekhanam || "";
+                savedAnuvadah = existingRecord.Anuvadah || existingRecord.anuvadah || "";
+                savedSahabhagita = existingRecord.Sahabhagita || existingRecord.sahabhagita || "";
+                savedTippani = existingRecord.Tippani || existingRecord.tippani || "";
+            }
+        }
+        let buildOptions = (savedVal) => {
+            let opts = '<option value="">-</option>';
+            ["A+", "A", "B+", "B", "C", "NA"].forEach(v => {
+                opts += `<option value="${v}" ${v === savedVal ? 'selected' : ''}>${v}</option>`;
+            });
+            return opts;
+        };
+        
+        html += `<tr class="av-student-row" data-name="${st.name}"><td style="font-weight:bold; color:#1B5E20;">${st.name}</td><td><select class="form-control av-lekhanam" style="padding:6px; margin:0;">${buildOptions(savedLekhanam)}</select></td><td><select class="form-control av-anuvadah" style="padding:6px; margin:0;">${buildOptions(savedAnuvadah)}</select></td><td><select class="form-control av-sahabhagita" style="padding:6px; margin:0;">${buildOptions(savedSahabhagita)}</select></td><td><input type="text" class="form-control av-tippani" style="padding:6px; margin:0;" placeholder="Optional" value="${savedTippani}"></td></tr>`; 
+    });
     html += `</tbody></table>`; container.innerHTML = html;
 }
 
 function submitAvalokanam() {
-    const val = document.getElementById('avClassSelect').value; if(!val) return alert("कृपया कक्षां चिनोतु!"); const cls = JSON.parse(decodeURIComponent(val)); let evalsArr = []; let hasError = false;
-    document.querySelectorAll('.av-student-row').forEach(row => { let name = row.getAttribute('data-name'); let l = row.querySelector('.av-lekhanam').value; let a = row.querySelector('.av-anuvadah').value; let s = row.querySelector('.av-sahabhagita').value; let t = row.querySelector('.av-tippani').value || "-"; if(!l || !a || !s) hasError = true; evalsArr.push({student: name, lekhanam: l, anuvadah: a, sahabhagita: s, tippani: t}); });
-    if(hasError) return alert("कृपया सर्वेषां छात्राणां मूल्याङ्कनं पूर्णं कुरुतु! (Please select a grade for all students)");
+    const val = document.getElementById('avClassSelect').value; if(!val) return alert("कृपया कक्षां चिनोतु!"); const cls = JSON.parse(decodeURIComponent(val)); let evalsArr = [];
+    document.querySelectorAll('.av-student-row').forEach(row => { let name = row.getAttribute('data-name'); let l = row.querySelector('.av-lekhanam').value; let a = row.querySelector('.av-anuvadah').value; let s = row.querySelector('.av-sahabhagita').value; let t = row.querySelector('.av-tippani').value || ""; if ((l && l !== '-') || (a && a !== '-') || (s && s !== '-') || (t && t.trim() !== '')) { evalsArr.push({student: name, lekhanam: l, anuvadah: a, sahabhagita: s, tippani: t}); } });
+    if(evalsArr.length === 0) return alert("कृपया किमपि मूल्याङ्कनं चिनोतु! (Please select at least one grade)");
     let btn = document.getElementById('avSubmitBtn'); btn.innerText = "समर्प्यते..."; btn.disabled = true;
     let formData = new URLSearchParams(); formData.append('action', 'addAvalokanam'); formData.append('paksha', settingsData['Avalokanam_Paksha']); formData.append('acharya', cls.acharya); formData.append('gana', cls.gana); formData.append('subject', cls.subject); formData.append('evaluations', JSON.stringify(evalsArr));
     fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: formData }).then(res => res.text()).then(data => { alert("सफलम्! (Evaluation Submitted)"); document.getElementById('avalokanamModal').style.display='none'; btn.innerText = "समर्पयतु (Submit Evaluation)"; btn.disabled = false; fetchDataFromGoogleSheets(); }).catch(err => { alert("दोषः जातः!"); btn.innerText = "समर्पयतु (Submit Evaluation)"; btn.disabled = false; });
@@ -843,7 +874,7 @@ function renderGanacharyaStudents() {
     let html = `<table class="report-table" style="width:100%;"><thead><tr><th>छात्रः (Student)</th><th>Action</th></tr></thead><tbody>`;
     
     filteredStudents.forEach(st => {
-        let isDone = charitryaData.some(c => c.Student === st.name);
+        let isDone = charitryaData.some(c => matchStudentNames(c.Student || c.student, st.name));
         let btnStr = isDone ? `<button class="btn-primary" style="background:#4CAF50; margin:0; padding:6px 12px; font-size:0.9rem;" onclick="openCharitryaForm('${st.name}', '${gana}')">✅ सम्पादियतु (Edit)</button>` : `<button class="btn-primary" style="background:#F57C00; margin:0; padding:6px 12px; font-size:0.9rem;" onclick="openCharitryaForm('${st.name}', '${gana}')">📝 चारित्र्य-अवलोकनम्</button>`;
         html += `<tr><td style="font-weight:bold; font-size:1.1rem; color:#1B5E20;">${st.name}</td><td>${btnStr}</td></tr>`;
     });
@@ -929,10 +960,12 @@ function generateReportHTML(studentName, gana) {
                     <th style="padding:12px; width:35%;">गणाचार्यस्य अभिप्रायः (Remarks)</th>
                 </tr>
     `;
-    let charData = charitryaData.find(c => c.Student === studentName);
+    let evalData = charitryaData.find(c => matchStudentNames(c.Student || c.student, studentName));
     charitryaPoints.forEach((point, index) => {
-        let qKey = 'Q' + (index + 1);
-        let ans = charData ? (charData[qKey] || charData[qKey.toLowerCase()] || "No Remark") : "No Remark";
+        let qKeyLower = 'q' + (index + 1);
+        let qKeyUpper = 'Q' + (index + 1);
+        let ans = evalData ? (evalData[qKeyLower] || evalData[qKeyUpper] || "") : "";
+        if (!ans) ans = "No Remark";
         page2Html += `<tr><td style="padding:9px 12px;">${point}</td><td style="padding:9px 12px;">${ans}</td></tr>`;
     });
     page2Html += `</table>
@@ -1022,6 +1055,22 @@ function openCharitryaForm(studentName, ganaName) {
     });
     document.getElementById('charitryaQuestionsContainer').innerHTML = html;
     document.getElementById('charitryaModal').style.display = 'flex';
+    
+    // Load from server data (charitryaData) first
+    if (typeof charitryaData !== 'undefined') {
+        let existingRecord = charitryaData.find(c => matchStudentNames(c.Student || c.student, studentName));
+        if (existingRecord) {
+            for(let i=1; i<=16; i++) {
+                let qKeyLower = 'q' + i;
+                let qKeyUpper = 'Q' + i;
+                let val = existingRecord[qKeyLower] || existingRecord[qKeyUpper] || "";
+                let textarea = document.getElementById('char_q' + i);
+                if (textarea && val) textarea.value = val;
+            }
+        }
+    }
+    
+    // Then load localStorage draft (overwrites if newer)
     loadCharitryaDraft(studentName);
 }
 
